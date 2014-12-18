@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Project>
+  <Device>
+    <Manufacturer id="ST" name="ST"/>
+    <Chip id="STM32F105RC" name="STM32F105RC"/>
+  </Device>
+  <Components/>
+  <ExcludedFiles>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_subr.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_strategy3m.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_siod.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_screen.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_ClimDef.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_clock.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_ConfigEnRuSR.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_Display.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_EngRus.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_Memory.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\405_Menu.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_const.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_control.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_GD.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_main.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\ENC28J60.C"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\ip_arp_udp_tcp.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\simple_server.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\SPI.C"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\stm32f10x_LCD240x64.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\stm32f10x_Rootines.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Gefest\stm_my\src\stm32f10x_Rootines.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Gefest\65_GD.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\stm32f10x_i2cRel.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\stm_my\src\stm32_sunrise.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_strategy3m2.c"/>
+    <Exclude path="C:\CooCox\CoIDE\workspace\Climat510\65_control (2).c"/>
+  </ExcludedFiles>
+  <Drivers/>
+</Project>

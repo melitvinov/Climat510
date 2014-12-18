@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbench version="2.0">
+<workbenchAdvisor/>
+<window>
+<fastViewData fastViewLocation="1024"/>
+<perspectiveBar/>
+<page focus="true" label="Workspace - CooCox CoBuilder">
+<editors>
+<editorArea activeWorkbook="DefaultEditorWorkbook">
+<info part="DefaultEditorWorkbook">
+<folder appearance="1" expanded="2">
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+<part id="1"/>
+<part id="2"/>
+<part id="3"/>
+<part id="4"/>
+<part id="5"/>
+<part id="6"/>
+<part id="7"/>
+<part id="8"/>
+<part id="9"/>
+<part id="10"/>
+<part id="11"/>
+<part id="12"/>
+<part id="13"/>
+<part id="14"/>
+<part id="15"/>
+<part id="16"/>
+<part id="17"/>
+<part id="18"/>
+<part id="19"/>
+<part id="20"/>
+<part id="21"/>
+<part id="22"/>
+<part id="23"/>
+<part id="24"/>
+<part id="25"/>
+<part id="26"/>
+<part id="27"/>
+<part id="28"/>
+</presentation>
+</folder>
+</info>
+</editorArea>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_control.c" partName="65_control.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/65_control.c" title="65_control.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/65_control.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510/65_control.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="28618" selectionTopPixel="18636"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485Master.c" partName="stm32f10x_RS485Master.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/stm_my/src/stm32f10x_RS485Master.c" title="stm32f10x_RS485Master.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/stm_my/src/stm32f10x_RS485Master.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="11" selectionOffset="17716" selectionTopPixel="11832"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_ConfigEnRuSR.c" partName="405_ConfigEnRuSR.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/405_ConfigEnRuSR.c" title="405_ConfigEnRuSR.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/405_ConfigEnRuSR.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510/405_ConfigEnRuSR.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="8955" selectionTopPixel="2436"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485Master.h" partName="stm32f10x_RS485Master.h" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h" title="stm32f10x_RS485Master.h" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510/stm_my/inc/stm32f10x_RS485Master.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2366" selectionTopPixel="1227"/>
+</editor>
+<editor id="org.coocox.builder.ui.editors.ConfigEditor" name="" partName="Configuration" title="Configuration" tooltip="" workbook="DefaultEditorWorkbook">
+<input factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory">&#x0A;<org.coocox.builder.ui.editors.ConfigEditor horizontalPosition="0" subTagIndex="0" verticalPosition="0"/>
+</input>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_control.c" partName="65_control.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_control.c" title="65_control.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_control.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_control.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="20288" selectionTopPixel="7869"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_Menu.c" partName="405_Menu.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/405_Menu.c" title="405_Menu.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/405_Menu.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/405_Menu.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="23184" selectionTopPixel="12410"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="65_GD.c" partName="65_GD.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_GD.c" title="65_GD.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_GD.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_GD.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="15852" selectionTopPixel="8143"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_strategy3m.c" partName="65_strategy3m.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_strategy3m.c" title="65_strategy3m.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_strategy3m.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_strategy3m.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="9" selectionOffset="13739" selectionTopPixel="5474"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_screen.c" partName="65_screen.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_screen.c" title="65_screen.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_screen.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_screen.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4134" selectionTopPixel="310"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485Master.h" partName="stm32f10x_RS485Master.h" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h" title="stm32f10x_RS485Master.h" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="18" selectionOffset="2078" selectionTopPixel="853"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_Rootines.c" partName="stm32f10x_Rootines.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/stm_my/src/stm32f10x_Rootines.c" title="stm32f10x_Rootines.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/stm_my/src/stm32f10x_Rootines.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/src/stm32f10x_Rootines.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="23534" selectionTopPixel="15606"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_subr.c" partName="65_subr.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/65_subr.c" title="65_subr.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/65_subr.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_subr.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="6" selectionOffset="4405" selectionTopPixel="3349"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_Rootines.h" partName="stm32f10x_Rootines.h" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_Rootines.h" title="stm32f10x_Rootines.h" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_Rootines.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/inc/stm32f10x_Rootines.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="11" selectionOffset="819" selectionTopPixel="323"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_Memory.c" partName="405_Memory.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/405_Memory.c" title="405_Memory.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/405_Memory.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/405_Memory.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="6915" selectionTopPixel="2944"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="simple_server.c" partName="simple_server.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/simple_server.c" title="simple_server.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/simple_server.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/src/simple_server.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4284" selectionTopPixel="2604"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="I2CSoft.c" partName="I2CSoft.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/I2CSoft.c" title="I2CSoft.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/I2CSoft.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/src/I2CSoft.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="7" selectionOffset="2083" selectionTopPixel="1696"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_Display.c" partName="405_Display.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/405_Display.c" title="405_Display.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/405_Display.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/405_Display.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="3" selectionOffset="10984" selectionTopPixel="4916"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_main.c" partName="65_main.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/65_main.c" title="65_main.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/65_main.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_main.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1363" selectionTopPixel="1054"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_ClimDef.c" partName="405_ClimDef.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/405_ClimDef.c" title="405_ClimDef.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/405_ClimDef.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/405_ClimDef.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="5" selectionOffset="752" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/main.c" title="main.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/main.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/main.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="mainAHU.c" partName="mainAHU.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/mainAHU.c" title="mainAHU.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/mainAHU.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/mainAHU.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
+</editor>
+<editor id="org.coocox.builder.ui.editors.ConfigEditor" name="" partName="Configuration" title="Configuration" tooltip="" workbook="DefaultEditorWorkbook">
+<input factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory">&#x0A;<org.coocox.builder.ui.editors.ConfigEditor/>
+</input>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="405_ConfigEnRuSR.c" partName="405_ConfigEnRuSR.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/405_ConfigEnRuSR.c" title="405_ConfigEnRuSR.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/405_ConfigEnRuSR.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/405_ConfigEnRuSR.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="14" selectionOffset="241" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_Rootines.c" partName="stm32f10x_Rootines.c" title="stm32f10x_Rootines.c" tooltip="C:\CooCox\CoIDE\workspace\Gefest_lim\stm_my\src\stm32f10x_Rootines.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" uri="file:/C:/CooCox/CoIDE/workspace/Gefest_lim/stm_my/src/stm32f10x_Rootines.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="298" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485.h" partName="stm32f10x_RS485.h" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485.h" title="stm32f10x_RS485.h" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_RS485.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/inc/stm32f10x_RS485.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="922" selectionTopPixel="37"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485.c" partName="stm32f10x_RS485.c" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/stm32f10x_RS485.c" title="stm32f10x_RS485.c" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/src/stm32f10x_RS485.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/src/stm32f10x_RS485.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="52" selectionOffset="925" selectionTopPixel="207"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_Define.h" partName="stm32f10x_Define.h" path="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_Define.h" title="stm32f10x_Define.h" tooltip="C:/CooCox/CoIDE/workspace/Climat510_true/stm_my/inc/stm32f10x_Define.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/stm_my/inc/stm32f10x_Define.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="6" selectionOffset="327" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="65_const.c" partName="65_const.c" path="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_const.c" title="65_const.c" tooltip="C:/Users/Дмитрий/Dropbox/C51/Climat510_true/65_const.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Climat510_true/65_const.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="13" selectionOffset="3781" selectionTopPixel="2040"/>
+</editor>
+</editors>
+<views>
+<view id="org.eclipse.debug.ui.ExpressionView" partName="Expressions">
+<viewState>
+<ExpressionKeySet ExpKeys="Head[0],Head[1],Head[2],Head[3],Head[4],retByte,(uint32_t)(&amp;GD.TControl),Head[0],Head[1],*pNumBlock,"/>
+</viewState>
+</view>
+<view id="org.coocox.builder.ui.views.ProjectView" partName="Project">
+<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="31">
+<expanded>
+<element path="/Climat510_true"/>
+<element path="/Climat510_true/stm_my"/>
+<element path="/Climat510_true/stm_my/inc"/>
+<element path="/Climat510_true/stm_my/src"/>
+</expanded>
+<selection>
+<element path="/Climat510_true/65_GD.c"/>
+</selection>
+</viewState>
+</view>
+<view id="org.coocox.component.ui.ComponentView" partName="Components">
+<viewState/>
+</view>
+<view id="org.eclipse.search.ui.views.SearchView" partName="Search">
+<viewState isPinned="false">
+<view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
+</viewState>
+</view>
+<view id="org.eclipse.debug.ui.DebugView" partName="Debug">
+<viewState/>
+</view>
+<view id="org.eclipse.ui.console.ConsoleView" partName="Console">
+<viewState/>
+</view>
+<view id="org.eclipse.debug.ui.VariableView" partName="Variables">
+<viewState/>
+</view>
+<view id="org.coocox.component.ui.Help" partName="Help">
+<viewState/>
+</view>
+</views>
+<perspectives activePart="org.coocox.builder.ui.views.ProjectView" activePerspective="org.coocox.builder.perspective.CoBuilder">
+<perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
+<descriptor class="org.coocox.builder.ui.PerspectiveCoBuilder" id="org.coocox.builder.perspective.CoBuilder" label="CooCox CoBuilder"/>
+<alwaysOnActionSet id="org.coocox.component.ui.actionSet"/>
+<alwaysOnActionSet id="org.coocox.welcome.ui.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.navigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.keyBindings"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.breakpointActionSet"/>
+<alwaysOnActionSet id="org.coocox.userspace.actionSet"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryAction"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.ShowDisassemblyAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showExpressionsAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showDebugAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showConsoleAction"/>
+<hide_menu_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryBrowserAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showVariablesAction"/>
+<hide_menu_item_id id="org.coocox.builder.ui.openProjectExplorerAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.trace.actions.ShowTraceControlAction"/>
+<hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showRegistersAction"/>
+<hide_toolbar_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
+<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
+<hide_toolbar_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
+<view id="org.coocox.component.ui.ComponentView"/>
+<view id="org.coocox.component.ui.Help"/>
+<view id="org.eclipse.ui.console.ConsoleView"/>
+<view id="org.eclipse.search.ui.views.SearchView"/>
+<view id="org.coocox.builder.ui.views.ProjectView"/>
+<fastViewBars/>
+<layout>
+<mainWindow>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@26e69d">
+<folder activePageID="org.coocox.component.ui.ComponentView" appearance="2" expanded="2">
+<page content="org.coocox.component.ui.ComponentView" label="Components"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@26e69d">
+<folder appearance="2" expanded="2">
+<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
+</folder>
+</info>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@9e6c13" ratio="0.6992561" ratioLeft="658" ratioRight="283" relationship="4" relative="org.eclipse.ui.internal.ViewStack@26e69d">
+<folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">
+<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<page content="org.eclipse.search.ui.views.SearchView" label="Search"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+<part id="1"/>
+</presentation>
+</folder>
+</info>
+<info part="org.coocox.builder.ui.exampleView" ratio="0.21966527" ratioLeft="420" ratioRight="1492" relationship="2" relative="org.eclipse.ui.internal.ViewStack@26e69d"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@164bc27" ratio="0.77792734" ratioLeft="1156" ratioRight="330" relationship="2" relative="org.coocox.builder.ui.exampleView">
+<folder activePageID="org.coocox.component.ui.Help" appearance="2" expanded="2">
+<page content="org.coocox.component.ui.Help" label="Help"/>
+<page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
+<page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
+<page content="org.coocox.coassistant.view.CoAssistantView" label="LabelNotFound"/>
+<page content="org.coocox.builder.ui.MoreExampleView" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+<info part="org.eclipse.ui.editorss" ratio="0.44952178" ratioLeft="423" ratioRight="518" relationship="4" relative="org.coocox.builder.ui.exampleView"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1ee6203" ratio="0.36981934" ratioLeft="348" ratioRight="593" relationship="4" relative="org.eclipse.ui.internal.ViewStack@26e69d">
+<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
+<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+</mainWindow>
+</layout>
+</perspective>
+<perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
+<descriptor class="org.coocox.codebugger.configuration.ui.Perspective" id="org.coocox.codebugger.configuration.perspective" label="CoDebugger"/>
+<alwaysOnActionSet id="org.coocox.component.ui.actionSet"/>
+<alwaysOnActionSet id="org.coocox.welcome.ui.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.navigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.keyBindings"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.breakpointActionSet"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.debugActionSet"/>
+<hide_menu_item_id id="org.coocox.builder.ui.newFolder"/>
+<hide_menu_item_id id="org.coocox.welcome.ui.action.repository"/>
+<hide_menu_item_id id="org.eclipse.ui.file.save"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
+<hide_menu_item_id id="org.eclipse.ui.file.saveAll"/>
+<hide_menu_item_id id="org.coocox.builder.ui.rebuild"/>
+<hide_menu_item_id id="org.coocox.builder.ui.openFile"/>
+<hide_menu_item_id id="org.eclipse.ui.file.saveAs"/>
+<hide_menu_item_id id="org.coocox.builder.rcp.projectMenu"/>
+<hide_menu_item_id id="org.coocox.builder.rcp.flashMenu"/>
+<hide_menu_item_id id="org.coocox.builder.ui.debug"/>
+<hide_menu_item_id id="org.coocox.builder.ui.showHelpViewAction"/>
+<hide_menu_item_id id="org.coocox.builder.ui.newFile"/>
+<hide_menu_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
+<hide_menu_item_id id="org.coocox.builder.ui.build"/>
+<hide_menu_item_id id="org.coocox.welcome.ui.action.welcome"/>
+<hide_menu_item_id id="org.coocox.component.ui.ShowRepositoryAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.actions.TargetManageAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.newProject"/>
+<hide_toolbar_item_id id="org.coocox.welcome.ui.action.repository"/>
+<hide_toolbar_item_id id="org.eclipse.ui.file.save"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.rebuild"/>
+<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideFlashEraseAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.debug"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.newFile"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
+<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.build"/>
+<hide_toolbar_item_id id="org.coocox.welcome.ui.action.welcome"/>
+<hide_toolbar_item_id id="org.coocox.component.ui.ShowRepositoryAction"/>
+<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideProgramDownloadAction"/>
+<view id="org.eclipse.debug.ui.VariableView"/>
+<view id="org.eclipse.debug.ui.ExpressionView"/>
+<view id="org.eclipse.search.ui.views.SearchView"/>
+<view id="org.eclipse.ui.console.ConsoleView"/>
+<view id="org.eclipse.debug.ui.DebugView"/>
+<view id="org.coocox.builder.ui.views.ProjectView"/>
+<fastViewBars/>
+<viewLayoutRec closeable="false" id="org.eclipse.debug.ui.DebugView"/>
+<layout>&#x0A;<mainWindow>&#x0A;<info folder="true" part="org.eclipse.ui.internal.ViewStack@1e4ea25">&#x0A;<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1e4ea25">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
+</folder>
+</info>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@22c9a4" ratio="0.6992561" ratioLeft="658" ratioRight="283" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1e4ea25">&#x0A;<folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
+<page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+<part id="1"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@10103cd" ratio="0.5" ratioLeft="956" ratioRight="956" relationship="2" relative="org.eclipse.ui.internal.ViewStack@22c9a4">&#x0A;<folder activePageID="org.eclipse.debug.ui.ExpressionView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.debug.ui.VariableView" label="Variables"/>
+<page content="org.eclipse.debug.ui.ExpressionView" label="Expressions"/>
+<page content="org.eclipse.search.ui.views.SearchView" label="Search"/>
+<page content="org.coocox.codebugger.trace.ui.traceview" label="LabelNotFound"/>
+<page content="org.eclipse.debug.ui.MemoryView" label="LabelNotFound"/>
+<page content="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+<part id="1"/>
+<part id="2"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1a08e66" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1e4ea25">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="LabelNotFound"/>
+<page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
+<page content="org.eclipse.debug.ui.RegisterView" label="LabelNotFound"/>
+<page content="org.coocox.coassistant.view.CoAssistantView_debug" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
+</folder>
+</info>
+<info part="org.eclipse.ui.editorss" ratio="0.29986054" ratioLeft="430" ratioRight="1004" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1e4ea25"/>
+</mainWindow>
+</layout>
+</perspective>
+</perspectives>
+<workingSets/>
+<navigationHistory>
+<editors>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/main.c"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/inc/stm32f10x_RS485Master.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/main.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_Rootines.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/inc/stm32f10x_Define.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_RS485.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_screen.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_Rootines.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_strategy3m.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_control.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_const.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/405_ConfigEnRuSR.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_GD.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_control.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_const.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Climat510_true/65_GD.c"/>
+</editors>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="13072" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="23412" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="13009" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="13049" y="17"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="905" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="0">
+<position info="not_deleted" x="13049" y="17"/>
+</item>
+<item historyLabel="main.c" index="1">
+<position info="not_deleted" x="4" y="0"/>
+</item>
+<item historyLabel="Configuration" index="2"/>
+<item historyLabel="main.c" index="1">
+<position info="not_deleted" x="4" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="23625" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="12720" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="913" y="13"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.h" index="4">
+<position info="not_deleted" x="2157" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="3586" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.h" index="4">
+<position info="not_deleted" x="2078" y="18"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="3586" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="23464" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="12446" y="19"/>
+</item>
+<item historyLabel="main.c" index="5">
+<position info="not_deleted" x="4" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="6">
+<position info="not_deleted" x="11310" y="0"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="6">
+<position info="not_deleted" x="1133" y="0"/>
+</item>
+<item historyLabel="stm32f10x_Define.h" index="7">
+<position info="not_deleted" x="327" y="6"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="6">
+<position info="not_deleted" x="1133" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="131" y="0"/>
+</item>
+<item historyLabel="main.c" index="5">
+<position info="not_deleted" x="4" y="0"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="6">
+<position info="not_deleted" x="1133" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="131" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485.c" index="8">
+<position info="not_deleted" x="925" y="52"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="3">
+<position info="not_deleted" x="13030" y="0"/>
+</item>
+<item historyLabel="main.c" index="5">
+<position info="not_deleted" x="4" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="9">
+<position info="not_deleted" x="13030" y="0"/>
+</item>
+<item historyLabel="65_screen.c" index="10">
+<position info="not_deleted" x="4134" y="0"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="11">
+<position info="not_deleted" x="1133" y="0"/>
+</item>
+<item historyLabel="65_strategy3m.c" index="12">
+<position info="not_deleted" x="50597" y="5"/>
+</item>
+<item historyLabel="65_control.c" index="13">
+<position info="not_deleted" x="16320" y="0"/>
+</item>
+<item historyLabel="65_control.c" index="13">
+<position info="not_deleted" x="30994" y="0"/>
+</item>
+<item historyLabel="65_strategy3m.c" index="12">
+<position info="not_deleted" x="12273" y="0"/>
+</item>
+<item historyLabel="65_const.c" index="14">
+<position info="not_deleted" x="3781" y="13"/>
+</item>
+<item historyLabel="65_strategy3m.c" index="12">
+<position info="not_deleted" x="13739" y="9"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="11">
+<position info="not_deleted" x="23597" y="9"/>
+</item>
+<item historyLabel="405_ConfigEnRuSR.c" index="15">
+<position info="not_deleted" x="18313" y="0"/>
+</item>
+<item historyLabel="405_ConfigEnRuSR.c" index="15">
+<position info="not_deleted" x="241" y="14"/>
+</item>
+<item historyLabel="stm32f10x_Rootines.c" index="11">
+<position info="not_deleted" x="23551" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="16">
+<position info="not_deleted" x="12882" y="0"/>
+</item>
+<item historyLabel="stm32f10x_RS485Master.c" index="16">
+<position info="not_deleted" x="17716" y="11"/>
+</item>
+<item historyLabel="65_GD.c" index="17">
+<position info="not_deleted" x="17544" y="0"/>
+</item>
+<item historyLabel="65_control.c" index="18">
+<position info="not_deleted" x="30994" y="0"/>
+</item>
+<item historyLabel="65_const.c" index="19">
+<position info="not_deleted" x="3781" y="13"/>
+</item>
+<item active="true" historyLabel="65_GD.c" index="20">
+<position info="not_deleted" x="24975" y="0"/>
+</item>
+</navigationHistory>
+<input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
+</page>
+<workbenchWindowAdvisor/>
+<actionBarAdvisor/>
+</window>
+<mruList>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
+<persistable>
+<org.coocox.welcome.ui.WelcomePage/>
+</persistable>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_control.c" tooltip="Climat510_true/65_control.c">
+<persistable path="/Climat510_true/65_control.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_RS485Master.c" tooltip="Climat510_true/stm_my/src/stm32f10x_RS485Master.c">
+<persistable path="/Climat510_true/stm_my/src/stm32f10x_RS485Master.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="Climat510_true/main.c">
+<persistable path="/Climat510_true/main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_const.c" tooltip="Climat510_true/65_const.c">
+<persistable path="/Climat510_true/65_const.c"/>
+</file>
+<file factoryID="org.coocox.component.ui.editors.repository.RepositoryElementFactory" id="org.coocox.builder.ui.editors.repository.RepositoryBrowser" name="Repository" tooltip="Repository">
+<persistable>&#x0A;<subPage/>
+</persistable>
+</file>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_strategy3m.c" tooltip="C:\CooCox\CoIDE\workspace\Climat510_true\65_strategy3m.c">
+<persistable uri="file:/C:/CooCox/CoIDE/workspace/Climat510_true/65_strategy3m.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_strategy3m.c" tooltip="Climat510_true/65_strategy3m.c">
+<persistable path="/Climat510_true/65_strategy3m.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_strategyAHU.c" tooltip="Climat510_true/65_strategyAHU.c">
+<persistable path="/Climat510_true/65_strategyAHU.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_GD.c" tooltip="Climat510_true/65_GD.c">
+<persistable path="/Climat510_true/65_GD.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="65_main.c" tooltip="Climat510_true/65_main.c">
+<persistable path="/Climat510_true/65_main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="405_Display.c" tooltip="Climat510_true/405_Display.c">
+<persistable path="/Climat510_true/405_Display.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="I2CSoft.c" tooltip="Climat510_true/stm_my/src/I2CSoft.c">
+<persistable path="/Climat510_true/stm_my/src/I2CSoft.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="simple_server.c" tooltip="Climat510_true/stm_my/src/simple_server.c">
+<persistable path="/Climat510_true/stm_my/src/simple_server.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_Rootines.h" tooltip="Climat510_true/stm_my/inc/stm32f10x_Rootines.h">
+<persistable path="/Climat510_true/stm_my/inc/stm32f10x_Rootines.h"/>
+</file>
+</mruList>
+</workbench>
