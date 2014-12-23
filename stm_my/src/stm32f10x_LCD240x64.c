@@ -340,7 +340,6 @@ uchar	CurRow,CurCol;
 		if (!GrafView) ClearGraf();
 		else return;
 		}
-
 	IniLCDMem();
 	TimeToBuf();
 
@@ -355,9 +354,6 @@ uchar	CurRow,CurCol;
 	CurRow=(AdinB+Mark) / DisplCols;// + 2;
 	Send2(cmdPozCurs,((int)CurRow * 256)+ CurCol); //0x0101);
     VideoSost();
-
-
-
 }
 
 void SendFirstScreen(char tmSec){

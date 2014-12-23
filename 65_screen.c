@@ -133,7 +133,7 @@ void SetPosScreen(char typScr)
 	{
 		IntZ-=pGD_Hot_Tepl->Kontur[cSmScreen].Do;//pGD_Hot_Tepl->OtherCalc.CorrScreen;
 
-		if YesBit(pGD_TControl_Tepl->RCS1,cbSCCorrection)
+		if (YesBit(pGD_TControl_Tepl->RCS1,cbSCCorrection))
 		{
 			IntX=((int)(ByteX))-IntZ;
 			if ((!IntZ)||(IntZ==100)||(abs(IntX)>GD.TuneClimate.sc_MinDelta))

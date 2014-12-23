@@ -432,7 +432,7 @@ USART_OUT_INT_VECT
 uint8_t RS485_Master_ExchangeDataIRQ(uint8_t fNCtr, uint16_t fAdrSend, uint16_t fNBytes, void* fData, uint8_t fNBlock, uint8_t Dir,uint8_t *fCond, CallBackRS pF)
 {
 	uint16_t	retByte,i;
-	char* fPtr;
+	//char* fPtr;
 	retByte=fNCtr|0x100;
 	if (!fNBytes) return 0;
 	HeadOUT[2]=fNBytes%256;
@@ -491,7 +491,7 @@ int16_t RS485_Out2_Transmit(uint16_t fNCtr, uint32_t fSend)
 	Head2[2]=(fSend>>8)%256;
 	Head2[3]=(fSend>>16);
 	Head2[4]=0x55;
-	chSumUARTOUT=0;
+	//chSumUARTOUT=0;
 	i=0;
 	while(i<HEAD_SIZE)
 	{
@@ -594,12 +594,10 @@ int16_t RS485_Master_ReadType(uint8_t fNCtr, uint8_t*  fIdent)
 uint16_t GetIPCComMod(uint16_t nAddress) {
 	return nAddress/100;
 	}
+
 uint16_t GetIPCNum(uint16_t nAddress) {
 	return nAddress%100;
 	}
-
-
-
 
 void ClrAllOutIPCDigit(void)
 {
@@ -686,7 +684,8 @@ uint32_t vCpM,bIn,i;
 
 uint16_t GetInIPC(uint16_t nAddress,char* nErr)
 {
-uint16_t vCpM,bOut,i,j,vInput;
+//uint16_t vCpM,bOut,i,j,vInput;
+uint16_t vCpM,i,vInput;
 //TODO
 	vCpM=GetIPCComMod(nAddress);
 	if(!vCpM) {*nErr=-1; return 0;}
@@ -702,12 +701,14 @@ uint16_t vCpM,bOut,i,j,vInput;
 		}
 	*nErr=0;
 	return 4444;
+#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!??????????????????
+
 }
 
 
 uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
 {
-uint16_t vCpM,bOut,i,j,vInput;
+uint16_t vCpM,i,vInput;
 //TODO
 	vCpM=GetIPCComMod(nAddress);
 	if(!vCpM) {*nErr=-1; return 0;}
@@ -732,7 +733,7 @@ uint16_t vCpM,bOut,i,j,vInput;
 
 uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
 {
-	uint16_t vCpM,i,j,k,vInput;
+	uint16_t vCpM,i,k,vInput;
 	vCpM=GetIPCComMod(nAddress);
 	if(!vCpM) return 0;
 	if(vCpM/100==6) return 0;
@@ -796,9 +797,9 @@ void ResMod(void)
 
 uint8_t IMOD_Exchange(TModulData*	fModule)
 {
-	uint8_t fIdent[8];
+	//uint8_t fIdent[8];
 	uint8_t	nModule;
-	uint8_t Res;
+	//uint8_t Res;
 	nModule=fModule->CpM%100+120;
 	if (fModule->MaxOut)
 		nModule=fModule->CpM%100+140;
@@ -925,6 +926,7 @@ void SendIPC(uint8_t *fErrModule)
 	{
 		ModulData[cModule].Cond=0;
 		RS485_Out2_Transmit(120+ModulData[cModule].CpM%100,ModulData[cModule].OutValues);
+#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!????????????????
 		cOperInModule=7;
 		return;
 	}

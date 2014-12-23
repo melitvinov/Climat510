@@ -8,7 +8,6 @@
 #include "stm32f10x_iwdg.h"
 
 #define code
-
 #define STM32_UNIT
 
 typedef uint16_t uint;
@@ -19,6 +18,7 @@ typedef uint8_t bit;
 #define ClrDog  IWDG_ReloadCounter();
 #define SETEA	__enable_irq()
 #define CLREA	__disable_irq()
+#define NOP     asm("nop")
 
 #pragma pack(1)
 
@@ -91,12 +91,6 @@ uint	Int2Count;
 uint	Int3Count;
 uchar	Sec;
 
-
-
-#define NOP asm("nop")
-
-#define Sound   GPIOA->ODR^=GPIO_Pin_4;
-
-
+#define Sound GPIOA->ODR^=GPIO_Pin_4;
 
 #endif

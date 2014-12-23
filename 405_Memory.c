@@ -87,11 +87,11 @@ uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)
    и запись в EEPROM с контрольной суммой*/
 void    SetInSaveRam(void) {
     	uint16_t cSum;
-    	uint16_t     vVal;
 		uint8_t	nBlFRAM;
 		if(!SizeEEP) return;
          AdrEEP=1;
          for(nBlFRAM=0; nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++){
+          uint16_t     vVal;
           ClrDog;
           vVal=AdrRAM-BlockEEP[nBlFRAM].AdrCopyRAM;
           if((vVal>=0)&&(vVal<BlockEEP[nBlFRAM].Size)){

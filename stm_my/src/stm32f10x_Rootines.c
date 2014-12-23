@@ -466,7 +466,7 @@ void CrcCalc()
 
 void Reg48ToI2C()
 {
-uint16_t i;
+//uint16_t i;
 //	for (i=0;i<8;i++)
 //		I2C_Rel_Write(OutR[i],i);
 	SendIPC(&GD.Hot.Tepl[0].ConnectionStatus);
@@ -514,8 +514,8 @@ void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 
 void WriteToFRAM()
 {
-	char i;
-	uint16_t fsizeSend;
+	//char i;
+	//uint16_t fsizeSend;
 	ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
 
@@ -530,8 +530,8 @@ void WriteToFRAM()
 
 void ReadFromFRAM()
 {
-	char i;
-	uint16_t fsizeSend;
+	//char i;
+	//uint16_t fsizeSend;
 	ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
 	RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
@@ -877,7 +877,7 @@ void Measure()
 {
 	char tTepl,nSens;
 	uint16_t	tSensVal;
-	int nModule;
+	//int nModule;
 	int8_t ErrModule;
 	for (tTepl=0;tTepl<cSTepl;tTepl++)
 	{
