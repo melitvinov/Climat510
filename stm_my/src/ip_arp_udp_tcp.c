@@ -226,7 +226,7 @@ unsigned char check_ip_scr(unsigned char *fbuf,unsigned char *dbuf)
 void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss,unsigned char cp_seq)
 	{
 	unsigned char i=0;
-	unsigned char tseq=0;;
+	unsigned char tseq;
 	while(i<2)
 		{
 	    buf[TCP_DST_PORT_H_P+i]=buf[TCP_SRC_PORT_H_P+i];

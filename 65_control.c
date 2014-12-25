@@ -972,10 +972,10 @@ void DoMechanics(char fnTepl)
 
 void SetMeteo(void)
 {
-	uint16_t i;
+	uint16_t tMes,i;
 	for (i=0;i<cConfSMetSens;i++)
 	{
-		uint16_t tMes=GD.Hot.MeteoSensing[i].Value;
+		tMes=GD.Hot.MeteoSensing[i].Value;
 		if (((tMes<=GD.TControl.MeteoSensing[i]+NameSensConfig[cConfSSens+i].DigitMidl)&&(tMes>=GD.TControl.MeteoSensing[i]-NameSensConfig[cConfSSens+i].DigitMidl))||(GD.TControl.TimeMeteoSensing[i]>20))
 		{
 			GD.TControl.TimeMeteoSensing[i]=0;
@@ -1182,7 +1182,7 @@ void	TransferWaterToBoil(void)
 
 void Control(void) 
 	{
-char tCTepl;
+char tCTepl,ttTepl;
 	Configuration();
 	SetDiskrSens();
 	if (DemoMode!=9)
@@ -1280,7 +1280,7 @@ char tCTepl;
 						sizeof(eNextTCalc)+sizeof(eKontur)*cSKontur+20));
 					IntZ=((GD.Hot.Time+o_DeltaTime)%(24*60));
 					TaskTimer(1,tCTepl,tCTepl);
-					char ttTepl=tCTepl;
+					ttTepl=tCTepl;
 					while ((!GD.Hot.Tepl[tCTepl].AllTask.NextTAir)&&(ttTepl))
 					{
 						TaskTimer(1,--ttTepl,tCTepl);

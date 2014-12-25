@@ -210,6 +210,7 @@ static void my_RTC_SetCounter(uint32_t cnt)
 void WriteDateTime()
 {
 	uint32_t cnt;
+	volatile uint16_t i;
 	eDateTime ts;
 
 	cnt = struct_to_counter( DateTime ); // non-DST counter-value

@@ -124,7 +124,7 @@ fptrData - размер передачи*/
 
 void I2C_Mem_Write(uint8_t fAddrDev,uint16_t fAddrMem,uint8_t* fData,uint16_t fptrData)
 {
-	uint16_t	timeout;//,i;
+	uint16_t	timeout,i;
 #ifdef MEM_TYPE_EEPROM
 	while (fptrData)
 	{

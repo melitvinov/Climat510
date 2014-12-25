@@ -71,7 +71,7 @@ u16 i2_GetASK(void){
 }
 
 void i2_WriteByte(int8_t data){
-	u8 i;
+	u8 i,j;
 	i2_ClrSCL;
 	for(i=0;i<8;i++){
 		i2_ToSDA(data & 0x80);
@@ -99,7 +99,7 @@ u8 i2_ReadByte(void){
 }
 u8 fm_Read(u16 adr,u8* buf,u16 size,u8* csum){
 u16 i;
-u8 d,sum=0;
+u8 d,sum;
 	if (!size) return 0;
 	i2_Start();
 	i2_WriteByte(FM_ADR);
@@ -128,7 +128,7 @@ u8 d,sum=0;
 
 u8 fm_Write(u16 adr,u8* buf,u16 size,u8* csum){
 u16 i;
-u8 d;
+u8 d,sum;
 	if (!size) return 0;
 	i2_Start();
 	i2_WriteByte(FM_ADR);

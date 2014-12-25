@@ -4,6 +4,8 @@
         Файл "k_main.c"
         Главный цикл программы
 ----------------------------------------------*/
+#include "keyboard.h"
+
 //++++++FullCheck ++++
 int  DestSize;
 int  DestAdr;
@@ -30,7 +32,8 @@ return 1;
 main()
 {
     char    timeDog;
-    BITKL=0;
+    keyboardSetBITKL(0);
+    //BITKL=0;
 
 #ifndef STM32_UNIT
     init8051();
@@ -70,8 +73,12 @@ main()
     ByteX=1;
     GD.SostRS=OUT_UNIT;
     //KeyDelay=0;
-    CheckKeyboardSTM();
-    if (BITKL)
+
+#warning !!!!!!!!!!!!!!!!!!!!!!!!! ON
+    //CheckKeyboardSTM();
+    KeyboardProcess();
+
+	if (keyboardGetBITKL())
         ByteX=6;
     ClrDog;
     TestMem(ByteX);
@@ -79,7 +86,7 @@ main()
     ClrDog;
     ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
     ClearAllAlarms();
-    start:
+start:
 
     if (not) {
         if (!ton_t--) {
@@ -106,7 +113,7 @@ main()
         if (NumBlock) ReWriteFRAM();
 //				}
         GD.SostRS=OUT_UNIT;
-        SIM=105;
+        keyboardSetSIM(105);
     }
     if (bSec) {
 #ifdef STM32_UNIT
@@ -130,11 +137,11 @@ main()
         // IMOD_WriteOutput(0,1,0xf0f0f0f0);
 
     }
-    if (BITKL) {
+	if (keyboardGetBITKL()) {
         ClrDog;
         GD.Hot.News|=bOperator;
         if (Menu) GD.Hot.News|=bEdit;
-        KeyBoard();		// !!!!!!!
+        KeyBoard();
         B_video=1;
     }
     //CheckReadyMeasure();

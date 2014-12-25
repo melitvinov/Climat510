@@ -990,6 +990,9 @@ void __sLastCheckKontur(char fnKontur,int* fnCorCritery)
 	int OldDoT;
 	long TempDo;	
 	*fnCorCritery=0;
+
+
+
 	if(YesBit((*pGD_Hot_Tepl_Kontur).ExtRCS,cbBlockPumpKontur)) 
 		(*pGD_TControl_Tepl_Kontur).PumpStatus=1;
 	
@@ -1073,6 +1076,7 @@ void __sCalcKonturs(void)
 	long MinMaxPowerReg[3];
 	long xdata temp;
 	int	 OldCrit;
+	char isFram;
 	char fnTepl,tTepl;
 	
 	for(fnTepl=0;fnTepl<cSTepl;fnTepl++)

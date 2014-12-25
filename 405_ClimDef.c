@@ -22,14 +22,19 @@ uchar   AdinB=0;
 uchar   xdata Form=0;
 uchar   SizeForm=0;
 uchar   Mark=0;
-uchar   SIM;
+
+#warning !!!!!!!!!!!!!!!!!!!!!!!!!! ON
+//uchar   SIM;
+
+
+
 //uchar   buf[90];
 void    *AdrVal;
 uchar   TecChan;
 bit     ReadyIZ;
 bit     FalseIZ;
 bit     bSec;
-bit     BITKL;
+//bit     BITKL;
 bit     Menu;
 bit     B_video;
 bit     B_input;
@@ -55,7 +60,9 @@ int8_t		bWaterReset[16];
 uchar   	ByteW,ByteY,ByteX,ByteZ;
 uchar   	nReset;
 uchar   	NumBlock;
+
 uchar   	not=230,ton=3,ton_t=15;
+
 uchar   	bNight;
 uchar   	ProgReset;
 //uint    OutR;

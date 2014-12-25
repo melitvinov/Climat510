@@ -123,6 +123,7 @@ void enc28j60clkout(unsigned char clk)
 
 void enc28j60Init(unsigned char* macaddr)
 	{
+	int y;
 	// initialize I/O
 	//enc28j60CSinit();
 	ENC28J60_CSH();

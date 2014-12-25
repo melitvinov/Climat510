@@ -1,3 +1,5 @@
+#include "keyboard.h"
+
 #define NameSens(ns)       w_txt(NameASens[ns].Name)
 #define EdSens(ns)         TxtEd(ns)
 
@@ -652,7 +654,7 @@ void SetResRam(void)
 void InitGD(char fTipReset) {
 		eCalSensor xdata *eCS;
         ClrDog;
-        SIM=100;
+        keyboardSetSIM(100);
 		NDat=0;
 		if (fTipReset>2) MemClr(&GD.Hot,(sizeof(eHot)));
         MemClr(&GD.Control,sizeof(eControl)
