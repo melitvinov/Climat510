@@ -15,6 +15,14 @@
 --------------------------------------------*/
 /*----------------------------------------*/
 
+uchar   vNFCtr;
+uint16_t	PORTNUM;
+int8_t		TimeReset;
+char	fLightOn;
+int16_t		fLightPause;
+uchar   	ProgReset;
+
+
 /*----------------------------------------------------
                 Находим нужную программу
 ------------------------------------------------------*/
@@ -296,7 +304,7 @@ void SetIfReset(void)
 /**********************************************************************/
 /*-*-*-*-*--Нахождение прогнозируемого изменения температуры--*-*-*-*-*/
 /**********************************************************************/
-void __cNextTCalc(char fnTepl)
+void __cNextTCalc(int8_t fnTepl)
 {
 	int	xdata CalcAllKontur;
 
@@ -635,8 +643,8 @@ void 	SetSensOnMech(void)
 //!!!Оптимизация
 void ClearAllAlarms(void)
 {
-	char fnAlr;
-	char fnTepl;
+	int8_t fnAlr;
+	int8_t fnTepl;
 	for (fnTepl=0;fnTepl<cSTepl;fnTepl++)
 		for (fnAlr=0;fnAlr<cSRegCtrl;fnAlr++)
 		{
@@ -793,7 +801,7 @@ ClrDog;
 	}
 }
 
-void DoMechanics(char fnTepl) 
+void DoMechanics(int8_t fnTepl)
 {
 	char fErr;
 	ClrDog;
@@ -1182,7 +1190,7 @@ void	TransferWaterToBoil(void)
 
 void Control(void) 
 	{
-char tCTepl,ttTepl;
+	int8_t tCTepl,ttTepl;
 	Configuration();
 	SetDiskrSens();
 	if (DemoMode!=9)

@@ -189,7 +189,7 @@ void pmDate(void) {
 			if(ByteY&64) break;
 			ByteY<<=1;
 			}
-	if (ByteX <7) w_txt(&DayOfWeek[ByteX][0]);	  //&
+	if (ByteX <7) w_txt((char *)&DayOfWeek[ByteX][0]);	  //&
     if (EndInput) {
         EndInput=0;
         if (CtrTime>=24*60) CtrTime=1;
@@ -837,7 +837,7 @@ void	pmProgClimate(void)
     for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++) 
 	{
 		ByteX=ByteY % SUM_NAME_TIMER;
-       	w_txt(&NameTimer[ByteX].Name);
+       	w_txt((char *)&NameTimer[ByteX].Name);
 		Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
 		buf[Ad_Buf++]='=';
 	   	w_int(&GD.Timer[ByteZ].Zone[NameTimer[ByteX].Index],NameTimer[ByteX].Frm);

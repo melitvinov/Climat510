@@ -1076,8 +1076,8 @@ void __sCalcKonturs(void)
 	long MinMaxPowerReg[3];
 	long xdata temp;
 	int	 OldCrit;
-	char isFram;
-	char fnTepl,tTepl;
+	int8_t isFram;
+	int8_t fnTepl,tTepl;
 	
 	for(fnTepl=0;fnTepl<cSTepl;fnTepl++)
 	{
@@ -1326,8 +1326,8 @@ void __sMechScreen(void)
 
 void __sMechWindows(void)
 {
-	char xdata WindWin[2];
-	char xdata fnTepl;
+	int8_t xdata WindWin[2];
+	int8_t xdata fnTepl;
 //Оптимизация
 	WindWin[0]=cSWaterKontur+1-GD.Hot.PozFluger;
 	WindWin[1]=cSWaterKontur+GD.Hot.PozFluger;

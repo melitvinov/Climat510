@@ -115,7 +115,7 @@ unsigned char analyse_get_url(char *str)
 	}
 
 
-int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
+int SocketUpdate(uint8_t nSock,char* f_buf,int data_p,int* fbsize)
 {
 switch (Sockets[nSock].IP_PHASE)
 {
@@ -161,7 +161,7 @@ switch (Sockets[nSock].IP_PHASE)
 
 		return 1;
 	case(ETH_RECVBLOCK):
-		if (Sockets[nSock].Header.Size<=(plen-54))/*info_data_len/*(plen-54)*/
+		if (Sockets[nSock].Header.Size<=(plen-54))//info_data_len/*(plen-54)
 		{
 			plen=Sockets[nSock].Header.Size;
 			*EthBlock=Sockets[nSock].NumBlock;
@@ -182,10 +182,11 @@ switch (Sockets[nSock].IP_PHASE)
 }
 }
 
+#warning non void must return error code !!!!!
 int simple_servercycle(void)
 {
 	uchar tIPAddr[4];
-	char i,nS,freeSlot;
+	int8_t i,nS,freeSlot;
 	unsigned int	j;
 //		OSTimeDlyHMSM(0, 0, 0, 50);
         // get the next new packet:

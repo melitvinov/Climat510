@@ -148,7 +148,7 @@ char SameSign(int Val1,int Val2)
 		return 0;
 }
 
-void SetPointersOnTepl(char fnTepl)
+void SetPointersOnTepl(int8_t fnTepl)
 {
 	pGD_Hot_Tepl=&GD.Hot.Tepl[fnTepl];
 	pGD_TControl_Tepl=&GD.TControl.Tepl[fnTepl];
@@ -162,7 +162,7 @@ void SetPointersOnTepl(char fnTepl)
 
 
 
-void SetPointersOnKontur(char fnKontur)
+void SetPointersOnKontur(int8_t fnKontur)
 {
 	pGD_Hot_Tepl_Kontur=&(pGD_Hot_Tepl->Kontur[fnKontur]);
 	pGD_TControl_Tepl_Kontur=&(pGD_TControl_Tepl->Kontur[fnKontur]);
@@ -385,9 +385,9 @@ void CheckSensLevs(char full,char met)
         return;
     }
 }
-/*-------------------------------------------
-		Измерение из частоты
---------------------------------------------
+//-------------------------------------------
+//		Измерение из частоты
+//--------------------------------------------
 
 
 
@@ -521,7 +521,7 @@ void  Calibr(void){
 		}
 	}
 }
-/*------------------------------------------
+//------------------------------------------
 
 ---------------------------------------------
 
@@ -595,7 +595,7 @@ void SetSensorOn(void)
  
 					continue;
 				}
-		       	nPort=(GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].Input-1);//*8+GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].nInput-1;
+		       	nPort=(GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].Input-1);//8+GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].nInput-1;
        			nInput=0;//GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].nInput-1;
 				nTypeSens=NamesSensConfig[ByteY+nNextSensor].TypeSens;
 
@@ -614,7 +614,7 @@ void SetSensorOn(void)
 				
 					continue;
 				}
-		       	nPort=(GD.Cal.MeteoSens[nNextSensor].Input-1);//*8+GD.Cal.MeteoSens[nNextSensor].nInput-1;
+		       	nPort=(GD.Cal.MeteoSens[nNextSensor].Input-1);//8+GD.Cal.MeteoSens[nNextSensor].nInput-1;
        			nInput=0;//GD.Cal.MeteoSens[nNextSensor].nInput-1;
 				nTypeSens=NamesOfSens[cSInTeplSens+nNextSensor].TypeSens;
 				break;
@@ -651,6 +651,7 @@ void SetResRam(void)
 {
 	GD.Hot.News|=bResRam;	
 }
+
 void InitGD(char fTipReset) {
 		eCalSensor xdata *eCS;
         ClrDog;
@@ -870,7 +871,7 @@ char bRelay;
 }
 
 
-void __SetBitOutReg(char fnTepl,char fnMech,char fnclr,char fnSm)
+void __SetBitOutReg(int8_t fnTepl,int8_t fnMech,int8_t fnclr,int8_t fnSm)
 {	uint16_t nBit,nByte,Mask;
 	if (fnTepl==-1) 
 	  nBit=fnMech;

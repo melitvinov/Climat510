@@ -18,6 +18,11 @@ int CopyVal;
 int MinimVal, MaximVal;
 char ValSize;
 uchar SumYMenu;
+uchar   SizeForm=0;
+uchar   Mark=0;
+void    *AdrVal;
+bit     B_input;
+
 void in_val(void);
 void SetValue(int vVal) {
 	if (ValSize == 1)

@@ -843,57 +843,57 @@ void InitBlockEEP(void){
 на единицу меньше номеру в массиве AdrGD
 т.е порядки структур должны быть строго одинаковы
 и все несохраняеьые в EEP должны быть в конце AdrGD*/
-        BlockEEP[0].AdrCopyRAM=&GD.Control.Tepl[0];
+        BlockEEP[0].AdrCopyRAM=(uchar*)&GD.Control.Tepl[0];
         BlockEEP[0].Size=sizeof(eTeplControl)*cSTepl+15;
 
 		ClrDog;
-        BlockEEP[1].AdrCopyRAM=&GD.Timer[0];
+        BlockEEP[1].AdrCopyRAM=(uchar*)&GD.Timer[0];
         BlockEEP[1].Size=(sizeof(eTimer)*cSTimer);
 		ClrDog;
-        BlockEEP[2].AdrCopyRAM=&GD.TuneClimate;
+        BlockEEP[2].AdrCopyRAM=(uchar*)&GD.TuneClimate;
         BlockEEP[2].Size=(sizeof(eTuneClimate));
 
-        BlockEEP[3].AdrCopyRAM=&GD.Strategy[0][0];
+        BlockEEP[3].AdrCopyRAM=(uchar*)&GD.Strategy[0][0];
         BlockEEP[3].Size=(sizeof(eStrategy)*cSStrategy*cSTepl);
 
-        BlockEEP[4].AdrCopyRAM=&GD.MechConfig[0];
+        BlockEEP[4].AdrCopyRAM=(uchar*)&GD.MechConfig[0];
         BlockEEP[4].Size=(sizeof(eMechConfig)*cSTepl);
 
-        BlockEEP[5].AdrCopyRAM=&GD.Cal;
+        BlockEEP[5].AdrCopyRAM=(uchar*)&GD.Cal;
         BlockEEP[5].Size=sizeof(eCalSensor)*cSTepl*cConfSSens;
 
-        BlockEEP[6].AdrCopyRAM=&GD.Cal.MeteoSens;
+        BlockEEP[6].AdrCopyRAM=(uchar*)&GD.Cal.MeteoSens;
         BlockEEP[6].Size=sizeof(eCalSensor)*cConfSMetSens;
 
-        BlockEEP[7].AdrCopyRAM=&GD.ConstMechanic[0];
+        BlockEEP[7].AdrCopyRAM=(uchar*)&GD.ConstMechanic[0];
         BlockEEP[7].Size=(sizeof(eConstMech)*cSTepl);
 }
 void ButtonReset(void) {
 /* адреса передачи данных */
-        AdrGD[0/*cblHot*/].Adr=&GD.Hot;
+        AdrGD[0/*cblHot*/].Adr=(uint8_t*)&GD.Hot;
         AdrGD[0].MaxSize=sizeof(eHot);
-        AdrGD[1/*cblControl*/].Adr=&GD.Control;
+        AdrGD[1/*cblControl*/].Adr=(uint8_t*)&GD.Control;
         AdrGD[1].MaxSize=sizeof(eControl);
-        AdrGD[2/*cblTimer*/].Adr=&GD.Timer[0];
+        AdrGD[2/*cblTimer*/].Adr=(uint8_t*)&GD.Timer[0];
         AdrGD[2].MaxSize=sizeof(eTimer)*cSTimer;
-        AdrGD[3/*cblTuneClimate*/].Adr=&GD.TuneClimate;
+        AdrGD[3/*cblTuneClimate*/].Adr=(uint8_t*)&GD.TuneClimate;
         AdrGD[3].MaxSize=sizeof(eTuneClimate);
-        AdrGD[4/*cblStrategy*/].Adr=&GD.Strategy[0];
+        AdrGD[4/*cblStrategy*/].Adr=(uint8_t*)&GD.Strategy[0];
         AdrGD[4].MaxSize=sizeof(eStrategy)*cSTepl*cSStrategy;
-        AdrGD[5/*cblMechConfig*/].Adr=&GD.MechConfig[0];
+        AdrGD[5/*cblMechConfig*/].Adr=(uint8_t*)&GD.MechConfig[0];
         AdrGD[5].MaxSize=sizeof(eMechConfig)*cSTepl;
-        AdrGD[6/*cblCal*/].Adr=&GD.Cal;
+        AdrGD[6/*cblCal*/].Adr=(uint8_t*)&GD.Cal;
         AdrGD[6/*cblCal*/].MaxSize=sizeof(eFullCal);
-        AdrGD[7/*cblCal*/].Adr=&GD.Cal.MeteoSens;
+        AdrGD[7/*cblCal*/].Adr=(uint8_t*)&GD.Cal.MeteoSens;
         AdrGD[7/*cblCal*/].MaxSize=sizeof(eFullCal);
-        AdrGD[8/*cblMechanic*/].Adr=&GD.ConstMechanic[0];
+        AdrGD[8/*cblMechanic*/].Adr=(uint8_t*)&GD.ConstMechanic[0];
         AdrGD[8/*cblCal*/].MaxSize=sizeof(eConstMech)*cSTepl;
         ClrDog;
-        AdrGD[9/*cblLevel*/].Adr=&GD.Level;
+        AdrGD[9/*cblLevel*/].Adr=(uint8_t*)&GD.Level;
         AdrGD[9/*cblCal*/].MaxSize=sizeof(eLevel);
-        AdrGD[10/*cblHot*/].Adr=&GD.Hot;
+        AdrGD[10/*cblHot*/].Adr=(uint8_t*)&GD.Hot;
         AdrGD[10/*cblCal*/].MaxSize=sizeof(eHot);
-        AdrGD[11/*cblHot*/].Adr=&GD.TControl;
+        AdrGD[11/*cblHot*/].Adr=(uint8_t*)&GD.TControl;
         AdrGD[11/*cblCal*/].MaxSize=sizeof(eTControl);
 /* параметры контроллера */
 

@@ -40,9 +40,11 @@ typedef struct eeAdrGD {
 typedef struct eeSocket
 		{
 			uint8_t	IP_source[4];
-			char	IP_PHASE;
+			//char	IP_PHASE;
+			uint8_t	IP_PHASE;
 			int		Timeout;
-			char	NumBlock;
+			//char	NumBlock;
+			uint8_t	NumBlock;
 			eHeader Header;
 		} eSocket;
 

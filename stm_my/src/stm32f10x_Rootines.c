@@ -472,7 +472,7 @@ void CrcCalc()
 
 void Reg48ToI2C()
 {
-uint16_t i;
+//uint16_t i;
 //	for (i=0;i<8;i++)
 //		I2C_Rel_Write(OutR[i],i);
 	SendIPC(&GD.Hot.Tepl[0].ConnectionStatus);
@@ -536,8 +536,6 @@ void WriteToFRAM()
 
 void ReadFromFRAM()
 {
-	char i;
-	uint16_t fsizeSend;
 	ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
 	RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
@@ -593,6 +591,7 @@ void CopyEEP()
 	}*/
 }
 
+#warning calc CRC off !!!!!!!
 void CalcEEPSum()
 {
 /*	uint16_t tSum,i;
@@ -828,7 +827,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }
 }
 
-void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
+void  CalibrNew(char nSArea,int8_t nTepl, int8_t nSens,int16_t Mes){
 	eSensing	*fSens;
 	eNameASens	*fNameSens;
 	int16_t		*fuSens;
@@ -881,9 +880,8 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
 
 void Measure()
 {
-	char tTepl,nSens;
+	int8_t tTepl,nSens;
 	uint16_t	tSensVal;
-	int nModule;
 	int8_t ErrModule;
 	for (tTepl=0;tTepl<cSTepl;tTepl++)
 	{
@@ -917,7 +915,7 @@ void Measure()
 
 void CheckInputConfig()
 {
-	char tTepl,nSens;
+	int8_t tTepl,nSens;
 	TIModulConf tTempConf;
 	tTempConf.Corr=0;
 	tTempConf.Output=0;
