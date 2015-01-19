@@ -6,29 +6,6 @@
 ----------------------------------------------*/
 #include "keyboard.h"
 
-//++++++FullCheck ++++
-int  DestSize;
-int  DestAdr;
-//char xdata	DestBuffer[7000];
-//char* DestAdrBuf;
-//char	BufCheckByte;
-
-/*char PlaceBuf(void) {
-int  i;
-char xdata *p1;
-char xdata *p2;
-if (BufCheckByte != 55) return 0; //;неудачный прием
-p1=(char xdata *)DestAdr;
-p2=(char xdata *)&DestBuffer[0];
-for (i=0;i < (DestSize-1);i++) {
-    *(p1++)=*(p2++);
-    }
-return 1;
-}
-*/
-//;------FullCheck------------------
-
-
 main()
 {
     char    timeDog;
@@ -78,7 +55,7 @@ main()
     //CheckKeyboardSTM();
     KeyboardProcess();
 
-	if (keyboardGetBITKL())
+    if (keyboardGetBITKL())
         ByteX=6;
     ClrDog;
     TestMem(ByteX);
@@ -87,7 +64,6 @@ main()
     ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
     ClearAllAlarms();
 start:
-
     if (not) {
         if (!ton_t--) {
             ton_t=ton; not--; Sound;
@@ -96,7 +72,6 @@ start:
     if (!not && nReset) {
         ton=(nReset--)+2;not=80;
     }
-
     if (!timeDog--) {
         timeDog=7;ClrDog;
     }
@@ -129,15 +104,13 @@ start:
 #endif
         bSec=0;
         ClrDog;
-        Control(); // !!!!
+        Control();
         ClrDog;
         B_video=1;
         if (!(Second%9))
             Measure();
-        // IMOD_WriteOutput(0,1,0xf0f0f0f0);
-
     }
-	if (keyboardGetBITKL()) {
+    if (keyboardGetBITKL()) {
         ClrDog;
         GD.Hot.News|=bOperator;
         if (Menu) GD.Hot.News|=bEdit;
@@ -155,5 +128,28 @@ start:
     }
     simple_servercycle(); //Перенесено в прерывание клавиатуры
 
-    goto start;
+goto start;
 }
+
+//++++++FullCheck ++++
+//int  DestSize;
+//int  DestAdr;
+//char xdata	DestBuffer[7000];
+//char* DestAdrBuf;
+//char	BufCheckByte;
+
+/*char PlaceBuf(void) {
+int  i;
+char xdata *p1;
+char xdata *p2;
+if (BufCheckByte != 55) return 0; //;неудачный прием
+p1=(char xdata *)DestAdr;
+p2=(char xdata *)&DestBuffer[0];
+for (i=0;i < (DestSize-1);i++) {
+    *(p1++)=*(p2++);
+    }
+return 1;
+}
+*/
+//;------FullCheck------------------
+

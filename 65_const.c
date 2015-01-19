@@ -1,13 +1,13 @@
 /*-----------------------------
 *******************************
-	Константы климата C324
+    Константы климата C324
 ********************************
 ------------------------------*/
 #define NameProg        "\310\252\245TO-K\247\245MAT\311"
 #define Proect          "FC325-K-II-"
 
 #ifdef ExtRegistry
-	#define SumRelay40
+    #define SumRelay40
 #endif
 
 #define	cMaxStopI		20	 
@@ -31,10 +31,10 @@
 /*Количество сохраняемых в EEPROM блоков*/
 
 #define cSTimer			40
-/*Количество программ для задания*/			
+/*Количество программ для задания*/         
 
 #define cSTimerSave		20
-/*Количество программ для задания*/			
+/*Количество программ для задания*/         
 
 #define cSArx			3
 /*Количество храминых дней с архивом*/
@@ -51,11 +51,11 @@
 
 #define c_PAirToWater		35
 #ifdef DEMO
-#define c_UpPosOn			40
-#define c_DownPosOn			40
+    #define c_UpPosOn			40
+    #define c_DownPosOn			40
 #else
-#define c_UpPosOn			5
-#define c_DownPosOn			5
+    #define c_UpPosOn			5
+    #define c_DownPosOn			5
 #endif
 
 #define v_AlarmMidlWater	1000
@@ -63,9 +63,9 @@
 #define f_DeadWindDirect	5
 #define f_AbsMinWind		50
 #ifdef SIO_PAUSE
-#define sio_ValPause		SIO_PAUSE
+    #define sio_ValPause		SIO_PAUSE
 #else
-#define sio_ValPause		6
+    #define sio_ValPause		6
 #endif
 
 #define o_MidlSRFactor		200
@@ -350,7 +350,7 @@
 #define cbReadyRegsKontur		0x80
 /*-----------------------------*/
 /*Константы для стратегии управления*/
-	/*Наличие и разделение контуров*/
+/*Наличие и разделение контуров*/
 //#define cNKontur	0
 //#define cAndKontur	1
 //#define cSepKontur	2
@@ -404,29 +404,29 @@ uchar   nPort;
 uchar   nInput;
 uchar   nPortD;
 uchar   nInputD;
-uchar	nTypeSens;
+uchar   nTypeSens;
 
-uchar	nSensArea;
-uchar	nSensAreaNow;
-uchar	nSensTepl;
-uchar	nSensTeplNow;
-uchar	nSensTeplSave;
+uchar   nSensArea;
+uchar   nSensAreaNow;
+uchar   nSensTepl;
+uchar   nSensTeplNow;
+uchar   nSensTeplSave;
 
-uchar	nSensor;
-uchar	nNextSensor;
+uchar   nSensor;
+uchar   nNextSensor;
 
-char 	nTimer;
-char 	nTimer1;
-char 	nProgs;
-char 	nNextProgs;
+char    nTimer;
+char    nTimer1;
+char    nProgs;
+char    nNextProgs;
 
 uchar Volume;
 uchar TicVol;
 uchar MaskRas;
 int   PastPerRas;
 int   TecPerRas;
-char	CalPort;
-uint16_t	NMinPCOut;
+char    CalPort;
+uint16_t    NMinPCOut;
 
 /*-----------------------------------*/
 
@@ -435,26 +435,26 @@ uint16_t	NMinPCOut;
 /*Переменные связи с асемблером*/
 uchar   OutR[11];
 uchar   RegLEV;
-uchar	DemoMode;
+uchar   DemoMode;
 int     MesINT1;
-uint16_t	IntCount;
-int		Rezerv1;
-int		Rezerv2;
-int		Rezerv3;
+uint16_t    IntCount;
+int     Rezerv1;
+int     Rezerv2;
+int     Rezerv3;
 
 char NowDayOfWeek;
 
 
 /*-----------------------------*/
 typedef struct eeDefStrategy {
-		char TempPower;
-		char RHPower;
-		char OptimalPower;
-		char EcoPower;
-		char Power;
-		char Separate;	
-		char KonturHelp;
-		} eDefStrategy;
+    char TempPower;
+    char RHPower;
+    char OptimalPower;
+    char EcoPower;
+    char Power;
+    char Separate;  
+    char KonturHelp;
+} eDefStrategy;
 
 
 /*typedef struct eeNameLev {
@@ -462,47 +462,47 @@ typedef struct eeDefStrategy {
         } eNameLev;
 */
 typedef struct  eeNameSens {
-        char Name[30];
-        char Frm;
-        char Ed;
-        char TypeSens;
-		char TypeInBoard;
-		char Output;
-        int16_t  Min;
-        int16_t  Max;
-        int16_t  uCal[2];
-        int16_t  vCal[2];
-		int16_t  uMin;
-		int16_t	 uMax;
-		char TypeMidl;
-		char DigitMidl;
-		char AlarmA;
-		char AlarmB;
-        } eNameASens;
+    char Name[30];
+    char Frm;
+    char Ed;
+    char TypeSens;
+    char TypeInBoard;
+    char Output;
+    int16_t  Min;
+    int16_t  Max;
+    int16_t  uCal[2];
+    int16_t  vCal[2];
+    int16_t  uMin;
+    int16_t  uMax;
+    char TypeMidl;
+    char DigitMidl;
+    char AlarmA;
+    char AlarmB;
+} eNameASens;
 
 typedef struct  eeNameConst {
-        uint16_t  StartZn;
-        char Frm;
-        } eNameConst;
+    uint16_t  StartZn;
+    char Frm;
+} eNameConst;
 
 
 eDefStrategy code DefStrategy[]={
-{40,	0,	20,	0,	50,	0,	0},
-{60,	0,	20,	0,	30,	0,	0},
-{30,	0,	20,	0,	15,	0,	0},
-{30,	0,	20,	0,	30,	0,	0},
-{25,	0,	20,	0,	25,	0,	0},
-{80,	0,	1,	0,	25,	0,	0},
-{0,		0,	0,	0,	0,	0,	0},
-{0,		0,	0,	0,	0,	0,	0}
+    {40,    0,  20, 0,  50, 0,  0},
+    {60,    0,  20, 0,  30, 0,  0},
+    {30,    0,  20, 0,  15, 0,  0},
+    {30,    0,  20, 0,  30, 0,  0},
+    {25,    0,  20, 0,  25, 0,  0},
+    {80,    0,  1,  0,  25, 0,  0},
+    {0,     0,  0,  0,  0,  0,  0},
+    {0,     0,  0,  0,  0,  0,  0}
 };
 
 int code DefMechanic[]={
-60,
-1000,
-500,
-30,
-50,
+    60,
+    1000,
+    500,
+    30,
+    50,
 };
 
 
@@ -539,80 +539,80 @@ eNameConst code NameConst[]={
 /*-----------------------------------
                 Параметры-солнце
 ------------------------------------*/
-{20,SSSS},
-{500,SSSS},
-{200,SSpS0},
-{200,SSpS0},
+    {20,SSSS},
+    {500,SSSS},
+    {200,SSpS0},
+    {200,SSpS0},
 
-{0,SSpS0},
-{0,SSpS0},
-{0,SSSS},
-{1500,SSpS0},
+    {0,SSpS0},
+    {0,SSpS0},
+    {0,SSSS},
+    {1500,SSpS0},
 
-{0,SSSS},
-{6000,SSpS0},
-{0,SSSS},
-{100,SSSpS},
+    {0,SSSS},
+    {6000,SSpS0},
+    {0,SSSS},
+    {100,SSSpS},
 
-{0,SSSpS},
-{0,SSSpS},
-{0,SSSi},
+    {0,SSSpS},
+    {0,SSSpS},
+    {0,SSSi},
 /*-----------------------------------
                 Параметры-для температуры вентиляции
 ------------------------------------*/
-{500,SSpS0},
-{3000,SSpS0},
-{500,SSpS0},
-{3000,SSpS0},
-{0,SSS},
+    {500,SSpS0},
+    {3000,SSpS0},
+    {500,SSpS0},
+    {3000,SSpS0},
+    {0,SSS},
 
 /*-----------------------------------
                 Параметры-обогрев
 ------------------------------------*/
 
-{500,SSpS0},
-{0,SSpS0},
-{600,SSSpS},
+    {500,SSpS0},
+    {0,SSpS0},
+    {600,SSSpS},
 
-{0,SSSpS},
-{1,SSSi},
+    {0,SSSpS},
+    {1,SSSi},
 /*-----------------------------------
                 Параметры-влияния на Тводы
 ------------------------------------*/
 
-{10,SSSS},
-{10*256+100,SSSS},
-{-1000,SSpS0},
+    {10,SSSS},
+    {10*256+100,SSSS},
+    {-1000,SSpS0},
 
-{-500,SSpS0},
+    {-500,SSpS0},
 
-{300,SSpS0},
-{2000,SSpS0},
-{0,SSpS0},
+    {300,SSpS0},
+    {2000,SSpS0},
+    {0,SSpS0},
 
-{200,SSpS0},
-{80,SSSS},
-{200,SSpS0},
+    {200,SSpS0},
+    {80,SSSS},
+    {200,SSpS0},
 
-{10,SSSS},
-{200,SSSS},
-{3000,SSpS0},
+    {10,SSSS},
+    {200,SSSS},
+    {3000,SSpS0},
 
-{400,SSpS0},
-{5000,SSpS0},
-{12300,SSpS0},
+    {400,SSpS0},
+    {5000,SSpS0},
+    {12300,SSpS0},
 
-{150,SSpS0},
-{1500,SSpS0},
-{1000,SSpS0},
+    {150,SSpS0},
+    {1500,SSpS0},
+    {1000,SSpS0},
 
-{-500,SSpS0},
-{500,SSpS0},
-{0,SSSi},
+    {-500,SSpS0},
+    {500,SSpS0},
+    {0,SSSi},
 
-{300,SSSpS},
-{0,SSSpS},
-{0,SSpS0},
+    {300,SSSpS},
+    {0,SSSpS},
+    {0,SSpS0},
 
 
 
@@ -621,150 +621,150 @@ eNameConst code NameConst[]={
                 Параметры-вентиляция
 ------------------------------------*/
 
-{20*256+3,SSSS},
-{50*256+5,SSSS},
+    {20*256+3,SSSS},
+    {50*256+5,SSSS},
 
-{100*256+7,SSSS},
-{1,SSSi},
-{0,SSpS0},
-{2,SSSi},
-{1500,SSpS0},
-{2000,SSpS0},
-{100,SSpS0},
+    {100*256+7,SSSS},
+    {1,SSSi},
+    {0,SSpS0},
+    {2,SSSi},
+    {1500,SSpS0},
+    {2000,SSpS0},
+    {100,SSpS0},
 
-{10,SSSS},
-{-500,SSpS0},
-{40,SSSi},
-{30*256+60,SSSi},
+    {10,SSSS},
+    {-500,SSpS0},
+    {40,SSSi},
+    {30*256+60,SSSi},
 /*-----------------------------------
                 Параметры-влияние на фрамуги
 ------------------------------------*/
 
-{50*256+1,SSSS},
-{500,SSpS0},
-{2500,SSpS0},
-{5000,SSSS},
+    {50*256+1,SSSS},
+    {500,SSpS0},
+    {2500,SSpS0},
+    {5000,SSSS},
 /*-----------------------------------
                 Параметры-CO2
 -----------------------------------*/
 
-{40,SSSi},
-{40,SpSSS},
+    {40,SSSi},
+    {40,SpSSS},
 
 /*-----------------------------------
                 Параметры-Экран
 ------------------------------------*/
-{750,SSSS},
-{5,SSSS},
-{600,SSpS0},
-{1000,SSpS0},
+    {750,SSSS},
+    {5,SSSS},
+    {600,SSpS0},
+    {1000,SSpS0},
 
-{-1000,SSpS0},
-{150,SSpS0},
-{600,SSpS0},
-{200,SSSS},
+    {-1000,SSpS0},
+    {150,SSpS0},
+    {600,SSpS0},
+    {200,SSSS},
 
-{1000,SSpS0},
-{35,SSSi},
-{-2000,SSpS0},
-{500,SSpS0},
+    {1000,SSpS0},
+    {35,SSSi},
+    {-2000,SSpS0},
+    {500,SSpS0},
 
-{5000,SpSSS},
-{50,SSSi},
-{4,SSSi},
-{2,SSSi},
+    {5000,SpSSS},
+    {50,SSSi},
+    {4,SSSi},
+    {2,SSSi},
 
-{80,SSSi},
-{2,SSSi},
-{1,SSSi},
-{2,SSSi},
+    {80,SSSi},
+    {2,SSSi},
+    {1,SSSi},
+    {2,SSSi},
 /*-----------------------------------
                 Параметры- СИОД
 ------------------------------------*/
-{200,SSpS0},
-{40,SSSi},
-{500,SSpS0},
-{20,SSSi},
-{200,SSpS0},
-{1000,SSpS0},
-{40,SSSi},
-{4000,SSpS0},
-{20,SSSi},
-{2000,SSpS0},
-{100,SSpS0},
+    {200,SSpS0},
+    {40,SSSi},
+    {500,SSpS0},
+    {20,SSSi},
+    {200,SSpS0},
+    {1000,SSpS0},
+    {40,SSSi},
+    {4000,SSpS0},
+    {20,SSSi},
+    {2000,SSpS0},
+    {100,SSpS0},
 /*-----------------------------------
                 Параметры-Вентиляторы
 -----------------------------------*/
 
-{200,SSpS0},
-{10,SSSi},
-{10,SSSi},
+    {200,SSpS0},
+    {10,SSSi},
+    {10,SSSi},
 
 
 /*-----------------------------------
                 Параметры-воздушный обогрев
 ------------------------------------*/
-{200,SSpS0},
-{200,SSpS0},
+    {200,SSpS0},
+    {200,SSpS0},
 
 /*-----------------------------------------
-				Параметры - ОБЩИЕ
+                Параметры - ОБЩИЕ
 ------------------------------------------*/
- 
-{200,SSpS0},
-{500,SSpS0},
 
-{500,SSSS},
+    {200,SSpS0},
+    {500,SSpS0},
+
+    {500,SSSS},
 
 /*-----------------------------------------
-				Параметры - коррекция по влажности темпеатуры задания
+                Параметры - коррекция по влажности темпеатуры задания
 ------------------------------------------*/
 
-{100,SpSSS},
-{10,SSSS},
-{50,SSSS},
-{1000,SSpS0},
-{3000,SSpS0},
-{0,SSSS},
+    {100,SpSSS},
+    {10,SSSS},
+    {50,SSSS},
+    {1000,SSpS0},
+    {3000,SSpS0},
+    {0,SSSS},
 
-{400,SSpS0},
-{250,SSSS},
-{150,SSSS},
-{30,SSSi},
-{60,SSSi},
+    {400,SSpS0},
+    {250,SSSS},
+    {150,SSSS},
+    {30,SSSi},
+    {60,SSSi},
 
-{5,SSSpS},
-{0,SSSi}
+    {5,SSSpS},
+    {0,SSSi}
 };
 
 
 uint16_t code DefControl[]={
-600,
-900,
-600,
-500,
-1100,
-600,
+    600,
+    900,
+    600,
+    500,
+    1100,
+    600,
 
-100,
-100,
-0,
-0,
-0,
+    100,
+    100,
+    0,
+    0,
+    0,
 
-0,
-0,
-250,
+    0,
+    0,
+    250,
 
-800,
-300,
-500,
-90,
-100,
-100,
-1,
-4,
-1
+    800,
+    300,
+    500,
+    90,
+    100,
+    100,
+    1,
+    4,
+    1
 };
 
 

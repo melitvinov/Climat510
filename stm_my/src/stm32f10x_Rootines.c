@@ -215,7 +215,6 @@ void TIM2_IRQHandler(void)
 	SETEA;
 	ReadyIZ=1;*/
 
-#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!! ON
 	//CheckKeyboardSTM();
 	KeyboardProcess();
 
@@ -478,6 +477,7 @@ void Reg48ToI2C()
 	SendIPC(&GD.Hot.Tepl[0].ConnectionStatus);
 }
 
+#warning empty function ????????????
 void OutReg()
 {
 }
@@ -560,6 +560,7 @@ void SetRTC(void) {
         ClrDog;
         WriteDateTime(&fDateTime);
 }
+
 void GetRTC(void) {
 		eDateTime	fDateTime;
         ReadDateTime(&fDateTime); //CtrTime=0;
@@ -573,8 +574,6 @@ void GetRTC(void) {
          CtrYear=fDateTime.year-2000;
          NowDayOfWeek=fDateTime.wday;
 }
-
-
 
 void CopyEEP()
 {
@@ -607,7 +606,7 @@ void CalcEEPSum()
 		FLASH_ProgramHalfWord(FLASH_ST_ADDR+AdrEEP+SizeEEP,tSum);
 //		EEPROM(AdrEEP+SizeEEP)=tSum/256;
 //		EEPROM(AdrEEP+SizeEEP+1)=tSum%256;
-/*		if ((SizeEEP+AdrEEP+1)%EEPROM_PAGESIZE)
+//		if ((SizeEEP+AdrEEP+1)%EEPROM_PAGESIZE)
 		{
 			EEPROM_AtomicWritePage((SizeEEP+AdrEEP)/32);
 			ClrDog;
@@ -832,7 +831,7 @@ void  CalibrNew(char nSArea,int8_t nTepl, int8_t nSens,int16_t Mes){
 	eNameASens	*fNameSens;
 	int16_t		*fuSens;
 	eCalSensor	*fCalSens;
-	char		met=0;
+	char met=0;
 	if (nSArea)
 	{
 		fSens=&GD.Hot.Tepl[nTepl].InTeplSens[nSens];
@@ -876,8 +875,6 @@ void  CalibrNew(char nSArea,int8_t nTepl, int8_t nSens,int16_t Mes){
 	}
 }
 
-
-
 void Measure()
 {
 	int8_t tTepl,nSens;
@@ -887,8 +884,8 @@ void Measure()
 	{
         for(nSens=0;nSens<cConfSSens;nSens++)
 		{
-        	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
-        	if (ErrModule<0)
+        	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);	// опрос датчиков всех зон
+        	if (ErrModule<0)				// проверяется только нличие ошибки
         	{
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
@@ -901,8 +898,8 @@ void Measure()
 	}
     for(nSens=0;nSens<cConfSMetSens;nSens++)
     {
-    	tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);
-    	if (ErrModule<0)
+    	tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);	// опрос метео датчиков
+    	if (ErrModule<0)					// проверяется только нличие ошибки
         {
         	GD.Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
     		GD.uMeteoSens[nSens]=0;
@@ -941,7 +938,7 @@ void CheckInputConfig()
 
 void SetDiskrSens(void)
 {
-	char fnTepl,nSens,nErr;
+	int8_t fnTepl,nSens,nErr;
 	for (fnTepl=0;fnTepl<cSTepl;fnTepl++)
 	{
 		SetPointersOnTepl(fnTepl);
@@ -952,5 +949,4 @@ void SetDiskrSens(void)
 			SetBit(pGD_Hot_Tepl->DiskrSens[0],cSmLightDiskr);
 */
 	}
-
 }

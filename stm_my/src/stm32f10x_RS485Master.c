@@ -7,12 +7,12 @@
 #include "stm32f10x_RS485Master.h"
 #include "misc.h"
 
-#define USART_MASTER_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
-#define USART_MASTER_TX     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TC))&&(fTimeout)) fTimeout--;
-#define USART_MASTER_TXE     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TXE))&&(fTimeout)) fTimeout--;
+#define USART_MASTER_RX     		fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
+#define USART_MASTER_TX     		fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TC))&&(fTimeout)) fTimeout--;
+#define USART_MASTER_TXE     		fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TXE))&&(fTimeout)) fTimeout--;
 
-#define USART_MASTER_STOPSEND			GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_RESET);
-#define USART_MASTER_STARTSEND			for(i=0;i<500;i++); GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_SET);
+#define USART_MASTER_STOPSEND		GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_RESET);
+#define USART_MASTER_STARTSEND		for(i=0;i<500;i++); GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_SET);
 
 
 #define USART_OUT2_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT2,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
@@ -23,14 +23,13 @@
 #define USART_OUT2_STARTSEND		for(i=0;i<500;i++); GPIO_WriteBit(USART_OUT2_DIR_PORT,USART_OUT2_DIR_PIN,Bit_SET);
 
 
-#define HEAD_SIZE				5
-#define IDENT_SIZE				7
+#define HEAD_SIZE		5
+#define IDENT_SIZE		7
 
-#define MODULE_IS_BUSY			1
-#define MODULE_IS_OK			0
+#define MODULE_IS_BUSY	1
+#define MODULE_IS_OK	0
 
-
-#define MAX_SUM_TRY				4
+#define MAX_SUM_TRY		4
 
 #define MAX_IN_SENS		32
 #define MAX_OUT_RELS	32
@@ -594,6 +593,7 @@ int16_t RS485_Master_ReadType(uint8_t fNCtr, uint8_t*  fIdent)
 uint16_t GetIPCComMod(uint16_t nAddress) {
 	return nAddress/100;
 	}
+
 uint16_t GetIPCNum(uint16_t nAddress) {
 	return nAddress%100;
 	}
@@ -610,7 +610,6 @@ void ClrAllOutIPCDigit(void)
 			ModulData[i].OutValues=0;
 			}
 }
-
 
 void ResumeOutIPCDigit(void)
 {
@@ -639,7 +638,6 @@ uint32_t vCpM,bOut,i;
 		}
 }
 
-
 void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr,void* Ptr)
 {
 uint32_t vCpM,bOut,i;
@@ -663,7 +661,6 @@ uint32_t vCpM,bOut,i;
 		}
 }
 
-
 char GetOutIPCDigit(uint16_t nAddress, char* nErr)
 {
 uint32_t vCpM,bIn,i;
@@ -682,7 +679,6 @@ uint32_t vCpM,bIn,i;
 		}
 	return -1;
 }
-
 
 uint16_t GetInIPC(uint16_t nAddress,char* nErr)
 {
@@ -704,31 +700,42 @@ uint16_t vCpM,i,vInput;
 	return 4444;
 }
 
-
 uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
 {
 uint16_t vCpM,i,vInput;
 //TODO
 	vCpM=GetIPCComMod(nAddress);
-	if(!vCpM) {*nErr=-1; return 0;}
-	if(vCpM/100==6) {*nErr=0; return 1;}
+	if(!vCpM)
+	{
+		*nErr=-1;
+		return 0;
+	}
+	if(vCpM/100==6)
+	{
+		*nErr=0;
+		return 1;
+	}
 	vInput=GetIPCNum(nAddress);
-	if (!vInput) {*nErr=-1; return 0;}
-	for (i=0; i< OUT_MODUL_SUM; i++) {
+	if (!vInput)
+	{
+		*nErr=-1;
+		return 0;
+	}
+	for (i=0; i< OUT_MODUL_SUM; i++)
+	{
 		if(!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-		if(vCpM == ModulData[i].CpM)	{
+		if(vCpM == ModulData[i].CpM)
+		{
 			*nErr=ModulData[i].Err;
-			if ((ModulData[i].InValues[vInput-1]>2500)&&(ModulData[i].Err<iMODULE_MAX_ERR))
+			if ((ModulData[i].InValues[vInput-1]>2500)&&(ModulData[i].Err<iMODULE_MAX_ERR)) // если больше 2500, то датчик есть
 				return 1;
 			else
 				return 0;
-			}
 		}
+	}
 	*nErr=0;
 	return 0;
 }
-
-
 
 uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
 {
@@ -832,12 +839,9 @@ uint8_t IMOD_Exchange(TModulData*	fModule)
 		case 6:
 			if (fModule->DataPtr)
 				return RS485_Master_ReadDataIRQ(nModule,3+sizeof(eFanData)*ncFan,sizeof(eFanData),&fModule->DataPtr[ncFan],9,&fModule->Cond,0);
-
-
 	}
 	return 0;
 }
-
 
 void SendIPC(uint8_t *fErrModule)
 {
@@ -930,7 +934,3 @@ void SendIPC(uint8_t *fErrModule)
 
 		cOperInModule++;
 }
-
-
-
-

@@ -30,31 +30,31 @@ bit     EndInput;
 bit     BlkW;
 unsigned char   Second;
 
-int16_t    	MesINT0;
-long 		LngX,LngY;
-uchar   	NDat;
-uchar   	NumIzm;
-int16_t    	IntX,IntY,IntZ;
-int16_t    	SaveInt;
-int16_t		SaveInt2;
-int8_t    	SaveChar;
-int8_t		nPortSave;
+int16_t     MesINT0;
+long        LngX,LngY;
+uchar       NDat;
+uchar       NumIzm;
+int16_t     IntX,IntY,IntZ;
+int16_t     SaveInt;
+int16_t     SaveInt2;
+int8_t      SaveChar;
+int8_t      nPortSave;
 
-int8_t		bWaterReset[16];
-int8_t   	ByteW,ByteY,ByteX,ByteZ;
-uchar   	nReset;
-uchar   	NumBlock;
+int8_t      bWaterReset[16];
+int8_t      ByteW,ByteY,ByteX,ByteZ;
+uchar       nReset;
+uchar       NumBlock;
 
-uchar   	not=230,ton=3,ton_t=15;
+uchar       not=230,ton=3,ton_t=15;
 
-uchar   	bNight;
+uchar       bNight;
 
-uchar   	RegLEV;
-eAdrGD     	AdrGD[15];
+uchar       RegLEV;
+eAdrGD      AdrGD[15];
 code uchar   Mon[]={31,28,31,30,31,30,31,31,30,31,30,31};
-uchar		SendByte1W;
-uchar		Buf1W[10];
-uchar*		pBuf;
-int8_t		ToHiTime;
-int8_t		ToLowTime;
+uchar       SendByte1W;
+uchar       Buf1W[10];
+uchar*      pBuf;
+int8_t      ToHiTime;
+int8_t      ToLowTime;
 
