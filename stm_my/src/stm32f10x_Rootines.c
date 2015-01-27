@@ -885,7 +885,7 @@ void Measure()
         for(nSens=0;nSens<cConfSSens;nSens++)
 		{
         	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);	// опрос датчиков всех зон
-        	if (ErrModule<0)				// проверяется только нличие ошибки
+        	if (ErrModule<0)		// проверяется только наличие ошибки
         	{
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
@@ -896,10 +896,10 @@ void Measure()
         	CalibrNew(1,tTepl,nSens,tSensVal);
 		}
 	}
-    for(nSens=0;nSens<cConfSMetSens;nSens++)
+    for(nSens=0;nSens<cConfSMetSens;nSens++)			// непосредственный опрос метео датчиков и сохранение результатов в GD.Hot
     {
     	tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);	// опрос метео датчиков
-    	if (ErrModule<0)					// проверяется только нличие ошибки
+    	if (ErrModule<0)					// проверяется только наличие ошибки
         {
         	GD.Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
     		GD.uMeteoSens[nSens]=0;
@@ -933,7 +933,6 @@ void CheckInputConfig()
         	UpdateInIPC(GetSensConfig(tTepl,nSens),&GD.Cal.InTeplSens[tTepl][nSens]);
     for(nSens=0;nSens<cConfSMetSens;nSens++)
     	UpdateInIPC(GetMetSensConfig(nSens),&GD.Cal.MeteoSens[nSens]);
-
 }
 
 void SetDiskrSens(void)

@@ -310,6 +310,7 @@ void USART_PC_Configuration(uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint
 
   USART_PC_STARTUP;
 
+#warning не используются зачем было сделано
   pSostRS485=fSostRS;
   pADRGD=fADRGD;
   pNFCtr=fNFCtr;
@@ -372,7 +373,6 @@ void USART_PC_Configuration(uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint
 
   USART_PC_STOPSEND;
   PHASE_RS=RS_START;
-
 }
 
 

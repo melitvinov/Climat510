@@ -289,16 +289,11 @@ int simple_servercycle(void)
 				return;
 				}
 			}
-	// tcp port www end
-	//
-
 }
 
 int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER)
 	{
 	SPI1_Init();
-
-//	Del_1ms(100);
 	/*initialize enc28j60*/
 	pADRGD=fADRGD;
 	EthSost=fSostEth;
@@ -308,11 +303,7 @@ int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, uint8_t* fIP
 	IPAddr=fIPAddr;
 	enc28j60Init(MACAddr);
 	init_ip_arp_udp_tcp(MACAddr,IPAddr,*PORTNUMBER);
-    //Ö¸Ê¾µÆ×´Ì¬:0x476 is PHLCON LEDA(ÂÌ)=links status, LEDB(ºì)=receive/transmit
     enc28j60PhyWrite(PHLCON,0x7a4);
 	enc28j60clkout(2); // change clkout from 6.25MHz to 12.5MHz
-//	Del_1ms(20);
 	Sockets[0].IP_PHASE=0;
-	//init the ethernet/ip layer:
-//        return (0);
 	}

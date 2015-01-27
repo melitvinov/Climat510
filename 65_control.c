@@ -235,10 +235,8 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
         tVal=pGD_CurrTimer->TVentAir;
         if (!tVal) tVal=pGD_CurrTimer->TAir+100;
         (*pGD_Hot_Tepl).AllTask.NextTVent=JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
-        (*pGD_Hot_Tepl).AllTask.Light=pGD_CurrTimer->Light;
-        (*pGD_Hot_Tepl).AllTask.ModeLight=pGD_CurrTimer->ModeLight;
-//		if (pGD_Hot_Tepl->InTeplSens[cSmRHSens])
-//		(*pGD_Hot_Tepl).AllTask.NextRHAir=JumpNext(pGD_CurrTimer->RHAir,pGD_NextTimer->RHAir,1);	
+        (*pGD_Hot_Tepl).AllTask.Light=pGD_CurrTimer->Light;                 // мощьность досветки в задании
+        (*pGD_Hot_Tepl).AllTask.ModeLight=pGD_CurrTimer->ModeLight;         // режим досветки в задании
         return;
     }
     (*pGD_Hot_Tepl).AllTask.TAir=JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
@@ -269,9 +267,7 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 //	(*pGD_Hot_Tepl).AllTask.Poise=pGD_CurrTimer->Poise;
     (*pGD_Hot_Tepl).Kontur[cSmKontur3].Do=JumpNext(pGD_CurrTimer->TPipe3,pGD_NextTimer->TPipe3,1,10);
     (*pGD_Hot_Tepl).Kontur[cSmKontur4].Do=JumpNext(pGD_CurrTimer->TPipe4,pGD_NextTimer->TPipe4,1,10);
-
 }
-
 
 void AllTaskAndCorrection(void)
 {
@@ -669,7 +665,7 @@ void SetMixValvePosition(void)
             continue;
         }
         ogrMin(&(pGD_TControl_Tepl_Kontur->TPause),0);  // если пауза была меньше 0 устанавливаем ее в 0, в противном случае оставим без изменения
-        if (YesBit(pGD_TControl_Tepl->MechBusy[ByteX].RCS, cMSBusyMech)) continue;  // если механизм занят останавливаемся
+        if (YesBit(pGD_TControl_Tepl->MechBusy[ByteX].RCS, cMSBusyMech)) continue;  // если механизм занят, останавливаемся
         if (pGD_TControl_Tepl_Kontur->TPause)
         {
             pGD_TControl_Tepl_Kontur->TPause--;  // уменьшаем паузу
@@ -1093,11 +1089,15 @@ void SetMeteo(void)
     for (i=0;i<cConfSMetSens;i++)
     {
         tMes=GD.Hot.MeteoSensing[i].Value;
-        if (((tMes<=GD.TControl.MeteoSensing[i]+NameSensConfig[cConfSSens+i].DigitMidl)&&(tMes>=GD.TControl.MeteoSensing[i]-NameSensConfig[cConfSSens+i].DigitMidl))||(GD.TControl.TimeMeteoSensing[i]>20))
+        if (	((tMes<=GD.TControl.MeteoSensing[i]+NameSensConfig[cConfSSens+i].DigitMidl)&&
+        		( tMes>=GD.TControl.MeteoSensing[i]-NameSensConfig[cConfSSens+i].DigitMidl))||
+        		(GD.TControl.TimeMeteoSensing[i]>20)	)
         {
             GD.TControl.TimeMeteoSensing[i]=0;
             GD.TControl.MeteoSensing[i]=tMes;
-        } else if (GD.TControl.TimeMeteoSensing[i]<30) GD.TControl.TimeMeteoSensing[i]++;
+        } else
+        	if (GD.TControl.TimeMeteoSensing[i]<30)
+        		GD.TControl.TimeMeteoSensing[i]++;
     }
     if (GD.TControl.Tepl[0].SnowTime>=GD.TuneClimate.MinRainTime)
         GD.TControl.bSnow=!GD.TControl.bSnow;
@@ -1122,54 +1122,50 @@ void SetMeteo(void)
     }
 }
 
+/*!
+\brief Установка кода нажатой кнопки. Ружимы 0 - откл, 1 - вкл, 2 - автоматический
+*/
 void SetLighting(void)
 {
     char bZad;
-    if (!(pGD_MechConfig->RNum[cHSmLight])) return;
+    if (!(pGD_MechConfig->RNum[cHSmLight])) return;	// стоит ручной режим управления
     IntZ=0;
-//	if(SameSign(IntY,IntZ)) pGD_TControl_Tepl->LightExtraPause=0;
     pGD_TControl_Tepl->LightPauseMode--;
-    if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))
-        pGD_TControl_Tepl->LightPauseMode=0;
+    if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))	// если пауза вкл досветки меньше нуля или больше какой то паузы
+        pGD_TControl_Tepl->LightPauseMode=0;	// паузу выставляем в ноль т.е. можно вкл досветку
     ClrDog;
     bZad=0;
-    if (pGD_TControl_Tepl->LightPauseMode) bZad=1;
-    if ((pGD_Hot_Tepl->AllTask.ModeLight<2))//&&(!bZad))
+    if (pGD_TControl_Tepl->LightPauseMode)	// если пауза больше 0
+    	bZad=1;	// выставлем флаг занятости
+    if ((pGD_Hot_Tepl->AllTask.ModeLight < 2))	// если режим меньше 2, это  (всего режимов, наверно 3: выкл, вкл и авто)
     {
-        pGD_TControl_Tepl->LightMode=pGD_Hot_Tepl->AllTask.ModeLight*pGD_Hot_Tepl->AllTask.Light;
+        pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;	// по всей видимости если не авто режим то выставляем флаг занятости
         bZad=1;
     }
-    if (!bZad)
+    if (!bZad)	// если авто режим
     {
-        if (GD.Hot.Zax-60>GD.Hot.Time) pGD_TControl_Tepl->LightMode=0;
-        if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn50)
+        if (GD.Hot.Zax-60>GD.Hot.Time)		// если время захода - 60 мин больше текущего времени
+        	pGD_TControl_Tepl->LightMode=0;	// выключаем досветку
+        if (GD.TControl.Tepl[0].SensHalfHourAgo < GD.TuneClimate.l_SunOn50)
         {
-//			pGD_TControl_Tepl->LightMode=50;
             IntY=GD.Hot.MidlSR;
-            CorrectionRule(GD.TuneClimate.l_SunOn100,GD.TuneClimate.l_SunOn50,50,0);
+            CorrectionRule(GD.TuneClimate.l_SunOn100, GD.TuneClimate.l_SunOn50, 50, 0);
             pGD_TControl_Tepl->LightMode=100-IntZ;
         }
-
-//		if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn100)
-//			pGD_TControl_Tepl->LightMode=100;
     }
-    if (pGD_TControl_Tepl->LightMode!=pGD_TControl_Tepl->OldLightMode)
+    if (pGD_TControl_Tepl->LightMode!=pGD_TControl_Tepl->OldLightMode)	// если текущий режим подсветки не равен предыдущему
     {
-        if (!(((int)pGD_TControl_Tepl->LightMode)*((int)pGD_TControl_Tepl->OldLightMode)))
+        if (!(((int)pGD_TControl_Tepl->LightMode)*((int)pGD_TControl_Tepl->OldLightMode)))	// если досветка была выключена или текущая или прошлая
         {
-            pGD_TControl_Tepl->DifLightMode=pGD_TControl_Tepl->LightMode-pGD_TControl_Tepl->OldLightMode;
-            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_PauseMode;
-//			pGD_TControl_Tepl->LightExtraPause=o_DeltaTime;
+            pGD_TControl_Tepl->DifLightMode=pGD_TControl_Tepl->LightMode - pGD_TControl_Tepl->OldLightMode;	// либо первый аргумент не может быть нулем либо одно из двух
+            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_PauseMode;	// т.к. была смена режимов, то взводим паузу
         } else
         {
-            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_SoftPauseMode;
+            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_SoftPauseMode;	// если смены режимов не было то взводим soft паузу ????
         }
     }
-    pGD_TControl_Tepl->OldLightMode=pGD_TControl_Tepl->LightMode;
-//	pGD_TControl_Tepl->LightExtraPause--;
-//	if (pGD_TControl_Tepl->LightExtraPause>0) return; 
-//	pGD_TControl_Tepl->LightExtraPause=0;	 
-    pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;     
+    pGD_TControl_Tepl->OldLightMode=pGD_TControl_Tepl->LightMode;	// сохраняем прошлый режим
+    pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;		// зачем то в значение величины подсветки записываем режим
 }
 
 void SetTepl(char fnTepl)

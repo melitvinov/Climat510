@@ -617,10 +617,10 @@ typedef struct eeScreen
     } eSensorD;	*/
 typedef struct eeMechBusy
 {
-    int             TimeSetMech;
-    int             TimeRealMech;
-    int             PauseMech;
-    char            RCS;
+    int             TimeSetMech;	// задаваемое значение
+    int             TimeRealMech;	// текущее положение в сек
+    int             PauseMech;	// пауза
+    char            RCS;	// регистр состояний
     eSensing*       Sens;
     int             PrevDelta;
     int             PrevTask;
@@ -679,9 +679,9 @@ typedef struct eeTControlTepl
     int8_t          nMaxKontur;
 //131
 //		int8_t			NumLight;
-    int16_t             PowMaxKonturs;
-    int16_t             PowOwnMaxKonturs;
-    int16_t             TimeSIO;
+    int16_t         PowMaxKonturs;
+    int16_t         PowOwnMaxKonturs;
+    int16_t         TimeSIO;
     int8_t          Vent;
     int8_t          PrevNLight;//CorrScreen;
 //137
