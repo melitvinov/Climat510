@@ -20,6 +20,53 @@ char        fLightOn;
 int16_t     fLightPause;
 uchar       ProgReset;
 
+/*!
+\brief Таблица типов старта
+*/
+typedef enum
+{
+    TYPE_START_OFF              = 0,
+    TYPE_START_BEFORE_SUNSET    = 1,
+    TYPE_START_AFTER_SUNSET     = 2,
+    TYPE_START_BEFORE_SUNRISE   = 3,
+    TYPE_START_AFTER_SUNRISE    = 4,
+} TYPE_START;
+
+/*!
+\brief Коррекция времени старта по типу старта
+@param typeStart тип старта, timeStart - время старта, sunRise - время восхода, sunSet - время захода. Параметры из задания
+@return int16_t скорректированное время. 0 - тип старта = 0, -1 - ошибка
+*/
+int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int16_t sunRise, int16_t sunSet)
+{
+    switch (typeStart)
+    {
+    case TYPE_START_BEFORE_SUNSET:
+        if (sunSet >= timeStart)
+            return sunSet - timeStart;
+        else return -1;
+        break;
+    case TYPE_START_AFTER_SUNSET:
+        if ((sunSet + timeStart) > 1440)
+            return(sunSet + timeStart) % 1440;
+        else sunSet + timeStart;
+        break;
+    case TYPE_START_BEFORE_SUNRISE:
+        if (sunRise >= timeStart)
+            return sunRise - timeStart;
+        else return -1;
+        break;
+    case TYPE_START_AFTER_SUNRISE:
+        if ((sunRise + timeStart) > 1440)
+            return(sunRise + timeStart) % 1440;
+        else sunRise + timeStart;
+        break;
+    case TYPE_START_OFF:
+        return timeStart;
+        break;
+    }
+}
+
 /*------------------------------------------------
         Управлюща программа
         Вариант "Ромашка"
@@ -28,8 +75,8 @@ uchar       ProgReset;
 void Control(void) 
 {
     int8_t tCTepl,ttTepl;
-    Configuration();	// читаем значение датчиков тепловых контуров (состояние, положение, температура)
-    SetDiskrSens();		// приводим адреса и проверяем наличие всех датчиков
+    Configuration();    // читаем значение датчиков тепловых контуров (состояние, положение, температура)
+    SetDiskrSens();     // приводим адреса и проверяем наличие всех датчиков
     if ((!Menu)&&(ProgReset))
     {
         ProgReset=0;
@@ -43,9 +90,9 @@ void Control(void)
     }
     if (Second==20)
     {
-        InitLCD();	// переинициализация диспея
+        InitLCD();  // переинициализация диспея
         ClrDog;
-        SetMeteo();	// опрос метео датчиков
+        SetMeteo(); // опрос метео датчиков
     }
 
     if ((Second==40)||(GD.TControl.Delay))
@@ -75,13 +122,13 @@ void Control(void)
                 ClrDog;
                 TaskTimer(0,ttTepl,tCTepl);
                 SetPointersOnTepl(tCTepl);
-                SetTepl(tCTepl);	// Корректировка датчика температуры при сторонних факторах (солнце, фрамуги, ветор, досветка и т.п.)
+                SetTepl(tCTepl);    // Корректировка датчика температуры при сторонних факторах (солнце, фрамуги, ветор, досветка и т.п.)
             }
 
             // Процедуры начальных установок для контура
             __sCalcKonturs();   // направления нагрев или охлаждене, мин макс контуров и фрамуг
-            __sMechWindows();	// учет направления ветра для фрамуг
-            __sMechScreen();	// установки для затемняющего и термического экранов
+            __sMechWindows();   // учет направления ветра для фрамуг
+            __sMechScreen();    // установки для затемняющего и термического экранов
             for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
             {
                 if (GD.Hot.MaxReqWater<GD.Hot.Tepl[tCTepl].MaxReqWater)
@@ -91,12 +138,12 @@ void Control(void)
         }
     }
     vNFCtr=GD.Control.NFCtr;
-    PORTNUM=DEF_PORTNUM;		// фактически включаем видимость контроллера
+    PORTNUM=DEF_PORTNUM;        // фактически включаем видимость контроллера
     MaskRas=bRasxod;
     if ( Second < 60) return;
-    WriteToFRAM();		// сохраняем GD hot в fram
-    MidlWindAndSr();	// расчет устредненого ветра и суммарного солнца
-    WindDirect();		// сохраняем положение флюгера
+    WriteToFRAM();      // сохраняем GD hot в fram
+    MidlWindAndSr();    // расчет устредненого ветра и суммарного солнца
+    WindDirect();       // сохраняем положение флюгера
 
 #ifndef NOTESTMEM
     if ((!Menu)&&(GD.SostRS==OUT_UNIT))
@@ -109,8 +156,8 @@ void Control(void)
         TimeReset--;
     if (TimeReset<0)
         TimeReset=1;
-    GD.Hot.Time++;	// увеличиваем счетчик
-    GetRTC();	//
+    GD.Hot.Time++;  // увеличиваем счетчик
+    GetRTC();   //
     not=220;ton=10;
     bNight=1;
     if ((GD.Hot.Time>=GD.Hot.Vosx)&&(GD.Hot.Time<GD.Hot.Zax))
@@ -177,47 +224,92 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     MinTimeStart=1440;
     sTimerNext=-1;
     sTimerPrev=-1;
+    int16_t typeStartCorrection = 0;
     for (nTimer=0;nTimer<cSTimer;nTimer++)    // cSTimer = 40
     {
-        if (!GD.Timer[nTimer].TimeStart)
-        	continue;
-        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
-        	continue;
+        typeStartCorrection = controlTypeStartCorrection(GD.Timer[nTimer].TypeStart, GD.Timer[nTimer].TimeStart, GD.Hot.Vosx, GD.Hot.Zax);
+        if (typeStartCorrection = -1)
+            typeStartCorrection = GD.Timer[nTimer].TimeStart;
 
-        if (GD.Timer[nTimer].TimeStart<MinTimeStart)
+        if (!typeStartCorrection)
+            continue;
+        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
+            continue;
+
+        if (typeStartCorrection<MinTimeStart)
         {
             MinTimeStart=GD.Timer[nTimer].TimeStart;
             sTimerMin=nTimer;
         }
         if (GD.Timer[nTimer].TimeStart>MaxTimeStart)
         {
-            MaxTimeStart=GD.Timer[nTimer].TimeStart;
+            MaxTimeStart=typeStartCorrection;
             sTimerMax=nTimer;
         }
-        if ((GD.Timer[nTimer].TimeStart>=IntZ)&&(NextTimeStart>GD.Timer[nTimer].TimeStart))
+        if ((typeStartCorrection>=IntZ)&&(NextTimeStart>typeStartCorrection))
         {
-            NextTimeStart=GD.Timer[nTimer].TimeStart;
+            NextTimeStart=typeStartCorrection;
             sTimerNext=nTimer;
         }
-        if ((GD.Timer[nTimer].TimeStart<IntZ)&&(PrevTimeStart<GD.Timer[nTimer].TimeStart))
+        if ((typeStartCorrection<IntZ)&&(PrevTimeStart<typeStartCorrection))
         {
-            PrevTimeStart=GD.Timer[nTimer].TimeStart;
+            PrevTimeStart=typeStartCorrection;
             sTimerPrev=nTimer;
         }
     }
     if (MinTimeStart==1440) return;
 
     if (sTimerNext<0)
-    	sTimerNext=sTimerMin;
+        sTimerNext=sTimerMin;
 
     if (sTimerPrev<0)
-    	sTimerPrev=sTimerMax;
+        sTimerPrev=sTimerMax;
 
     pGD_CurrTimer=&GD.Timer[sTimerPrev];
     pGD_NextTimer=&GD.Timer[sTimerNext];
 
     IntX=CtrTime-GD.Timer[sTimerPrev].TimeStart;
     IntY=GD.Timer[sTimerNext].TimeStart-GD.Timer[sTimerPrev].TimeStart;
+
+//        if (!GD.Timer[nTimer].TimeStart)
+//            continue;
+//        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
+//            continue;
+//
+//        if (GD.Timer[nTimer].TimeStart<MinTimeStart)
+//        {
+//            MinTimeStart=GD.Timer[nTimer].TimeStart;
+//            sTimerMin=nTimer;
+//        }
+//        if (GD.Timer[nTimer].TimeStart>MaxTimeStart)
+//        {
+//            MaxTimeStart=GD.Timer[nTimer].TimeStart;
+//            sTimerMax=nTimer;
+//        }
+//        if ((GD.Timer[nTimer].TimeStart>=IntZ)&&(NextTimeStart>GD.Timer[nTimer].TimeStart))
+//        {
+//            NextTimeStart=GD.Timer[nTimer].TimeStart;
+//            sTimerNext=nTimer;
+//        }
+//        if ((GD.Timer[nTimer].TimeStart<IntZ)&&(PrevTimeStart<GD.Timer[nTimer].TimeStart))
+//        {
+//            PrevTimeStart=GD.Timer[nTimer].TimeStart;
+//            sTimerPrev=nTimer;
+//        }
+//    }
+//    if (MinTimeStart==1440) return;
+//
+//    if (sTimerNext<0)
+//        sTimerNext=sTimerMin;
+//
+//    if (sTimerPrev<0)
+//        sTimerPrev=sTimerMax;
+//
+//    pGD_CurrTimer=&GD.Timer[sTimerPrev];
+//    pGD_NextTimer=&GD.Timer[sTimerNext];
+//
+//    IntX=CtrTime-GD.Timer[sTimerPrev].TimeStart;
+//    IntY=GD.Timer[sTimerNext].TimeStart-GD.Timer[sTimerPrev].TimeStart;
     if (IntY<0)
     {
         IntY+=1440;
@@ -684,7 +776,7 @@ void SetMixValvePosition(void)
             (*IntVal)=(100-IntY)*100; // сохраняем вычисленое значение интегр коэф
             IntZ=100;   // % открытия = 100
         } else
-            if (IntZ<0) 
+            if (IntZ<0)
         {
             (*IntVal)=(-IntY)*100;
             IntZ=0; // % открытия = 0
@@ -1089,15 +1181,15 @@ void SetMeteo(void)
     for (i=0;i<cConfSMetSens;i++)
     {
         tMes=GD.Hot.MeteoSensing[i].Value;
-        if (	((tMes<=GD.TControl.MeteoSensing[i]+NameSensConfig[cConfSSens+i].DigitMidl)&&
-        		( tMes>=GD.TControl.MeteoSensing[i]-NameSensConfig[cConfSSens+i].DigitMidl))||
-        		(GD.TControl.TimeMeteoSensing[i]>20)	)
+        if (    ((tMes<=GD.TControl.MeteoSensing[i]+NameSensConfig[cConfSSens+i].DigitMidl)&&
+                 ( tMes>=GD.TControl.MeteoSensing[i]-NameSensConfig[cConfSSens+i].DigitMidl))||
+                (GD.TControl.TimeMeteoSensing[i]>20)    )
         {
             GD.TControl.TimeMeteoSensing[i]=0;
             GD.TControl.MeteoSensing[i]=tMes;
         } else
-        	if (GD.TControl.TimeMeteoSensing[i]<30)
-        		GD.TControl.TimeMeteoSensing[i]++;
+            if (GD.TControl.TimeMeteoSensing[i]<30)
+            GD.TControl.TimeMeteoSensing[i]++;
     }
     if (GD.TControl.Tepl[0].SnowTime>=GD.TuneClimate.MinRainTime)
         GD.TControl.bSnow=!GD.TControl.bSnow;
@@ -1128,24 +1220,24 @@ void SetMeteo(void)
 void SetLighting(void)
 {
     char bZad;
-    if (!(pGD_MechConfig->RNum[cHSmLight])) return;	// стоит ручной режим управления
+    if (!(pGD_MechConfig->RNum[cHSmLight])) return; // стоит ручной режим управления
     IntZ=0;
     pGD_TControl_Tepl->LightPauseMode--;
-    if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))	// если пауза вкл досветки меньше нуля или больше какой то паузы
-        pGD_TControl_Tepl->LightPauseMode=0;	// паузу выставляем в ноль т.е. можно вкл досветку
+    if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))  // если пауза вкл досветки меньше нуля или больше какой то паузы
+        pGD_TControl_Tepl->LightPauseMode=0;    // паузу выставляем в ноль т.е. можно вкл досветку
     ClrDog;
     bZad=0;
-    if (pGD_TControl_Tepl->LightPauseMode)	// если пауза больше 0
-    	bZad=1;	// выставлем флаг занятости
-    if ((pGD_Hot_Tepl->AllTask.ModeLight < 2))	// если режим меньше 2, это  (всего режимов, наверно 3: выкл, вкл и авто)
+    if (pGD_TControl_Tepl->LightPauseMode)  // если пауза больше 0
+        bZad=1; // выставлем флаг занятости
+    if ((pGD_Hot_Tepl->AllTask.ModeLight < 2))  // если режим меньше 2, это  (всего режимов, наверно 3: выкл, вкл и авто)
     {
-        pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;	// по всей видимости если не авто режим то выставляем флаг занятости
+        pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;   // по всей видимости если не авто режим то выставляем флаг занятости
         bZad=1;
     }
-    if (!bZad)	// если авто режим
+    if (!bZad)  // если авто режим
     {
-        if (GD.Hot.Zax-60>GD.Hot.Time)		// если время захода - 60 мин больше текущего времени
-        	pGD_TControl_Tepl->LightMode=0;	// выключаем досветку
+        if (GD.Hot.Zax-60>GD.Hot.Time)      // если время захода - 60 мин больше текущего времени
+            pGD_TControl_Tepl->LightMode=0; // выключаем досветку
         if (GD.TControl.Tepl[0].SensHalfHourAgo < GD.TuneClimate.l_SunOn50)
         {
             IntY=GD.Hot.MidlSR;
@@ -1153,19 +1245,19 @@ void SetLighting(void)
             pGD_TControl_Tepl->LightMode=100-IntZ;
         }
     }
-    if (pGD_TControl_Tepl->LightMode!=pGD_TControl_Tepl->OldLightMode)	// если текущий режим подсветки не равен предыдущему
+    if (pGD_TControl_Tepl->LightMode!=pGD_TControl_Tepl->OldLightMode)  // если текущий режим подсветки не равен предыдущему
     {
-        if (!(((int)pGD_TControl_Tepl->LightMode)*((int)pGD_TControl_Tepl->OldLightMode)))	// если досветка была выключена или текущая или прошлая
+        if (!(((int)pGD_TControl_Tepl->LightMode)*((int)pGD_TControl_Tepl->OldLightMode)))  // если досветка была выключена или текущая или прошлая
         {
-            pGD_TControl_Tepl->DifLightMode=pGD_TControl_Tepl->LightMode - pGD_TControl_Tepl->OldLightMode;	// либо первый аргумент не может быть нулем либо одно из двух
-            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_PauseMode;	// т.к. была смена режимов, то взводим паузу
+            pGD_TControl_Tepl->DifLightMode=pGD_TControl_Tepl->LightMode - pGD_TControl_Tepl->OldLightMode; // либо первый аргумент не может быть нулем либо одно из двух
+            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_PauseMode;   // т.к. была смена режимов, то взводим паузу
         } else
         {
-            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_SoftPauseMode;	// если смены режимов не было то взводим soft паузу ????
+            pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_SoftPauseMode;   // если смены режимов не было то взводим soft паузу ????
         }
     }
-    pGD_TControl_Tepl->OldLightMode=pGD_TControl_Tepl->LightMode;	// сохраняем прошлый режим
-    pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;		// зачем то в значение величины подсветки записываем режим
+    pGD_TControl_Tepl->OldLightMode=pGD_TControl_Tepl->LightMode;   // сохраняем прошлый режим
+    pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;     // зачем то в значение величины подсветки записываем режим
 }
 
 void SetTepl(char fnTepl)
@@ -1182,13 +1274,13 @@ void SetTepl(char fnTepl)
 //	if(!(*pGD_Hot_Tepl).RCS)
     {   
         AllTaskAndCorrection(); // корректировка по солнцу температуры, влажности, СО, фрамуг
-        LaunchCalorifer();		// один из способов обогрева с помощью обдува калорифера
+        LaunchCalorifer();      // один из способов обогрева с помощью обдува калорифера
 
-        __cNextTCalc(fnTepl);	// нахождение прогнозируемого изменения температуры (фрамуги, солнце и еще много всего)
+        __cNextTCalc(fnTepl);   // нахождение прогнозируемого изменения температуры (фрамуги, солнце и еще много всего)
 
 
-        DecPumpPause();		// работа с насосами
-        SetUpSiod(fnTepl);	// настройка увлажнителей
+        DecPumpPause();     // работа с насосами
+        SetUpSiod(fnTepl);  // настройка увлажнителей
         InitScreen(cTermHorzScr);
         InitScreen(cSunHorzScr);
         InitScreen(cTermVertScr1);
@@ -1205,8 +1297,8 @@ void SetTepl(char fnTepl)
         SetReg(cHSmPressReg,
                pGD_Hot_Tepl->AllTask.DoPressure,pGD_Hot_Tepl->OtherCalc.MeasDifPress);
 
-        LaunchVent();	// учет ветра и параметров вентиляции
-        SetLighting();	// настройка досветки
+        LaunchVent();   // учет ветра и параметров вентиляции
+        SetLighting();  // настройка досветки
     }
 }
 
