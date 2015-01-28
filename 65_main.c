@@ -6,6 +6,29 @@
 ----------------------------------------------*/
 #include "keyboard.h"
 
+//++++++FullCheck ++++
+int  DestSize;
+int  DestAdr;
+//char xdata	DestBuffer[7000];
+//char* DestAdrBuf;
+//char	BufCheckByte;
+
+/*char PlaceBuf(void) {
+int  i;
+char xdata *p1;
+char xdata *p2;
+if (BufCheckByte != 55) return 0; //;неудачный прием
+p1=(char xdata *)DestAdr;
+p2=(char xdata *)&DestBuffer[0];
+for (i=0;i < (DestSize-1);i++) {
+    *(p1++)=*(p2++);
+    }
+return 1;
+}
+*/
+//;------FullCheck------------------
+
+
 main()
 {
     char    timeDog;
@@ -49,8 +72,13 @@ main()
     GD.Hot.News|=bKlTest;
     ByteX=1;
     GD.SostRS=OUT_UNIT;
+    //KeyDelay=0;
+
+#warning !!!!!!!!!!!!!!!!!!!!!!!!! ON
+    //CheckKeyboardSTM();
     KeyboardProcess();
-    if (keyboardGetBITKL())
+
+	if (keyboardGetBITKL())
         ByteX=6;
     ClrDog;
     TestMem(ByteX);
@@ -59,6 +87,7 @@ main()
     ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
     ClearAllAlarms();
 start:
+
     if (not) {
         if (!ton_t--) {
             ton_t=ton; not--; Sound;
@@ -67,9 +96,11 @@ start:
     if (!not && nReset) {
         ton=(nReset--)+2;not=80;
     }
+
     if (!timeDog--) {
         timeDog=7;ClrDog;
     }
+
     if (GD.SostRS == (uchar)IN_UNIT) {  /*Если приняли блок с ПК */
         /*--Если запись 0бл и признак времени то установить время */
 //            if(PlaceBuf()) {
@@ -78,7 +109,8 @@ start:
 #endif
         if (!NumBlock && (GD.Hot.News&0x80)) SetRTC();
         ClrDog;
-        if (NumBlock) ReWriteFRAM();	// Была запись с ПК в блок NumBlock, переписать в EEPROM
+        /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
+        if (NumBlock) ReWriteFRAM();
 //				}
         GD.SostRS=OUT_UNIT;
         keyboardSetSIM(105);
@@ -86,7 +118,7 @@ start:
     if (bSec) {
 #ifdef STM32_UNIT
         if (Second==58) {
-            CheckWithoutPC();	//  проверка наличия подключения к компьютеру
+            CheckWithoutPC();
             CheckInputConfig();
         }
         CheckRSTime();
@@ -97,13 +129,15 @@ start:
 #endif
         bSec=0;
         ClrDog;
-        Control();
+        Control(); // !!!!
         ClrDog;
         B_video=1;
         if (!(Second%9))
             Measure();
+        // IMOD_WriteOutput(0,1,0xf0f0f0f0);
+
     }
-    if (keyboardGetBITKL()) {
+	if (keyboardGetBITKL()) {
         ClrDog;
         GD.Hot.News|=bOperator;
         if (Menu) GD.Hot.News|=bEdit;
@@ -121,5 +155,5 @@ start:
     }
     simple_servercycle(); //Перенесено в прерывание клавиатуры
 
-goto start;
+    goto start;
 }

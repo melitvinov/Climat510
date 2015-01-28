@@ -215,6 +215,7 @@ void TIM2_IRQHandler(void)
 	SETEA;
 	ReadyIZ=1;*/
 
+#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!! ON
 	//CheckKeyboardSTM();
 	KeyboardProcess();
 
@@ -471,13 +472,12 @@ void CrcCalc()
 
 void Reg48ToI2C()
 {
-//uint16_t i;
+uint16_t i;
 //	for (i=0;i<8;i++)
 //		I2C_Rel_Write(OutR[i],i);
 	SendIPC(&GD.Hot.Tepl[0].ConnectionStatus);
 }
 
-#warning empty function ????????????
 void OutReg()
 {
 }
@@ -536,6 +536,8 @@ void WriteToFRAM()
 
 void ReadFromFRAM()
 {
+	char i;
+	uint16_t fsizeSend;
 	ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
 	RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
@@ -560,7 +562,6 @@ void SetRTC(void) {
         ClrDog;
         WriteDateTime(&fDateTime);
 }
-
 void GetRTC(void) {
 		eDateTime	fDateTime;
         ReadDateTime(&fDateTime); //CtrTime=0;
@@ -574,6 +575,8 @@ void GetRTC(void) {
          CtrYear=fDateTime.year-2000;
          NowDayOfWeek=fDateTime.wday;
 }
+
+
 
 void CopyEEP()
 {
@@ -590,7 +593,6 @@ void CopyEEP()
 	}*/
 }
 
-#warning calc CRC off !!!!!!!
 void CalcEEPSum()
 {
 /*	uint16_t tSum,i;
@@ -606,7 +608,7 @@ void CalcEEPSum()
 		FLASH_ProgramHalfWord(FLASH_ST_ADDR+AdrEEP+SizeEEP,tSum);
 //		EEPROM(AdrEEP+SizeEEP)=tSum/256;
 //		EEPROM(AdrEEP+SizeEEP+1)=tSum%256;
-//		if ((SizeEEP+AdrEEP+1)%EEPROM_PAGESIZE)
+/*		if ((SizeEEP+AdrEEP+1)%EEPROM_PAGESIZE)
 		{
 			EEPROM_AtomicWritePage((SizeEEP+AdrEEP)/32);
 			ClrDog;
@@ -826,12 +828,12 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }
 }
 
-void  CalibrNew(char nSArea,int8_t nTepl, int8_t nSens,int16_t Mes){
+void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
 	eSensing	*fSens;
 	eNameASens	*fNameSens;
 	int16_t		*fuSens;
 	eCalSensor	*fCalSens;
-	char met=0;
+	char		met=0;
 	if (nSArea)
 	{
 		fSens=&GD.Hot.Tepl[nTepl].InTeplSens[nSens];
@@ -875,17 +877,20 @@ void  CalibrNew(char nSArea,int8_t nTepl, int8_t nSens,int16_t Mes){
 	}
 }
 
+
+
 void Measure()
 {
-	int8_t tTepl,nSens;
+	char tTepl,nSens;
 	uint16_t	tSensVal;
+	int nModule;
 	int8_t ErrModule;
 	for (tTepl=0;tTepl<cSTepl;tTepl++)
 	{
         for(nSens=0;nSens<cConfSSens;nSens++)
 		{
-        	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);	// опрос датчиков всех зон
-        	if (ErrModule<0)		// проверяется только наличие ошибки
+        	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
+        	if (ErrModule<0)
         	{
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
         		GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
@@ -896,10 +901,10 @@ void Measure()
         	CalibrNew(1,tTepl,nSens,tSensVal);
 		}
 	}
-    for(nSens=0;nSens<cConfSMetSens;nSens++)			// непосредственный опрос метео датчиков и сохранение результатов в GD.Hot
+    for(nSens=0;nSens<cConfSMetSens;nSens++)
     {
-    	tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);	// опрос метео датчиков
-    	if (ErrModule<0)					// проверяется только наличие ошибки
+    	tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);
+    	if (ErrModule<0)
         {
         	GD.Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
     		GD.uMeteoSens[nSens]=0;
@@ -912,7 +917,7 @@ void Measure()
 
 void CheckInputConfig()
 {
-	int8_t tTepl,nSens;
+	char tTepl,nSens;
 	TIModulConf tTempConf;
 	tTempConf.Corr=0;
 	tTempConf.Output=0;
@@ -933,11 +938,12 @@ void CheckInputConfig()
         	UpdateInIPC(GetSensConfig(tTepl,nSens),&GD.Cal.InTeplSens[tTepl][nSens]);
     for(nSens=0;nSens<cConfSMetSens;nSens++)
     	UpdateInIPC(GetMetSensConfig(nSens),&GD.Cal.MeteoSens[nSens]);
+
 }
 
 void SetDiskrSens(void)
 {
-	int8_t fnTepl,nSens,nErr;
+	char fnTepl,nSens,nErr;
 	for (fnTepl=0;fnTepl<cSTepl;fnTepl++)
 	{
 		SetPointersOnTepl(fnTepl);
@@ -948,4 +954,5 @@ void SetDiskrSens(void)
 			SetBit(pGD_Hot_Tepl->DiskrSens[0],cSmLightDiskr);
 */
 	}
+
 }

@@ -46,7 +46,7 @@ typedef uint8_t bit;
 
 #define SetBit(Val,NBit)        (Val |= (NBit))
 #define ClrBit(Val,NBit)        (Val &=~(NBit))
-#define YesBit(Val,NBit)        (Val &  (NBit))
+#define YesBit(Val,NBit)        (Val & (NBit))
 
 //----- Прототипы функций
 void CopyEEP(void);
