@@ -468,7 +468,7 @@ Discarded input sections
  .text.SetResRam
                 0x00000000       0x14 ..\obj\main.o
  .text.controlTypeStartCorrection
-                0x00000000       0x8c ..\obj\main.o
+                0x00000000       0x9c ..\obj\main.o
  .text.SendBlockPM
                 0x00000000       0x70 ..\obj\main.o
  .text.w1reset  0x00000000       0x98 ..\obj\main.o
@@ -2001,7 +2001,7 @@ LOAD c:/program files (x86)/gnu tools arm embedded/4.6 2012q4/bin/../lib/gcc/arm
 END GROUP
 OUTPUT(Climat510.elf elf32-littlearm)
 
-.debug_info     0x00000000    0x117d3
+.debug_info     0x00000000    0x117bf
  .debug_info    0x00000000      0x46a ..\obj\stm32f10x_rtc.o
  .debug_info    0x0000046a      0x412 ..\obj\stm32f10x__clock.o
  .debug_info    0x0000087c     0x1e32 ..\obj\stm32f10x_tim.o
@@ -2020,10 +2020,10 @@ OUTPUT(Climat510.elf elf32-littlearm)
  .debug_info    0x0000e9b0      0x495 ..\obj\stm32f10x_dma.o
  .debug_info    0x0000ee45      0x548 ..\obj\misc.o
  .debug_info    0x0000f38d      0xa2a ..\obj\stm32f10x_spi.o
- .debug_info    0x0000fdb7      0x447 ..\obj\I2CSoft.o
- .debug_info    0x000101fe      0xb6c ..\obj\stm32f10x_i2c.o
- .debug_info    0x00010d6a      0x870 ..\obj\stm32f10x_bkp.o
- .debug_info    0x000115da      0x1f9 ..\obj\stm32f10x_iwdg.o
+ .debug_info    0x0000fdb7      0x433 ..\obj\I2CSoft.o
+ .debug_info    0x000101ea      0xb6c ..\obj\stm32f10x_i2c.o
+ .debug_info    0x00010d56      0x870 ..\obj\stm32f10x_bkp.o
+ .debug_info    0x000115c6      0x1f9 ..\obj\stm32f10x_iwdg.o
 
 .debug_abbrev   0x00000000     0x2735
  .debug_abbrev  0x00000000      0x18c ..\obj\stm32f10x_rtc.o
@@ -2049,7 +2049,7 @@ OUTPUT(Climat510.elf elf32-littlearm)
  .debug_abbrev  0x000024b0      0x17c ..\obj\stm32f10x_bkp.o
  .debug_abbrev  0x0000262c      0x109 ..\obj\stm32f10x_iwdg.o
 
-.debug_loc      0x00000000     0x9956
+.debug_loc      0x00000000     0x9914
  .debug_loc     0x00000000      0x1ee ..\obj\stm32f10x_rtc.o
  .debug_loc     0x000001ee      0x3bd ..\obj\stm32f10x__clock.o
  .debug_loc     0x000005ab     0x1598 ..\obj\stm32f10x_tim.o
@@ -2057,21 +2057,21 @@ OUTPUT(Climat510.elf elf32-littlearm)
  .debug_loc     0x00001df1      0x265 ..\obj\system_stm32f10x.o
  .debug_loc     0x00002056       0xe6 ..\obj\stm32f10x_pwr.o
  .debug_loc     0x0000213c      0x444 ..\obj\stm32f10x_gpio.o
- .debug_loc     0x00002580     0x4474 ..\obj\main.o
- .debug_loc     0x000069f4      0x19c ..\obj\stm32f10x_RS485.o
- .debug_loc     0x00006b90      0x7b5 ..\obj\stm32f10x_rcc.o
- .debug_loc     0x00007345       0x33 ..\obj\startup_stm32f10x_cl.o
- .debug_loc     0x00007378      0x174 ..\obj\stm32f10x_exti.o
- .debug_loc     0x000074ec      0x66b ..\obj\stm32f10x_usart.o
- .debug_loc     0x00007b57      0xb77 ..\obj\stm32f10x_RS485Master.o
- .debug_loc     0x000086ce       0x92 ..\obj\keyboard.o
- .debug_loc     0x00008760      0x142 ..\obj\stm32f10x_dma.o
- .debug_loc     0x000088a2      0x143 ..\obj\misc.o
- .debug_loc     0x000089e5      0x511 ..\obj\stm32f10x_spi.o
- .debug_loc     0x00008ef6      0x2b9 ..\obj\I2CSoft.o
- .debug_loc     0x000091af      0x646 ..\obj\stm32f10x_i2c.o
- .debug_loc     0x000097f5      0x124 ..\obj\stm32f10x_bkp.o
- .debug_loc     0x00009919       0x3d ..\obj\stm32f10x_iwdg.o
+ .debug_loc     0x00002580     0x4432 ..\obj\main.o
+ .debug_loc     0x000069b2      0x19c ..\obj\stm32f10x_RS485.o
+ .debug_loc     0x00006b4e      0x7b5 ..\obj\stm32f10x_rcc.o
+ .debug_loc     0x00007303       0x33 ..\obj\startup_stm32f10x_cl.o
+ .debug_loc     0x00007336      0x174 ..\obj\stm32f10x_exti.o
+ .debug_loc     0x000074aa      0x66b ..\obj\stm32f10x_usart.o
+ .debug_loc     0x00007b15      0xb77 ..\obj\stm32f10x_RS485Master.o
+ .debug_loc     0x0000868c       0x92 ..\obj\keyboard.o
+ .debug_loc     0x0000871e      0x142 ..\obj\stm32f10x_dma.o
+ .debug_loc     0x00008860      0x143 ..\obj\misc.o
+ .debug_loc     0x000089a3      0x511 ..\obj\stm32f10x_spi.o
+ .debug_loc     0x00008eb4      0x2b9 ..\obj\I2CSoft.o
+ .debug_loc     0x0000916d      0x646 ..\obj\stm32f10x_i2c.o
+ .debug_loc     0x000097b3      0x124 ..\obj\stm32f10x_bkp.o
+ .debug_loc     0x000098d7       0x3d ..\obj\stm32f10x_iwdg.o
 
 .debug_aranges  0x00000000     0x13e0
  .debug_aranges
@@ -2143,7 +2143,7 @@ OUTPUT(Climat510.elf elf32-littlearm)
  .debug_ranges  0x00001210       0x68 ..\obj\stm32f10x_bkp.o
  .debug_ranges  0x00001278       0x38 ..\obj\stm32f10x_iwdg.o
 
-.debug_line     0x00000000     0x723d
+.debug_line     0x00000000     0x7244
  .debug_line    0x00000000      0x26c ..\obj\stm32f10x_rtc.o
  .debug_line    0x0000026c      0x262 ..\obj\stm32f10x__clock.o
  .debug_line    0x000004ce      0x9b9 ..\obj\stm32f10x_tim.o
@@ -2151,21 +2151,21 @@ OUTPUT(Climat510.elf elf32-littlearm)
  .debug_line    0x000010f2      0x1ce ..\obj\system_stm32f10x.o
  .debug_line    0x000012c0      0x20f ..\obj\stm32f10x_pwr.o
  .debug_line    0x000014cf      0x33f ..\obj\stm32f10x_gpio.o
- .debug_line    0x0000180e     0x2f8c ..\obj\main.o
- .debug_line    0x0000479a      0x28e ..\obj\stm32f10x_RS485.o
- .debug_line    0x00004a28      0x4ea ..\obj\stm32f10x_rcc.o
- .debug_line    0x00004f12       0x8f ..\obj\startup_stm32f10x_cl.o
- .debug_line    0x00004fa1      0x23d ..\obj\stm32f10x_exti.o
- .debug_line    0x000051de      0x421 ..\obj\stm32f10x_usart.o
- .debug_line    0x000055ff      0x683 ..\obj\stm32f10x_RS485Master.o
- .debug_line    0x00005c82      0x274 ..\obj\keyboard.o
- .debug_line    0x00005ef6      0x28a ..\obj\stm32f10x_dma.o
- .debug_line    0x00006180      0x1db ..\obj\misc.o
- .debug_line    0x0000635b      0x3b1 ..\obj\stm32f10x_spi.o
- .debug_line    0x0000670c      0x2f3 ..\obj\I2CSoft.o
- .debug_line    0x000069ff      0x45a ..\obj\stm32f10x_i2c.o
- .debug_line    0x00006e59      0x22d ..\obj\stm32f10x_bkp.o
- .debug_line    0x00007086      0x1b7 ..\obj\stm32f10x_iwdg.o
+ .debug_line    0x0000180e     0x2f93 ..\obj\main.o
+ .debug_line    0x000047a1      0x28e ..\obj\stm32f10x_RS485.o
+ .debug_line    0x00004a2f      0x4ea ..\obj\stm32f10x_rcc.o
+ .debug_line    0x00004f19       0x8f ..\obj\startup_stm32f10x_cl.o
+ .debug_line    0x00004fa8      0x23d ..\obj\stm32f10x_exti.o
+ .debug_line    0x000051e5      0x421 ..\obj\stm32f10x_usart.o
+ .debug_line    0x00005606      0x683 ..\obj\stm32f10x_RS485Master.o
+ .debug_line    0x00005c89      0x274 ..\obj\keyboard.o
+ .debug_line    0x00005efd      0x28a ..\obj\stm32f10x_dma.o
+ .debug_line    0x00006187      0x1db ..\obj\misc.o
+ .debug_line    0x00006362      0x3b1 ..\obj\stm32f10x_spi.o
+ .debug_line    0x00006713      0x2f3 ..\obj\I2CSoft.o
+ .debug_line    0x00006a06      0x45a ..\obj\stm32f10x_i2c.o
+ .debug_line    0x00006e60      0x22d ..\obj\stm32f10x_bkp.o
+ .debug_line    0x0000708d      0x1b7 ..\obj\stm32f10x_iwdg.o
 
 .debug_str      0x00000000     0x603c
  .debug_str     0x00000000      0x2d6 ..\obj\stm32f10x_rtc.o

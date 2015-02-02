@@ -40,7 +40,7 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
     case TYPE_START_AFTER_SUNSET:
         if ((sunSet + timeStart) > 1440)
             return(sunSet + timeStart) % 1440;
-        else sunSet + timeStart;
+        else return sunSet + timeStart;
         break;
     case TYPE_START_BEFORE_SUNRISE:
         if (sunRise >= timeStart)
@@ -50,11 +50,13 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
     case TYPE_START_AFTER_SUNRISE:
         if ((sunRise + timeStart) > 1440)
             return(sunRise + timeStart) % 1440;
-        else sunRise + timeStart;
+        else return sunRise + timeStart;
         break;
     case TYPE_START_OFF:
         return timeStart;
         break;
+    default:
+        return -1;
     }
 }
 
