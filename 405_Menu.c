@@ -310,9 +310,11 @@ void pmParam() {
 							}
 						return;}
 				ByteZ-=SumTeplZones;
-                if(!ByteZ){
-		                if(Y_menu2 > SUM_NAME_TUNE) Y_menu2=0;
-		                if(Y_menu2 >= SUM_NAME_TUNE) Y_menu2=SUM_NAME_TUNE-1;
+                if(!ByteZ){  													// Уставки
+		                if(Y_menu2 > sizeof(NameConst))//SUM_NAME_TUNE)
+		                	Y_menu2=0;
+		                if(Y_menu2 >= sizeof(NameConst))//SUM_NAME_TUNE)
+		                	Y_menu2=sizeof(NameConst)-1;//SUM_NAME_TUNE-1;
 						w_txt(Mes91);
 						Ad_Buf=Str3;
 						if(Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
@@ -325,7 +327,8 @@ void pmParam() {
 							Ad_Buf=((Ad_Buf / DisplCols))*DisplCols+20;
 							buf[Ad_Buf++]='=';
 	                        w_int(&GD.TuneClimate.s_TStart[ByteY],NameConst[ByteX].Frm);
-							if(Y_menu2 == ByteY) BlkW=1;
+							if(Y_menu2 == ByteY)
+								BlkW=1;
 							Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
 
 							}

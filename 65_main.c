@@ -72,12 +72,7 @@ main()
     GD.Hot.News|=bKlTest;
     ByteX=1;
     GD.SostRS=OUT_UNIT;
-    //KeyDelay=0;
-
-#warning !!!!!!!!!!!!!!!!!!!!!!!!! ON
-    //CheckKeyboardSTM();
     KeyboardProcess();
-
 	if (keyboardGetBITKL())
         ByteX=6;
     ClrDog;
@@ -129,13 +124,11 @@ start:
 #endif
         bSec=0;
         ClrDog;
-        Control(); // !!!!
+        Control();
         ClrDog;
         B_video=1;
         if (!(Second%9))
             Measure();
-        // IMOD_WriteOutput(0,1,0xf0f0f0f0);
-
     }
 	if (keyboardGetBITKL()) {
         ClrDog;

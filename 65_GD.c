@@ -812,6 +812,7 @@ struct  eGData{
         int16_t         uMeteoSens[cConfSMetSens];
         } GD;
 
+eTimer xdata *pGD_Timer;
 eKontur xdata *pGD_Hot_Tepl_Kontur; 
 eTControlKontur xdata *pGD_TControl_Tepl_Kontur; 
 eMechanic xdata *pGD_Hot_Hand_Kontur; 

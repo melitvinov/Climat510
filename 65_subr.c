@@ -689,7 +689,7 @@ ClrDog;
 		for (IntX=0;IntX<(sizeof(NameConst)/3);IntX++)
 			GD.TuneClimate.s_TStart[IntX]=NameConst[IntX].StartZn;
 
-
+#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IP
 		GD.Control.NFCtr=NumCtr;
 		GD.Control.IPAddr[0]=192;
 		GD.Control.IPAddr[1]=168;

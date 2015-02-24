@@ -182,6 +182,7 @@ switch (Sockets[nSock].IP_PHASE)
 }
 }
 
+#warning IP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int simple_servercycle(void)
 {
 	uchar tIPAddr[4];
@@ -213,8 +214,7 @@ int simple_servercycle(void)
             return;
         	}
 
-        
-        if(fbuf[IP_PROTO_P]==IP_PROTO_ICMP_V && fbuf[ICMP_TYPE_P]==ICMP_TYPE_ECHOREQUEST_V)
+                if(fbuf[IP_PROTO_P]==IP_PROTO_ICMP_V && fbuf[ICMP_TYPE_P]==ICMP_TYPE_ECHOREQUEST_V)
         	{
             // a ping packet, let's send pong	
 			make_echo_reply_from_request(fbuf, plen);
@@ -281,6 +281,7 @@ int simple_servercycle(void)
 //	            GlobData++;
 	            BufCpy(Sockets[nS].IP_source,tIPAddr,4);
 	            SocketUpdate(nS,fbuf,dat_p,&plen);
+#warning IP send packet!!!!!!!!!!!!!!
 	            if (plen)
 	            	make_tcp_ack_with_data(fbuf,plen,0); // send data
 	            else

@@ -35,28 +35,29 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
     case TYPE_START_BEFORE_SUNSET:
         if (sunSet >= timeStart)
             return sunSet - timeStart;
-        else return -1;
+        //else return -1;
         break;
     case TYPE_START_AFTER_SUNSET:
-        if ((sunSet + timeStart) > 1440)
-            return(sunSet + timeStart) % 1440;
-        else return sunSet + timeStart;
+        //if ((sunSet + timeStart) > 1440)
+        //    return(sunSet + timeStart) % 1440;
+        //else return sunSet + timeStart;
+        return sunSet + timeStart;
         break;
     case TYPE_START_BEFORE_SUNRISE:
         if (sunRise >= timeStart)
             return sunRise - timeStart;
-        else return -1;
+        //else return -1;
         break;
     case TYPE_START_AFTER_SUNRISE:
-        if ((sunRise + timeStart) > 1440)
-            return(sunRise + timeStart) % 1440;
-        else return sunRise + timeStart;
+    	//return 559;
+        //if ((sunRise + timeStart) > 1440)
+        //    return(sunRise + timeStart) % 1440;
+        //else return sunRise + timeStart;
+    	return sunRise + timeStart;
         break;
     case TYPE_START_OFF:
         return timeStart;
         break;
-    default:
-        return -1;
     }
 }
 
@@ -76,10 +77,13 @@ int	JumpNext(int Now,int Next,char Check, char Mull)
 	IntZ=Next-Now;
     var=IntZ;
 	var*=IntX;
-	if (!IntY) return Now*Mull;
+	if (!IntY)
+		return Now*Mull;
 	var/=IntY;
 	return(Now+var)*Mull;
 	}
+
+//int16_t TempOld, TempNew = 0;
 
 void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 {
@@ -87,7 +91,9 @@ int8_t nTimer,sTimerNext,sTimerPrev,sTimerMin,sTimerMax;
 int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 	eTimer xdata *pGD_CurrTimer;
 	eTimer xdata *pGD_NextTimer;
-
+	int16_t typeStartCorrection;
+	int16_t nextTimer = 0;
+	int16_t prevTimer = 0;
 	pGD_Hot_Tepl=&GD.Hot.Tepl[fnTeplLoad];
 	(*pGD_Hot_Tepl).AllTask.TAir=0;
 	IntZ=CtrTime+fsmTime;
@@ -98,12 +104,13 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 	MinTimeStart=1440;
 	sTimerNext=-1;
 	sTimerPrev=-1;
-	int16_t typeStartCorrection;
 	for (nTimer=0;nTimer<cSTimer;nTimer++) //20
 	{
-	typeStartCorrection = controlTypeStartCorrection(GD.Timer[nTimer].TypeStart, GD.Timer[nTimer].TimeStart, GD.Hot.Vosx, GD.Hot.Zax);
-        if (typeStartCorrection = -1)
-            typeStartCorrection = GD.Timer[nTimer].TimeStart;
+		pGD_Timer = &GD.Timer[nTimer];
+		typeStartCorrection = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
+		ClrDog;
+        //if (typeStartCorrection == -1)
+        //    typeStartCorrection = GD.Timer[nTimer].TimeStart;
 
         if (!typeStartCorrection)
             continue;
@@ -112,14 +119,15 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 
         if (typeStartCorrection<MinTimeStart)
         {
-            MinTimeStart=GD.Timer[nTimer].TimeStart;
+            MinTimeStart=typeStartCorrection;
             sTimerMin=nTimer;
         }
-        if (GD.Timer[nTimer].TimeStart>MaxTimeStart)
+        if (typeStartCorrection>MaxTimeStart)
         {
             MaxTimeStart=typeStartCorrection;
             sTimerMax=nTimer;
         }
+        ClrDog;
         if ((typeStartCorrection>=IntZ)&&(NextTimeStart>typeStartCorrection))
         {
             NextTimeStart=typeStartCorrection;
@@ -141,10 +149,14 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 
     pGD_CurrTimer=&GD.Timer[sTimerPrev];
     pGD_NextTimer=&GD.Timer[sTimerNext];
-
-    IntX=CtrTime-GD.Timer[sTimerPrev].TimeStart;
-    IntY=GD.Timer[sTimerNext].TimeStart-GD.Timer[sTimerPrev].TimeStart;
-
+    ClrDog;
+    pGD_Timer = &GD.Timer[sTimerPrev];
+    prevTimer = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
+    pGD_Timer = &GD.Timer[sTimerNext];
+    nextTimer = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
+    IntX= CtrTime - prevTimer;
+    IntY= nextTimer - prevTimer;
+    ClrDog;
 //        if (!GD.Timer[nTimer].TimeStart)
 //            continue;
 //        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
@@ -185,10 +197,14 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 //    IntX=CtrTime-GD.Timer[sTimerPrev].TimeStart;
 //    IntY=GD.Timer[sTimerNext].TimeStart-GD.Timer[sTimerPrev].TimeStart;
 	if (IntY<0)
-	{	IntY+=1440;}
+	{
+		IntY+=1440;
+	}
 
 	if (IntX<0)
-	{	IntX+=1440;}
+	{
+		IntX+=1440;
+	}
 
 	if (fsmTime) 
 	{
@@ -203,9 +219,12 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 //		(*pGD_Hot_Tepl).AllTask.NextRHAir=JumpNext(pGD_CurrTimer->RHAir,pGD_NextTimer->RHAir,1);	
 		return;
 	}
-
-
+	ClrDog;
 	(*pGD_Hot_Tepl).AllTask.TAir=JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+	//if ((*pGD_Hot_Tepl).AllTask.TAir - TempOld > 50)
+	//	NOP;
+	//TempOld = (*pGD_Hot_Tepl).AllTask.TAir;
+
 	//Блокировка нулевой темепратуры вентиляции
 	tVal=pGD_CurrTimer->TVentAir;
 	if (!tVal) tVal=pGD_CurrTimer->TAir+100;
@@ -688,6 +707,7 @@ void	DoVentCalorifer(void)
 		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
 }
 
+#warning вкл подсветки
 void	DoLights(void)
 {
 	if (YesBit((*(pGD_Hot_Hand+cHSmLight)).RCS,(/*cbNoMech+*/cbManMech))) return;
@@ -1105,6 +1125,8 @@ void SetMeteo(void)
 		GD.TControl.Tepl[0].TimeSumSens=0;
 	}
 }
+
+#warning light !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void SetLighting(void)
 {
 	char bZad;
@@ -1196,9 +1218,7 @@ void SetTepl(char fnTepl)
 			pGD_Hot_Tepl->OtherCalc.MeasDifPress=0;
 		SetReg(cHSmPressReg,
 			pGD_Hot_Tepl->AllTask.DoPressure,pGD_Hot_Tepl->OtherCalc.MeasDifPress);
-
 		LaunchVent();
-
 		SetLighting();
 	}
 }
@@ -1284,60 +1304,14 @@ void Control(void)
 char tCTepl,ttTepl;
 	Configuration();
 	SetDiskrSens();
-	if (DemoMode!=9)
-		DemoMode=0;
-	if (!DemoMode)
-	{
-		ClrAllOutIPCDigit();
-		OutR[0]=0;
-		OutR[1]=0;
-		OutR[2]=0;
-		OutR[3]=0;
-		OutR[4]=0;
-		OutR[5]=0;
-		OutR[6]=0;
-		OutR[7]=0;
-		OutR[8]=0;
-		OutR[9]=0;
-		OutR[10]=0;
-		SetAlarm();
-		for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
-		{
-			SetPointersOnTepl(tCTepl);
-			SetSensOnMech();
-			DoMechanics(tCTepl);
-			SetDiskr(tCTepl);
-			DoSiod();
-			DoPumps();
-//			CheckReadyMeasure();
-			DoVentCalorifer();
-			DoLights();
-//			DoPoisen();
-			RegWorkDiskr(cHSmCO2);
-			RegWorkDiskr(cHSmPressReg);
-#ifdef Vitebsk
-			TransferWaterToBoil();
-#endif
-		}
-		ResumeOutIPCDigit();
-		
-	}
-//	if (Second==12)
-//	{
-		//CLREA;
-//		while(1);
-//	}
-//		GD.Cal.InTeplSens[0][0].U0=0;
 	if ((!Menu)&&(ProgReset))
 	{
 		ProgReset=0;
 		TestMem(2);
 	}
-
 	#ifdef SumRelay48
 		//Reg48ToI2C();
 		//OutRelay88();
-
 	#else
 		#ifdef SumRelay40
 			OutRelay40();
@@ -1356,7 +1330,6 @@ char tCTepl,ttTepl;
 		if (Second==20)
 		{
 	        InitLCD();
-//	        GD.Control.ConfSTepl=10;
     	    ClrDog;
 			SetMeteo();
 		}
@@ -1390,7 +1363,6 @@ char tCTepl,ttTepl;
 					SetPointersOnTepl(tCTepl);
 					SetTepl(tCTepl);
 				}
-//------------------------------------------------
 				__sCalcKonturs();
 				__sMechWindows();
 				__sMechScreen();
@@ -1399,17 +1371,12 @@ char tCTepl,ttTepl;
 					if (GD.Hot.MaxReqWater<GD.Hot.Tepl[tCTepl].MaxReqWater)
 						GD.Hot.MaxReqWater=GD.Hot.Tepl[tCTepl].MaxReqWater;
 					bWaterReset[tCTepl]=0;
-//					GD.TControl.Tepl[tCTepl].Sensor[0].SumD=0;
-//					GD.TControl.Tepl[tCTepl].Sensor[0].SumD=0;
 				}
 			}
 		}
     vNFCtr=GD.Control.NFCtr;
     PORTNUM=DEF_PORTNUM;
-//	ToHiTime=GD.Control.Read1W;
-//	ToLowTime=GD.Control.Write1W;
   	MaskRas=bRasxod;
-
   	if (TecPerRas > 2305) {
         TecPerRas=2305;
         GD.TControl.NowRasx=0;
@@ -1427,19 +1394,10 @@ char tCTepl,ttTepl;
 	}	
 	Volume=0;
 	if( Second < 60) return;
-
 	WriteToFRAM();
 	MidlWindAndSr();
 	WindDirect();
-	//ReadFromFRAM();
-	//while(1);
-/*    if(GD.TControl.tCodTime) GD.TControl.tCodTime--; else {
-		GD.TControl.NowCod=0;
-#ifdef SumExtCG
-		SendFirstScreen(GD.Control.Screener);
-#endif
-	}
-*/
+
 #ifndef NOTESTMEM
 	if ((!Menu)&&(GD.SostRS==OUT_UNIT))
 		TestMem(1);
@@ -1447,9 +1405,6 @@ char tCTepl,ttTepl;
 	
 	ClrDog;
 	Second=0;
-//	w1_test();
-//	ds18b20_ConvertTemp();
-
 	if(TimeReset)
 		TimeReset--;
 	if(TimeReset<0)
@@ -1457,21 +1412,16 @@ char tCTepl,ttTepl;
 	GD.Hot.Time++;
 	GetRTC();
 	not=220;ton=10;
-/*	if ((bNight)&&(GD.Hot.Time>=GD.Hot.Vosx)&&(GD.Hot.Time<GD.Hot.Zax))
-	{
-		MemClr(&GD.TControl.Tepl[cSmTeplA].MidlSensDN,12);
-	}
-*/	bNight=1;
+
+	if (GD.Hot.Vosx != 0)
+		settingsVosx = GD.Hot.Vosx;
+	if (GD.Hot.Zax != 0)
+		settingsZax = GD.Hot.Zax;
+
+	bNight=1;
 	if ((GD.Hot.Time>=GD.Hot.Vosx)&&(GD.Hot.Time<GD.Hot.Zax))
 		bNight=0;
-/*	if((GD.Arx[0].Date!=GD.Hot.Data)&&(GD.Hot.Time>GD.Hot.Vosx)) 
-		{
-		
-//		SdvArx();
-//		GD.Arx[0].Date=GD.Hot.Data;
 
-		}
-*/
 	if(GD.Hot.Time>=24*60)      /*новые сутки*/
 		{
 		GD.Hot.Time=0;

@@ -107,6 +107,7 @@ void init_ip_arp_udp_tcp(unsigned char *mymac,unsigned char *myip,unsigned int w
 		}
 	}
 
+#warning Check IP byte !!!!!!!!!!!!!!!!!!!!!!!!
 unsigned char eth_type_is_arp_and_my_ip(unsigned char *buf,unsigned  int len)
 	{
 	unsigned char i=0;
