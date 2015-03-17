@@ -497,9 +497,9 @@ typedef struct eeTuneClimate
 		int16_t		c_RHOnMin2;
 
 		int16_t		CorrectionScreen; // экран понижает на
-		//int16_t		ScreenCloseSpeed; // скорость закрытия экрана  // NEW13
+		int16_t		ScreenCloseSpeed; // скорость закрытия экрана
 
-	    int16_t     Rez[15];
+	    int16_t     Rez[14];
 //282
        }
         eTuneClimate;
