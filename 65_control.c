@@ -38,10 +38,10 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
         //else return -1;
         break;
     case TYPE_START_AFTER_SUNSET:
-        //if ((sunSet + timeStart) > 1440)
-        //    return(sunSet + timeStart) % 1440;
-        //else return sunSet + timeStart;
-        return sunSet + timeStart;
+        if ((sunSet + timeStart) > 1440)
+            return(sunSet + timeStart) % 1440;
+        else return sunSet + timeStart;
+        //return sunSet + timeStart;
         break;
     case TYPE_START_BEFORE_SUNRISE:
         if (sunRise >= timeStart)
@@ -49,11 +49,10 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
         //else return -1;
         break;
     case TYPE_START_AFTER_SUNRISE:
-    	//return 559;
-        //if ((sunRise + timeStart) > 1440)
-        //    return(sunRise + timeStart) % 1440;
-        //else return sunRise + timeStart;
-    	return sunRise + timeStart;
+        if ((sunRise + timeStart) > 1440)
+            return(sunRise + timeStart) % 1440;
+        else return sunRise + timeStart;
+    	//return sunRise + timeStart;
         break;
     case TYPE_START_OFF:
         return timeStart;
@@ -296,6 +295,7 @@ void AllTaskAndCorrection(void)
 //		(*pGD_Hot_Tepl).AllTask.NextRHAir-=IntZ;		
 		}
 	/*---------------------------------------------------*/
+
 	/*Установка и коррекция по солнцу заданной концентрации СО2*/
 	if ((*pGD_Hot_Tepl).AllTask.CO2)
 		{
@@ -308,6 +308,7 @@ void AllTaskAndCorrection(void)
 		}
 	/*---------------------------------------------------*/
 	/*Установка и коррекция по солнцу минимальной температуры в контурах 1 и 2*/
+
 	if ((*pGD_Hot_Tepl).Kontur[cSmKontur1].MinTask)
 	{	
 		IntX=CorrectionRule(GD.TuneClimate.s_TStart[0],GD.TuneClimate.s_TEnd,
@@ -414,6 +415,7 @@ void SetIfReset(void)
 /**********************************************************************/
 /*-*-*-*-*--Нахождение прогнозируемого изменения температуры--*-*-*-*-*/
 /**********************************************************************/
+#warning Прогнозы температуры по внешним факторам !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void __cNextTCalc(char fnTepl)
 {
 	int	xdata CalcAllKontur;
@@ -432,7 +434,9 @@ void __cNextTCalc(char fnTepl)
 		pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat+GD.TuneClimate.c_MaxDifTUp;
 	if (GD.TuneClimate.c_MaxDifTDown)
 		pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
+
 	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-CURRENT_TEMP_VALUE;
+
 /**********************************************/
 /*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
 	pGD_Hot_Tepl->AllTask.Rez[0]=CURRENT_TEMP_VALUE;
@@ -449,9 +453,33 @@ void __cNextTCalc(char fnTepl)
 	(*pGD_Hot_Tepl).NextTCalc.UpSR=IntZ;
 /*Вычиляем увеличение от разницы температуры задания и стекла*/	
 	IntY=(*pGD_Hot_Tepl).AllTask.NextTAir-(*pGD_Hot_Tepl).InTeplSens[cSmGlassSens].Value;
+
 	CorrectionRule(GD.TuneClimate.c_GlassStart,GD.TuneClimate.c_GlassEnd,
 		GD.TuneClimate.c_GlassFactor,0);	
 	(*pGD_Hot_Tepl).NextTCalc.LowGlass=IntZ;
+
+	if ((*pGD_TControl_Tepl).Screen[0].Mode < 2)
+	//if ((*pGD_TControl_Tepl).Screen[0].Mode < 2)
+		(*pGD_Hot_Tepl).NextTCalc.CorrectionScreen = GD.TuneClimate.CorrectionScreen * (*pGD_TControl_Tepl).Screen[0].Mode;
+	//IntY = (*pGD_TControl_Tepl).Screen[0].Value;
+	//if ((*pGD_Hot_Tepl).AllTask.Screen[0] == 2)
+	//{
+	//	if ((*(pGD_Hot_Hand+cHSmScrTH+0)).Position)
+	//	{
+	//		CorrectionRule(100, 0, GD.TuneClimate.CorrectionScreen,0);
+	//		(*pGD_Hot_Tepl).NextTCalc.CorrectionScreen=IntZ;
+	//	}
+	//}
+//		screenOldPosiyion = screenTermoGetPossition();
+//
+//		if ((screenTermoGetPossition() != 0) && (screenTermoGetCurrentPossition() > 0))
+//		{
+//			CorrectionRule(100, 0, GD.TuneClimate.CorrectionScreen,0);
+//			(*pGD_Hot_Tepl).NextTCalc.CorrectionScreen=IntZ;
+	    // расчет. Экран понижает t отопление на
+		//GD.TuneClimate.CorrectionScreen
+//	}
+//		}
 
 	ClrDog;
 /*Вычисляем корректировки ветра фрамуг и разницы между температурой задания
@@ -479,7 +507,8 @@ void __cNextTCalc(char fnTepl)
 		+(*pGD_Hot_Tepl).NextTCalc.UpSR
 		-(*pGD_Hot_Tepl).NextTCalc.LowGlass
 		-(*pGD_Hot_Tepl).NextTCalc.LowOutWinWind
-		+(*pGD_Hot_Tepl).NextTCalc.UpLight;
+		+(*pGD_Hot_Tepl).NextTCalc.UpLight
+		-(*pGD_Hot_Tepl).NextTCalc.CorrectionScreen;
 
 //		-(*pGD_Hot_Tepl).NextTCalc.LowRain;
 	if (GD.TControl.bSnow)
@@ -707,7 +736,7 @@ void	DoVentCalorifer(void)
 		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
 }
 
-#warning вкл подсветки
+#warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void	DoLights(void)
 {
 	if (YesBit((*(pGD_Hot_Hand+cHSmLight)).RCS,(/*cbNoMech+*/cbManMech))) return;
@@ -1142,11 +1171,17 @@ void SetLighting(void)
 	ClrDog;
 	bZad=0;
 	if (pGD_TControl_Tepl->LightPauseMode) bZad=1;
-	if ((pGD_Hot_Tepl->AllTask.ModeLight<2))//&&(!bZad))
-	{ 		
-		pGD_TControl_Tepl->LightMode=pGD_Hot_Tepl->AllTask.ModeLight*pGD_Hot_Tepl->AllTask.Light;
-		bZad=1;
-	}		
+
+// old
+//	if ((pGD_Hot_Tepl->AllTask.ModeLight<2))//&&(!bZad))	// если режим досветки не авто
+//	{
+//		pGD_TControl_Tepl->LightMode=pGD_Hot_Tepl->AllTask.ModeLight*pGD_Hot_Tepl->AllTask.Light;
+//		bZad=1;
+//	}
+
+    pGD_TControl_Tepl->LightMode=pGD_Hot_Tepl->AllTask.ModeLight*pGD_Hot_Tepl->AllTask.Light;
+	bZad=1;
+
 	if (!bZad)
 	{
 		if (GD.Hot.Zax-60>GD.Hot.Time) pGD_TControl_Tepl->LightMode=0;
@@ -1179,7 +1214,20 @@ void SetLighting(void)
 //	pGD_TControl_Tepl->LightExtraPause--;
 //	if (pGD_TControl_Tepl->LightExtraPause>0) return; 
 //	pGD_TControl_Tepl->LightExtraPause=0;	 
-	pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;		
+
+	// new
+	if (pGD_Hot_Tepl->AllTask.ModeLight == 2)    		// авто досветка
+	{
+		if (pGD_Hot_Tepl->AllTask.Light > pGD_TControl_Tepl->LightMode)
+			pGD_TControl_Tepl->LightValue = pGD_Hot_Tepl->AllTask.Light;
+	}
+	else
+		pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;
+	// new
+
+
+	//old
+	//pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;		// значение досветки
 
 }
 

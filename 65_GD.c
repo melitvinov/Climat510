@@ -163,7 +163,9 @@ typedef struct eeNextTCalc {
 				
 				int16_t		PCorrectionVent;//Остаток от предыдущих расчетов	26
 
-				int16_t		Rez[10];
+				int16_t		CorrectionScreen; // экран понижает на
+
+				int16_t		Rez[9];
 
 				} eNextTCalc;
 typedef struct eeMechanic {  //20
@@ -408,8 +410,8 @@ typedef struct eeTuneClimate
 /*-----------------------------------
                 Параметры-Экран
 ------------------------------------*/
-		int16_t		sc_ZSRClose;/*Экран затеняющий - Солнце закрывает при*/
-		int16_t		sc_TSROpen;/*Экран термический - Солнце открывает при*/
+		int16_t		sc_ZSRClose; /*Экран затеняющий - Солнце закрывает при*/
+		int16_t		sc_TSROpen;  /*Экран термический - Солнце открывает при*/
 		int16_t		sc_TOutClose;/*Экран термический - Твнеш днем закрывает при*/
 		int16_t		sc_TVOutClose;/*Экран термический - Твнеш ночью закрывает при*/
 
@@ -465,9 +467,9 @@ typedef struct eeTuneClimate
 /*-----------------------------------------
 				Параметры - ОБЩИЕ
 ------------------------------------------*/
-        int16_t     sc_dTStart;   /*Коэффициент усреднения солнечой радиации*/
-        int16_t     sc_dTEnd;/*Коэффициент усреднения ветра*/
-        int16_t     sc_dTSunFactor;/*Коэффициент упреждения*/
+        int16_t     sc_dTStart;     /*Коэффициент усреднения солнечой радиации*/
+        int16_t     sc_dTEnd;	    /*Коэффициент усреднения ветра*/
+        int16_t     sc_dTSunFactor;	/*Коэффициент упреждения*/
 /*-----------------------------------------
 				Параметры - коррекция по влажности темпеатуры задания
 ------------------------------------------*/
@@ -494,11 +496,14 @@ typedef struct eeTuneClimate
 		int16_t		c_RHOnMin1;
 		int16_t		c_RHOnMin2;
 
+		int16_t		CorrectionScreen; // экран понижает на
+		//int16_t		ScreenCloseSpeed; // скорость закрытия экрана  // NEW13
 
-	    int16_t     Rez[16];
-//280		
+	    int16_t     Rez[15];
+//282
        }
         eTuneClimate;
+
 typedef struct eeTeplControl
 	   	{
        	int16_t     c_MaxTPipe[cSWaterKontur];   /*Максимально допустимая температура Контур1-5*/
@@ -513,8 +518,8 @@ typedef struct eeTeplControl
         int16_t     f_PFactor; /*Контур 1 - Динамика(Тзад-Тизм)понижает на*/
 		int8_t		vs_DegSt; //Градусы для вычисления позиции экрана
 		int8_t		vs_DegEnd; //Градусы для вычисления позиции экрана
-		int16_t		sc_TMaxOpen;
-		int16_t		sc_ZMaxOpen;
+		int16_t		sc_TMaxOpen; // экран термический
+		int16_t		sc_ZMaxOpen; // экран затеняющий
 		uint16_t	co_model;/*СО2 - исполнитель(0-регулятор,1-клапан)*/
 		uint16_t	sio_SVal;
 		uint16_t	sLight;

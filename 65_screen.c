@@ -22,21 +22,25 @@ void CheckModeScreen(char typScr,char chType)
 	IntZ=GD.TControl.MeteoSensing[cSmOutTSens];
 	switch(chType) 
 	{
-	case 0:
+	case 0:	// термический горизонтальный экран
 		
 		if (!bZad)
 		{
-			if (IntZ<GD.TuneClimate.sc_TOutClose) pScr->Mode=1;
-			if ((IntZ>GD.TuneClimate.sc_TOutClose+200)||(!GD.TuneClimate.sc_TOutClose)) pScr->Mode=0;
+			if (IntZ<GD.TuneClimate.sc_TOutClose)
+				pScr->Mode=1;
+			if ((IntZ>GD.TuneClimate.sc_TOutClose+200)||(!GD.TuneClimate.sc_TOutClose))
+				pScr->Mode=0;
 			if (GD.TuneClimate.sc_TSROpen)
 			{
-				if (GD.Hot.MidlSR>GD.TuneClimate.sc_TSROpen) pScr->Mode=0;
+				if (GD.Hot.MidlSR>GD.TuneClimate.sc_TSROpen)
+					pScr->Mode=0;
 			}
 			else
 				if (!bNight) pScr->Mode=0;
 			if (YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,cbDownAlarmSens))
 				pScr->Mode=1;
-			if((GD.TuneClimate.sc_ZSRClose)&&(GD.Hot.MidlSR>SunZClose)) pScr->Mode=1;
+			if((GD.TuneClimate.sc_ZSRClose)&&(GD.Hot.MidlSR>SunZClose))
+				pScr->Mode=1;
 		}
 		if 	(pScr->Mode!=pScr->OldMode)
 		{
@@ -55,7 +59,7 @@ void CheckModeScreen(char typScr,char chType)
 		IntY=pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value;
 		CorrectionRule(GD.TuneClimate.sc_GlassStart,GD.TuneClimate.sc_GlassEnd,GD.TuneClimate.sc_GlassMax,0);
 		if ((YesBit(pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) IntZ=GD.TuneClimate.sc_GlassMax;
-		pScr->Value=pScr->Mode*(pGD_Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-IntZ));		
+		pScr->Value=pScr->Mode*(pGD_Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-IntZ));	  // итоговое значение открытия экрана
 /*Влияние разницы влажности на открытие экрана
 		IntY=pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value-pGD_Hot_Tepl->AllTask.DoRHAir;
 		CorrectionRule(GD.TuneClimate.sc_RHStart,GD.TuneClimate.sc_RHEnd,GD.TuneClimate.sc_RHMax,0);
@@ -70,7 +74,8 @@ void CheckModeScreen(char typScr,char chType)
 				pScr->Mode=1;
 			if ((!pGD_TControl_Tepl->Screen[0].Mode)||(IntZ>GD.TuneClimate.sc_ZOutClose+200)||(!GD.TuneClimate.sc_ZOutClose))
 				pScr->Mode=0;
-			if((GD.TuneClimate.sc_ZSRClose)&&(GD.Hot.MidlSR>SunZClose)) pScr->Mode=1;
+			if((GD.TuneClimate.sc_ZSRClose)&&(GD.Hot.MidlSR>SunZClose))
+				pScr->Mode=1;
 		}
 		if 	(pScr->Mode!=pScr->OldMode)
 			pScr->PauseMode=GD.TuneClimate.sc_PauseMode;
@@ -82,8 +87,10 @@ void CheckModeScreen(char typScr,char chType)
 		{
 			ByteX=0;
 			ByteZ=0;
-			if (IntZ<GD.TuneClimate.sc_TVOutClose) pScr->Mode=1;
-			if ((IntZ>GD.TuneClimate.sc_TVOutClose+200)||(!GD.TuneClimate.sc_TVOutClose)) pScr->Mode=0;
+			if (IntZ<GD.TuneClimate.sc_TVOutClose)
+				pScr->Mode=1;
+			if ((IntZ>GD.TuneClimate.sc_TVOutClose+200)||(!GD.TuneClimate.sc_TVOutClose))
+				pScr->Mode=0;
 			if ((GD.Hot.MidlSR>GD.TuneClimate.sc_TVSRMaxOpen)&&(GD.TuneClimate.sc_TVSRMaxOpen))
 				pScr->Mode=0;
 		}
@@ -105,11 +112,7 @@ void InitScreen(char typScr)
 		(pScr->PauseMode>GD.TuneClimate.sc_PauseMode))
 		pScr->PauseMode=0;
 	CheckModeScreen(typScr,typScr);
-
-
-
 }
-
 
 void SetPosScreen(char typScr)
 {
@@ -117,16 +120,16 @@ void SetPosScreen(char typScr)
     eScreen *pScr;
 	char step;
 
-	pScr=&pGD_TControl_Tepl->Screen[typScr];
+	pScr=&pGD_TControl_Tepl->Screen[typScr];  // итоговая позиция экрана
 
     pMech=&((*(pGD_Hot_Hand+cHSmScrTH+typScr)).Position);
-	
+
 	if (YesBit((*(pGD_Hot_Hand+cHSmScrTH+typScr)).RCS,/*(cbNoMech+*/cbManMech)) return;
 
 	if(pScr->Pause<0) pScr->Pause=0;
 	if(pScr->Pause) {pScr->Pause--;return;}
 	
-	ByteX=(*pMech);
+	ByteX=(*pMech);    //  текущее положение экрана
 	IntZ=pScr->Value;	
 
 	if (!typScr) // Только если термический, то произвести коррекцию

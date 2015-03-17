@@ -44,6 +44,8 @@ bit     BlkW;
 unsigned char   Second;
 
 
+//int16_t screenMaxPosition;
+//int16_t screenCurPosition;
 
 
 //int16_t    	Mes;

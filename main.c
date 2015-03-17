@@ -1,5 +1,5 @@
 
-#define DEBUG
+//#define DEBUG
 //#define AHU
 #define AGAPOVSKIY_DOUBLE_VALVE
 //#define SIO_PAUSE	1
@@ -22,7 +22,7 @@
 #ifdef AHU
 #define cModification	16+4
 #else
-#define cModification	16
+#define cModification	16+1
 #endif
 
 /*Модификация ПО контроллера*/
