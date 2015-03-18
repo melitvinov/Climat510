@@ -461,6 +461,10 @@ void __cNextTCalc(char fnTepl)
 	if ((*pGD_TControl_Tepl).Screen[0].Mode < 2)
 	//if ((*pGD_TControl_Tepl).Screen[0].Mode < 2)
 		(*pGD_Hot_Tepl).NextTCalc.CorrectionScreen = GD.TuneClimate.CorrectionScreen * (*pGD_TControl_Tepl).Screen[0].Mode;
+
+	//vdv
+	//if ((*pGD_TControl_Tepl).Screen[0].Mode)
+
 	//IntY = (*pGD_TControl_Tepl).Screen[0].Value;
 	//if ((*pGD_Hot_Tepl).AllTask.Screen[0] == 2)
 	//{

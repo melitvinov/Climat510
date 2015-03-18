@@ -59,7 +59,12 @@ void CheckModeScreen(char typScr,char chType)
 		IntY=pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value;
 		CorrectionRule(GD.TuneClimate.sc_GlassStart,GD.TuneClimate.sc_GlassEnd,GD.TuneClimate.sc_GlassMax,0);
 		if ((YesBit(pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) IntZ=GD.TuneClimate.sc_GlassMax;
-		pScr->Value=pScr->Mode*(pGD_Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-IntZ));	  // итоговое значение открытия экрана
+		{
+			pScr->Value=pScr->Mode*(pGD_Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-IntZ));	  // итоговое значение открытия экрана
+			if (pScr->Mode==0) // если экран закрывается
+				pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
+		}
+
 /*Влияние разницы влажности на открытие экрана
 		IntY=pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value-pGD_Hot_Tepl->AllTask.DoRHAir;
 		CorrectionRule(GD.TuneClimate.sc_RHStart,GD.TuneClimate.sc_RHEnd,GD.TuneClimate.sc_RHMax,0);
