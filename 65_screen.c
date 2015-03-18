@@ -61,8 +61,8 @@ void CheckModeScreen(char typScr,char chType)
 		if ((YesBit(pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) IntZ=GD.TuneClimate.sc_GlassMax;
 		{
 			pScr->Value=pScr->Mode*(pGD_Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-IntZ));	  // итоговое значение открытия экрана
-			if (pScr->Mode==0) // если экран закрывается
-				pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
+			//if (pScr->Mode==0) // если экран закрывается
+			//	pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
 		}
 
 /*Влияние разницы влажности на открытие экрана
@@ -126,7 +126,6 @@ void SetPosScreen(char typScr)
 	char step;
 
 	pScr=&pGD_TControl_Tepl->Screen[typScr];  // итоговая позиция экрана
-
     pMech=&((*(pGD_Hot_Hand+cHSmScrTH+typScr)).Position);
 
 	if (YesBit((*(pGD_Hot_Hand+cHSmScrTH+typScr)).RCS,/*(cbNoMech+*/cbManMech)) return;
@@ -154,11 +153,15 @@ void SetPosScreen(char typScr)
 	{
 		step=GD.TuneClimate.sc_StepS2Zone;
 		pScr->Pause=GD.TuneClimate.sc_StepP2Zone;
+	    if ((pScr->Mode == 0) && (!typScr))
+	    	step = step * GD.TuneClimate.ScreenCloseSpeed;
 	}
 	if (ByteX>=GD.TuneClimate.sc_StartP1Zone)	 
 	{
 		step=GD.TuneClimate.sc_StepS1Zone;
 		pScr->Pause=GD.TuneClimate.sc_StepP1Zone;
+		if ((pScr->Mode == 0) && (!typScr))
+	    	step = step * GD.TuneClimate.ScreenCloseSpeed;
 	}
 	IntX=((int)(ByteX))-IntZ;
 	if (IntX>0)
