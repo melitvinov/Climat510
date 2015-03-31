@@ -153,14 +153,14 @@ void SetPosScreen(char typScr)
 	{
 		step=GD.TuneClimate.sc_StepS2Zone;
 		pScr->Pause=GD.TuneClimate.sc_StepP2Zone;
-	    if ((pScr->Mode == 0) && (!typScr))
+	    if ((pScr->Mode == 1) && (!typScr))
 	    	step = step * GD.TuneClimate.ScreenCloseSpeed;
 	}
 	if (ByteX>=GD.TuneClimate.sc_StartP1Zone)	 
 	{
 		step=GD.TuneClimate.sc_StepS1Zone;
 		pScr->Pause=GD.TuneClimate.sc_StepP1Zone;
-		if ((pScr->Mode == 0) && (!typScr))
+		if ((pScr->Mode == 1) && (!typScr))
 	    	step = step * GD.TuneClimate.ScreenCloseSpeed;
 	}
 	IntX=((int)(ByteX))-IntZ;
