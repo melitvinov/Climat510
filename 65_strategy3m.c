@@ -1,3 +1,117 @@
+/*!
+\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t strategyGetTempVent()
+{
+	int16_t	tempVent;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_vent)
+		{
+			case 0: // sensor temp 1
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempVent = temp;
+			}
+			break;
+		}
+		return tempVent;
+}
+
+/*!
+\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t strategyGetTempHeat()
+{
+	int16_t	tempHeat;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_heat)
+		{
+			case 0: // sensor temp 1
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempHeat = temp;
+			}
+			break;
+		}
+		return tempHeat;
+}
+
 /**************************************************************************/
 /*-*-*-*-*-*-*--Процедура установки границ для водных контуров--*-*-*-*-*-*/
 /**************************************************************************/
@@ -648,10 +762,12 @@ void __WorkableKontur(char fnKontur)
 //------------------------------------------------------------------------
 //Установить бит возможности работы насосом
 //------------------------------------------------------------------------
+#warning CHECK THIS
+// NEW
 		if ((!(*pGD_TControl_Tepl_Kontur).PumpStatus)&&(pGD_TControl_Tepl->Critery>0)&&(fnKontur<cSmKontur5))
 		{
 			if  ((GD.Hot.MidlSR<GD.TuneClimate.f_MinSun)&&(pGD_Hot_Tepl->AllTask.NextTAir-GD.TControl.MeteoSensing[cSmOutTSens]>GD.TuneClimate.f_DeltaOut)||
-			((CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTHeat)<0)&&(((pGD_Control_Tepl->c_PFactor%100)<90)||(pGD_TControl_Tepl->StopVentI>0)))
+			((strategyGetTempHeat()-(*pGD_Hot_Tepl).AllTask.DoTHeat)<0)&&(((pGD_Control_Tepl->c_PFactor%100)<90)||(pGD_TControl_Tepl->StopVentI>0)))
 			{
 				SetBit((*pGD_Hot_Tepl_Kontur).ExtRCS,cbReadyPumpKontur);
 		    	if ((pGD_TControl_Tepl_Kontur->NAndKontur==1)&&(!pGD_TControl_Tepl->qMaxOwnKonturs)) pGD_TControl_Tepl_Kontur->RealPower[1]+=100;
@@ -926,14 +1042,16 @@ void __sLastCheckWindow(void)
 	if (DoOn>MaxOn)
 		DoOn=MaxOn;
 
-   	IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;
-	if (((DoUn==MaxUn)&&(DoOn==MaxOn)&&(IntY>0))
+   	//IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;   // было
+#warning CHECK THIS
+// NEW
+	IntY=strategyGetTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
+
+   	if (((DoUn==MaxUn)&&(DoOn==MaxOn)&&(IntY>0))
 	|| ((DoUn==MinUn)&&(DoOn==MinOn)&&(IntY<0)))
 		pGD_TControl_Tepl->StopVentI++;
 	else
 		pGD_TControl_Tepl->StopVentI=0;
-
-
 		
 	if (pGD_TControl_Tepl->StopVentI>cMaxStopI) pGD_TControl_Tepl->StopVentI=cMaxStopI;
 
@@ -1085,7 +1203,7 @@ void __sCalcKonturs(void)
 
 //		if(!(*pGD_Hot_Tepl).AllTask.NextTAir) return;
 
-//Определение направления нагрев аили охлаждени
+//Определение направления нагрев или охлаждени
 		pGD_TControl_Tepl->CurrPower=0;
 		if (pGD_TControl_Tepl->Critery>0)
 			pGD_TControl_Tepl->CurrPower=1;

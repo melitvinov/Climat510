@@ -4,7 +4,10 @@
 #define EdSens(ns)         TxtEd(ns)
 
 
-#define CURRENT_TEMP_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens].Value)  //(pGD_TControl_Tepl->LastLastInTeplSensing[cSmTSens])
+#define CURRENT_TEMP1_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value)
+#define CURRENT_TEMP2_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
+#define CURRENT_TEMP3_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens3].Value)
+#define CURRENT_TEMP4_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens4].Value)
 
 /*-------------------------------------------
 		Вывод единиц измерения

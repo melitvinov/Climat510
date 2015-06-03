@@ -1,3 +1,117 @@
+/*!
+\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t screenGetTempVent()
+{
+	int16_t	tempVent;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_vent)
+		{
+			case 0: // sensor temp 1
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempVent = temp;
+			}
+			break;
+		}
+		return tempVent;
+}
+
+/*!
+\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t screenGetTempHeat()
+{
+	int16_t	tempHeat;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_heat)
+		{
+			case 0: // sensor temp 1
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempHeat = temp;
+			}
+			break;
+		}
+		return tempHeat;
+}
+
 void CheckModeScreen(char typScr,char chType)
 {
 //Оптимицация на typScr
@@ -16,7 +130,10 @@ void CheckModeScreen(char typScr,char chType)
 		pScr->Mode=pGD_Hot_Tepl->AllTask.Screen[ttyp];
 		bZad=1;
 	}
-	IntY=CURRENT_TEMP_VALUE-pGD_Hot_Tepl->AllTask.DoTHeat;
+
+#warning CHECK THIS
+	// NEW
+	IntY=screenGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sc_dTStart,GD.TuneClimate.sc_dTEnd,GD.TuneClimate.sc_dTSunFactor,0);
 	SunZClose=GD.TuneClimate.sc_ZSRClose-IntZ;
 	IntZ=GD.TControl.MeteoSensing[cSmOutTSens];
@@ -37,8 +154,13 @@ void CheckModeScreen(char typScr,char chType)
 			}
 			else
 				if (!bNight) pScr->Mode=0;
-			if (YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,cbDownAlarmSens))
+
+#warning CHECK THIS
+			if (YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
 				pScr->Mode=1;
+
+
+
 			if((GD.TuneClimate.sc_ZSRClose)&&(GD.Hot.MidlSR>SunZClose))
 				pScr->Mode=1;
 		}
@@ -200,11 +322,12 @@ void LaunchVent(void)
 		pGD_TControl_Tepl->Vent=0;
 		return;
 	}
+#warning CHECK THIS
+	// NEW
 	IntY=0;
-	if (pGD_Hot_Tepl->InTeplSens[cSmTCSens].Value)
+	if (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 	{
-		IntY=CURRENT_TEMP_VALUE
-			-pGD_Hot_Tepl->InTeplSens[cSmTCSens].Value;
+		IntY= screenGetTempVent()-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
 		if (IntY<0)
 			IntY=-IntY;
 	}
@@ -229,10 +352,13 @@ void LaunchVent(void)
 void LaunchCalorifer(void)
 {
 	if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
-	if(CURRENT_TEMP_VALUE<(pGD_Hot_Tepl->AllTask.DoTHeat
+
+#warning CHECK THIS
+	// NEW
+	if(screenGetTempHeat()<(pGD_Hot_Tepl->AllTask.DoTHeat
 		-GD.TuneClimate.vt_StartCalorifer))
 		SetBit(pGD_TControl_Tepl->Calorifer,0x01);
-	if ((CURRENT_TEMP_VALUE>(pGD_Hot_Tepl->AllTask.DoTHeat
+	if ((screenGetTempHeat()>(pGD_Hot_Tepl->AllTask.DoTHeat
 		+GD.TuneClimate.vt_EndCalorifer))||(!GD.TuneClimate.vt_StartCalorifer)) 
 		ClrBit(pGD_TControl_Tepl->Calorifer,0x01);
 //		pGD_TControl_Tepl->Calorifer=0;

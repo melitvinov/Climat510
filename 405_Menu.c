@@ -140,7 +140,10 @@ void pmInfoProg405(void){
 		w_int(&GD.Hot.Tepl[ByteY].AllTask.DoTVent,SSpS0);
 		Ad_Buf++;
 		w_txt(Mes42);
-		w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens].Value,SSpS0);
+		w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens1].Value,SSpS0);
+		w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens2].Value,SSpS0);
+		w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens3].Value,SSpS0);
+		w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens4].Value,SSpS0);
 		return;
 	}
 	if (ByteZ==1)
@@ -792,7 +795,10 @@ void pmNow(void) {
 	Ad_Buf=Str3;
 	w_txt(" T  | RH |CO2 |Tp1 |Tp2 |Tp3 |Tp4 |Tp5");
     Ad_Buf=Str4;
-	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens].Value,SSpS0);
+	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens1].Value,SSpS0);
+	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens2].Value,SSpS0);
+	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens3].Value,SSpS0);
+	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens4].Value,SSpS0);
 	buf[Ad_Buf++]='|';
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmRHSens].Value,SSpS0);
 	buf[Ad_Buf++]='|';

@@ -10,6 +10,119 @@
 /**************************************************/
 /*------------------------------------------------*/
 
+/*!
+\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t controlGetTempVent()
+{
+	int16_t	tempVent;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_vent)
+		{
+			case 0: // sensor temp 1
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempVent = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempVent = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempVent = temp;
+			}
+			break;
+		}
+		return tempVent;
+}
+
+/*!
+\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t controlGetTempHeat()
+{
+	int16_t	tempHeat;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_heat)
+		{
+			case 0: // sensor temp 1
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempHeat = temp;
+			}
+			break;
+		}
+		return tempHeat;
+}
 
 /*!
 \brief Таблица типов старта
@@ -218,8 +331,13 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 //		(*pGD_Hot_Tepl).AllTask.NextRHAir=JumpNext(pGD_CurrTimer->RHAir,pGD_NextTimer->RHAir,1);	
 		return;
 	}
+#warning temp !!!!!!!!!!!!!!!!!!!!!!!!!!
 	ClrDog;
+
+	// T отопления, в зависимости что стоит в параметрах упраления, то и ставим в температуру
 	(*pGD_Hot_Tepl).AllTask.TAir=JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+
+
 	//if ((*pGD_Hot_Tepl).AllTask.TAir - TempOld > 50)
 	//	NOP;
 	//TempOld = (*pGD_Hot_Tepl).AllTask.TAir;
@@ -227,7 +345,10 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 	//Блокировка нулевой темепратуры вентиляции
 	tVal=pGD_CurrTimer->TVentAir;
 	if (!tVal) tVal=pGD_CurrTimer->TAir+100;
+
+	// T вентиляции
 	(*pGD_Hot_Tepl).AllTask.DoTVent=JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
+
 	(*pGD_Hot_Tepl).AllTask.SIO=pGD_CurrTimer->SIO;
 	(*pGD_Hot_Tepl).AllTask.RHAir=JumpNext(pGD_CurrTimer->RHAir_c,pGD_NextTimer->RHAir_c,1,100);
 	(*pGD_Hot_Tepl).AllTask.CO2=JumpNext(pGD_CurrTimer->CO2,pGD_NextTimer->CO2,1,1);
@@ -428,19 +549,40 @@ void __cNextTCalc(char fnTepl)
 		SetIfReset();
 	}
 /*Расчитываем Тизмерения-Тзадания*/
-	pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=0;
-	pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=0;
-	if (GD.TuneClimate.c_MaxDifTUp)
-		pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat+GD.TuneClimate.c_MaxDifTUp;
-	if (GD.TuneClimate.c_MaxDifTDown)
-		pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
+//	pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=0;
+//	pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=0;
 
-	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-CURRENT_TEMP_VALUE;
+//	if (GD.TuneClimate.c_MaxDifTUp)
+//		pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat+GD.TuneClimate.c_MaxDifTUp;
+//	if (GD.TuneClimate.c_MaxDifTDown)
+//		pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
 
+//	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-CURRENT_TEMP_VALUE;
 /**********************************************/
 /*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
-	pGD_Hot_Tepl->AllTask.Rez[0]=CURRENT_TEMP_VALUE;
-	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-CURRENT_TEMP_VALUE);
+//	pGD_Hot_Tepl->AllTask.Rez[0]=CURRENT_TEMP_VALUE;
+//	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-CURRENT_TEMP_VALUE);
+
+#warning NEW CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// смотря по какому датчику работаем того и считаем
+// ---------------------
+// NEW
+	int cSmTSens=0;
+	for (cSmTSens=0; cSmTSens<4; cSmTSens++)  // 4 датчика температуры
+	{
+		pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=0;
+		pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=0;
+		if (GD.TuneClimate.c_MaxDifTUp)
+			pGD_Level_Tepl[cSmTSens][cSmUpAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat+GD.TuneClimate.c_MaxDifTUp;
+		if (GD.TuneClimate.c_MaxDifTDown)
+			pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
+	}
+
+	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-controlGetTempVent();
+	/**********************************************/
+	/*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
+	pGD_Hot_Tepl->AllTask.Rez[0]=controlGetTempHeat();
+	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-controlGetTempHeat());
 
 /**********************************************/	
 /*Вычиляем увеличение от солнечной радиации*/
@@ -614,7 +756,7 @@ void __cNextTCalc(char fnTepl)
 /******************************************************************
 		Далее расчет критерия для фрамуг
 *******************************************************************/
-	IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	IntY=controlGetTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
 
 	(*pGD_Hot_Tepl).NextTCalc.PCorrectionVent=((int)((((long)(IntY))*((long)pGD_Control_Tepl->f_PFactor))/100));
 	if (pGD_TControl_Tepl->StopVentI<2)
@@ -662,8 +804,6 @@ void __cNextTCalc(char fnTepl)
 		}
 	} 
 	(*pGD_Hot_Tepl).NextTCalc.TVentCritery=(*pGD_TControl_Tepl).TVentCritery;
-
-
 
 }
 
@@ -809,13 +949,26 @@ void SetAlarm(void)
 	{
 		SetPointersOnTepl(fnTepl);	
 		pGD_TControl_Tepl->bAlarm=0;
-		if ((YesBit(pGD_Hot_Tepl->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
-			||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-			||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+		//if ((YesBit(pGD_Hot_Tepl->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
+		//	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+		//	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+		//{
+		//	__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
+		//	pGD_TControl_Tepl->bAlarm=100;
+		//}
+
+#warning CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// теперь мы не знаем какой датчик работает какой нет, мы проверяем что бы работали все.
+		// NEW
+		if ((YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens1].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens2].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens3].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens4].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
 		{
 			__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
 			pGD_TControl_Tepl->bAlarm=100;
 		}
+
 		for(ByteX=0;ByteX<cConfSSens;ByteX++)
 		{
 			if (YesBit(pGD_Hot_Tepl->InTeplSens[ByteX].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
@@ -1244,8 +1397,19 @@ void SetTepl(char fnTepl)
 /***********************************************************************/
 	if(!(*pGD_Hot_Tepl).AllTask.NextTAir)
 		SetBit((*pGD_Hot_Tepl).RCS,cbNoTaskForTepl);
-	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens].Value)
+
+//	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens].Value)
+//		SetBit((*pGD_Hot_Tepl).RCS,cbNoSensingTemp);
+// NEW
+	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens1].Value)
 		SetBit((*pGD_Hot_Tepl).RCS,cbNoSensingTemp);
+	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens2].Value)
+		SetBit((*pGD_Hot_Tepl).RCS,cbNoSensingTemp);
+	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens3].Value)
+		SetBit((*pGD_Hot_Tepl).RCS,cbNoSensingTemp);
+	if(!(*pGD_Hot_Tepl).InTeplSens[cSmTSens4].Value)
+		SetBit((*pGD_Hot_Tepl).RCS,cbNoSensingTemp);
+
 //	if(!(*pGD_Hot_Tepl).RCS)
 	{	
 		AllTaskAndCorrection();

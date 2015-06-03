@@ -20,16 +20,23 @@
 #define cSmMainTSens	6
 #define cSmPresureSens	8
 
-#define cSmTSens		0
+//#define cSmTSens		0
+// NEW
+#define cSmTSens1		0
+#define cSmTSens2		1
+#define cSmTSens3		2
+#define cSmTSens4		3
+
 #define cSmRHSens		4
 #define cSmInLightSens	6
 #define cSmRoofSens		12
 #define cSmGlassSens	14
 #define cSmCOSens		7
-#define cSmTCSens		1
+#warning CHECK THIS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#define cSmTCSens		1
 #define cSmWinNSens		17
 #define cSmWinSSens		18
-#define cSmScreenSens		19
+#define cSmScreenSens	19
 #define cSmWaterSens	20
 
 

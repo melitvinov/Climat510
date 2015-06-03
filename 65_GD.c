@@ -68,6 +68,7 @@ typedef struct  eeTimer
 
 		uchar		MinTPipe3;
 		uchar		RHAir_c;
+
 		uint16_t	Rez[10];
         }
         eTimer;
@@ -523,7 +524,11 @@ typedef struct eeTeplControl
 		uint16_t	co_model;/*СО2 - исполнитель(0-регулятор,1-клапан)*/
 		uint16_t	sio_SVal;
 		uint16_t	sLight;
-		int16_t		Rez[20];
+		int8_t		sensT_heat;
+		int8_t		sensT_vent;
+
+
+		int16_t		Rez[19];
 //+42 байта
 		} eTeplControl;
 

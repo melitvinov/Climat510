@@ -3,6 +3,62 @@
 #define cSIOFazaPause	3
 #define cSIOFazaEnd		4
 
+/*!
+\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t soidGetTempHeat()
+{
+	int16_t	tempHeat;
+	int16_t temp = 0;
+	int16_t i;
+		switch (pGD_Control_Tepl->sensT_heat)
+		{
+			case 0: // sensor temp 1
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 1: // sensor temp 2
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 2: // sensor temp 3
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 3: // sensor temp 4
+				tempHeat = CURRENT_TEMP1_VALUE;
+			break;
+			case 4: // min
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 5: // max
+			{
+				temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
+				for (i=1;i<4;i++)
+				{
+					if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
+						temp = pGD_Hot_Tepl->InTeplSens[i].Value;
+				}
+				tempHeat = temp;
+			}
+			break;
+			case 6: // average
+			{
+				for (i=0;i<4;i++)
+					temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
+				temp = temp / 4;
+				tempHeat = temp;
+			}
+			break;
+		}
+		return tempHeat;
+}
 
 void SetUpSiod(char fnTepl)
 {
@@ -22,12 +78,16 @@ void SetUpSiod(char fnTepl)
 	if ((((pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value-pGD_Hot_Tepl->AllTask.DoRHAir)>GD.TuneClimate.sio_RHStop)
 		||(pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value>9600))
 		&&(pGD_Hot_Tepl->AllTask.DoRHAir)) return;
-	if ((pGD_Hot_Tepl->AllTask.DoTHeat-CURRENT_TEMP_VALUE)>GD.TuneClimate.sio_TStop) return;
-	if (((CURRENT_TEMP_VALUE-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
+
+
+#warning CHECK THIS
+// NEW
+	if ((pGD_Hot_Tepl->AllTask.DoTHeat-soidGetTempHeat())>GD.TuneClimate.sio_TStop) return;
+	if (((soidGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
 		&&(((pGD_Hot_Tepl->AllTask.DoRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value)<GD.TuneClimate.sio_RHStart)
 		||(!pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value))) return;	
 
-	IntY=CURRENT_TEMP_VALUE-pGD_Hot_Tepl->AllTask.DoTHeat;
+	IntY=soidGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sio_TStart,GD.TuneClimate.sio_TEnd,GD.TuneClimate.sio_TStartFactor-GD.TuneClimate.sio_TEndFactor,0);
 	IntX=(int)(GD.TuneClimate.sio_TStartFactor-IntZ);
 
