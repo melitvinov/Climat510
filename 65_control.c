@@ -1520,6 +1520,9 @@ void Control(void)
 char tCTepl,ttTepl;
 	Configuration();
 	SetDiskrSens();
+
+	ResumeOutIPCDigit();
+
 	if ((!Menu)&&(ProgReset))
 	{
 		ProgReset=0;
