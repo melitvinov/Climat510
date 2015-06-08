@@ -13,13 +13,13 @@ int16_t strategyGetTempVent()
 				tempVent = CURRENT_TEMP1_VALUE;
 			break;
 			case 1: // sensor temp 2
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP2_VALUE;
 			break;
 			case 2: // sensor temp 3
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP3_VALUE;
 			break;
 			case 3: // sensor temp 4
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP4_VALUE;
 			break;
 			case 4: // min
 			{
@@ -70,13 +70,13 @@ int16_t strategyGetTempHeat()
 				tempHeat = CURRENT_TEMP1_VALUE;
 			break;
 			case 1: // sensor temp 2
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP2_VALUE;
 			break;
 			case 2: // sensor temp 3
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP3_VALUE;
 			break;
 			case 3: // sensor temp 4
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP4_VALUE;
 			break;
 			case 4: // min
 			{

@@ -25,13 +25,13 @@ int16_t controlGetTempVent()
 				tempVent = CURRENT_TEMP1_VALUE;
 			break;
 			case 1: // sensor temp 2
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP2_VALUE;
 			break;
 			case 2: // sensor temp 3
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP3_VALUE;
 			break;
 			case 3: // sensor temp 4
-				tempVent = CURRENT_TEMP1_VALUE;
+				tempVent = CURRENT_TEMP4_VALUE;
 			break;
 			case 4: // min
 			{
@@ -75,20 +75,20 @@ int16_t controlGetTempHeat()
 {
 	int16_t	tempHeat;
 	int16_t temp = 0;
-	int16_t i;
+	int16_t i=0;
 		switch (pGD_Control_Tepl->sensT_heat)
 		{
 			case 0: // sensor temp 1
 				tempHeat = CURRENT_TEMP1_VALUE;
 			break;
 			case 1: // sensor temp 2
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP2_VALUE;
 			break;
 			case 2: // sensor temp 3
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP3_VALUE;
 			break;
 			case 3: // sensor temp 4
-				tempHeat = CURRENT_TEMP1_VALUE;
+				tempHeat = CURRENT_TEMP4_VALUE;
 			break;
 			case 4: // min
 			{
@@ -1521,8 +1521,44 @@ char tCTepl,ttTepl;
 	Configuration();
 	SetDiskrSens();
 
-	ResumeOutIPCDigit();
+	if (DemoMode!=9)
+		DemoMode=0;
+	if (!DemoMode)
+	{
+		ClrAllOutIPCDigit();
+		OutR[0]=0;
+		OutR[1]=0;
+		OutR[2]=0;
+		OutR[3]=0;
+		OutR[4]=0;
+		OutR[5]=0;
+		OutR[6]=0;
+		OutR[7]=0;
+		OutR[8]=0;
+		OutR[9]=0;
+		OutR[10]=0;
+		SetAlarm();
+		for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
+		{
+			SetPointersOnTepl(tCTepl);
+			SetSensOnMech();
+			DoMechanics(tCTepl);
+			SetDiskr(tCTepl);
+			DoSiod();
+			DoPumps();
+//			CheckReadyMeasure();
+			DoVentCalorifer();
+			DoLights();
+//			DoPoisen();
+			RegWorkDiskr(cHSmCO2);
+			RegWorkDiskr(cHSmPressReg);
+#ifdef Vitebsk
+			TransferWaterToBoil();
+#endif
+		}
+		ResumeOutIPCDigit();
 
+	}
 	if ((!Menu)&&(ProgReset))
 	{
 		ProgReset=0;
