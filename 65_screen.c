@@ -2,7 +2,7 @@
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t screenGetTempVent()
+/*int16_t screenGetTempVent()
 {
 	int16_t	tempVent;
 	int16_t temp = 0;
@@ -53,13 +53,13 @@ int16_t screenGetTempVent()
 			break;
 		}
 		return tempVent;
-}
+}*/
 
 /*!
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t screenGetTempHeat()
+/*int16_t screenGetTempHeat()
 {
 	int16_t	tempHeat;
 	int16_t temp = 0;
@@ -110,7 +110,7 @@ int16_t screenGetTempHeat()
 			break;
 		}
 		return tempHeat;
-}
+}*/
 
 void CheckModeScreen(char typScr,char chType)
 {
@@ -133,7 +133,7 @@ void CheckModeScreen(char typScr,char chType)
 
 #warning CHECK THIS
 	// NEW
-	IntY=screenGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
+	IntY=getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sc_dTStart,GD.TuneClimate.sc_dTEnd,GD.TuneClimate.sc_dTSunFactor,0);
 	SunZClose=GD.TuneClimate.sc_ZSRClose-IntZ;
 	IntZ=GD.TControl.MeteoSensing[cSmOutTSens];
@@ -327,7 +327,7 @@ void LaunchVent(void)
 	IntY=0;
 	if (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 	{
-		IntY= screenGetTempVent()-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
+		IntY= getTempVent()-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
 		if (IntY<0)
 			IntY=-IntY;
 	}
@@ -355,10 +355,10 @@ void LaunchCalorifer(void)
 
 #warning CHECK THIS
 	// NEW
-	if(screenGetTempHeat()<(pGD_Hot_Tepl->AllTask.DoTHeat
+	if(getTempHeat()<(pGD_Hot_Tepl->AllTask.DoTHeat
 		-GD.TuneClimate.vt_StartCalorifer))
 		SetBit(pGD_TControl_Tepl->Calorifer,0x01);
-	if ((screenGetTempHeat()>(pGD_Hot_Tepl->AllTask.DoTHeat
+	if ((getTempHeat()>(pGD_Hot_Tepl->AllTask.DoTHeat
 		+GD.TuneClimate.vt_EndCalorifer))||(!GD.TuneClimate.vt_StartCalorifer)) 
 		ClrBit(pGD_TControl_Tepl->Calorifer,0x01);
 //		pGD_TControl_Tepl->Calorifer=0;

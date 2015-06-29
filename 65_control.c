@@ -14,7 +14,7 @@
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t controlGetTempVent()
+/*int16_t controlGetTempVent()
 {
 	int16_t	tempVent;
 	int16_t temp = 0;
@@ -65,13 +65,13 @@ int16_t controlGetTempVent()
 			break;
 		}
 		return tempVent;
-}
+}*/
 
 /*!
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t controlGetTempHeat()
+/*int16_t controlGetTempHeat()
 {
 	int16_t	tempHeat;
 	int16_t temp = 0;
@@ -122,7 +122,7 @@ int16_t controlGetTempHeat()
 			break;
 		}
 		return tempHeat;
-}
+}*/
 
 /*!
 \brief Таблица типов старта
@@ -578,11 +578,11 @@ void __cNextTCalc(char fnTepl)
 			pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
 	}
 
-	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-controlGetTempVent();
+	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-getTempVent();
 	/**********************************************/
 	/*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
-	pGD_Hot_Tepl->AllTask.Rez[0]=controlGetTempHeat();
-	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-controlGetTempHeat());
+	pGD_Hot_Tepl->AllTask.Rez[0]=getTempHeat();
+	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-getTempHeat());
 
 /**********************************************/	
 /*Вычиляем увеличение от солнечной радиации*/
@@ -756,7 +756,7 @@ void __cNextTCalc(char fnTepl)
 /******************************************************************
 		Далее расчет критерия для фрамуг
 *******************************************************************/
-	IntY=controlGetTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	IntY=getTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
 
 	(*pGD_Hot_Tepl).NextTCalc.PCorrectionVent=((int)((((long)(IntY))*((long)pGD_Control_Tepl->f_PFactor))/100));
 	if (pGD_TControl_Tepl->StopVentI<2)

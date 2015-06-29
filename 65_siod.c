@@ -7,7 +7,7 @@
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t soidGetTempHeat()
+/*int16_t soidGetTempHeat()
 {
 	int16_t	tempHeat;
 	int16_t temp = 0;
@@ -58,7 +58,7 @@ int16_t soidGetTempHeat()
 			break;
 		}
 		return tempHeat;
-}
+}*/
 
 void SetUpSiod(char fnTepl)
 {
@@ -82,12 +82,12 @@ void SetUpSiod(char fnTepl)
 
 #warning CHECK THIS
 // NEW
-	if ((pGD_Hot_Tepl->AllTask.DoTHeat-soidGetTempHeat())>GD.TuneClimate.sio_TStop) return;
-	if (((soidGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
+	if ((pGD_Hot_Tepl->AllTask.DoTHeat-getTempHeat())>GD.TuneClimate.sio_TStop) return;
+	if (((getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
 		&&(((pGD_Hot_Tepl->AllTask.DoRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value)<GD.TuneClimate.sio_RHStart)
 		||(!pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value))) return;	
 
-	IntY=soidGetTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
+	IntY=getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sio_TStart,GD.TuneClimate.sio_TEnd,GD.TuneClimate.sio_TStartFactor-GD.TuneClimate.sio_TEndFactor,0);
 	IntX=(int)(GD.TuneClimate.sio_TStartFactor-IntZ);
 

@@ -16,8 +16,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Climat510_true/stm_my/src/ip_arp_udp_tcp.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="D:\CooCoxProjects\Climat510\stm_my\src\ip_arp_udp_tcp.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="false"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="false" persistant="true" registered="true">
@@ -36,8 +36,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Climat510_true/stm_my/src/ip_arp_udp_tcp.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="D:\CooCoxProjects\Climat510\stm_my\src\ip_arp_udp_tcp.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="false"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="false" persistant="true" registered="true">
@@ -56,8 +56,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Climat510_true/65_subr.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="D:\CooCoxProjects\Climat510\65_subr.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="false"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="false" persistant="true" registered="true">
@@ -76,8 +76,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Climat510_true/stm_my/src/simple_server.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="D:\CooCoxProjects\Climat510\stm_my\src\simple_server.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="false"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 </breakpoints>

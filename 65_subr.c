@@ -4,6 +4,8 @@
 #define EdSens(ns)         TxtEd(ns)
 
 
+
+
 #define CURRENT_TEMP1_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value)
 #define CURRENT_TEMP2_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 #define CURRENT_TEMP3_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens3].Value)
@@ -45,6 +47,129 @@
 #define	DS18B20_SEND_EEPROM	0x4E
 #define	DS18B20_FILL_EEPROM	0x48
 #define	DS18B20_SKIP_ROM	0xCC
+
+
+int16_t getTempSensor(char sensor)
+{
+	if (pGD_Hot_Tepl->InTeplSens[sensor].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[sensor].Value;
+	else
+		return 0;
+}
+
+/*!
+\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t getTempVent()
+{
+	int16_t error = 0;
+	int16_t temp = 0;
+	int16_t i;
+	char calcType = 0;
+	char mask = 0;
+	int16_t max = 0;
+	int16_t min = 5000;
+	int16_t average = 0;
+	char averageCount = 0;
+	int16_t singleSensor = 0;
+	calcType = pGD_Control_Tepl->sensT_heat >> 6;
+	mask = pGD_Control_Tepl->sensT_vent << 2;
+	mask = mask >> 2;
+	error = 1;
+	for (i=0;i<6;i++)
+	{
+		if ( (mask >> i & 1) && (getTempSensor(i)) )
+		{
+			temp = getTempSensor(i);
+			if (min > temp)
+				min = temp;
+			if (max < temp)
+				max = temp;
+			average += temp;
+			averageCount++;
+			singleSensor = temp;
+			error = 0;
+		}
+	}
+	average = average / averageCount;
+	if (!error)
+	{
+		GD.Hot.tempParamVent=pGD_Control_Tepl->sensT_vent;
+		switch (calcType)
+		{
+		case 0: // average
+			GD.Hot.tempVent = average;
+		break;
+		case 1:	//min
+			GD.Hot.tempVent = min;
+		break;
+		case 2:  // max
+			GD.Hot.tempVent = max;
+		break;
+		case 3: // single sens
+			GD.Hot.tempVent = singleSensor;
+		break;
+		}
+	}
+}
+
+/*!
+\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
+@return int16_t Температура
+*/
+int16_t getTempHeat()
+{
+	int16_t error = 0;
+	int16_t temp = 0;
+	int16_t i;
+	char calcType = 0;
+	char mask = 0;
+	int16_t max = 0;
+	int16_t min = 5000;
+	int16_t average = 0;
+	char averageCount = 0;
+	int16_t singleSensor = 0;
+	calcType = pGD_Control_Tepl->sensT_heat >> 6;
+	mask = pGD_Control_Tepl->sensT_heat << 2;
+	mask = mask >> 2;
+	error = 1;
+	for (i=0;i<6;i++)
+	{
+		if ( (mask >> i & 1) && (getTempSensor(i)) )
+		{
+			temp = getTempSensor(i);
+			if (min > temp)
+				min = temp;
+			if (max < temp)
+				max = temp;
+			average += temp;
+			averageCount++;
+			singleSensor = temp;
+			error = 0;
+		}
+	}
+	average = average / averageCount;
+	if (!error)
+	{
+		GD.Hot.tempParamHeat=pGD_Control_Tepl->sensT_heat;
+		switch (calcType)
+		{
+		case 0: // average
+			GD.Hot.tempHeat = average;
+		break;
+		case 1:	//min
+			GD.Hot.tempHeat = min;
+		break;
+		case 2:  // max
+			GD.Hot.tempHeat = max;
+		break;
+		case 3: // single sens
+			GD.Hot.tempHeat = singleSensor;
+		break;
+		}
+	}
+}
 
 
 char ds18b20_ReadROM(void)

@@ -244,7 +244,12 @@ typedef struct eeHot {
 //50
 				uchar		isLight;
 				uchar		blockCO2;
-				uchar		Rez[4];
+
+				uchar		tempParamHeat;  // new
+				uchar		tempParamVent;  // new
+
+				uchar		Rez[2];
+				//uchar		Rez[4];
 				int16_t		MidlSR;
 				int16_t		MidlWind;
 				int16_t		PozFluger;
@@ -255,7 +260,12 @@ typedef struct eeHot {
 				uchar 		Demo;
 /***************************************/				
 				eTepl 		Tepl[cSTepl];
-				int16_t		Rez2[10];
+
+				uint16_t 	tempHeat;  // new
+				uint16_t 	tempVent;  // new
+
+				int16_t		Rez2[8];
+				//int16_t		Rez2[10];
 /***************************************/
 				} eHot;
 
