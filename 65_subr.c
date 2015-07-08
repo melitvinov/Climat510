@@ -5,7 +5,7 @@
 
 
 
-
+#warning не используется теперь
 #define CURRENT_TEMP1_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value)
 #define CURRENT_TEMP2_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 #define CURRENT_TEMP3_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens3].Value)
@@ -48,7 +48,79 @@
 #define	DS18B20_FILL_EEPROM	0x48
 #define	DS18B20_SKIP_ROM	0xCC
 
+/*
+int16_t getСSmRHSens()
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmRHSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value;
+	else
+		return 0;
+}
 
+int16_t getСSmInLightSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmInLightSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmInLightSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmCOSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmCOSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmRoofSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmRoofSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmRoofSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmGlassSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmWinNSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmWinSSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmScreenSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
+	else
+		return 0;
+}
+
+int16_t getСSmWaterSens(void)
+{
+	if (pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS == 0)
+		return pGD_Hot_Tepl->InTeplSens[cSmWaterSens].Value;
+	else
+		return 0;
+}
+*/
 int16_t getTempSensor(char sensor)
 {
 	if (pGD_Hot_Tepl->InTeplSens[sensor].RCS == 0)
@@ -61,22 +133,23 @@ int16_t getTempSensor(char sensor)
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempVent()
+int16_t getTempVent(char fnTepl)
 {
 	int16_t error = 0;
 	int16_t temp = 0;
 	int16_t i;
-	char calcType = 0;
-	char mask = 0;
+	int8_t calcType = 0;
+	int8_t mask = 0;
+	int8_t maskN = 0;
 	int16_t max = 0;
 	int16_t min = 5000;
 	int16_t average = 0;
 	char averageCount = 0;
 	int16_t singleSensor = 0;
-	calcType = pGD_Control_Tepl->sensT_heat >> 6;
-	mask = pGD_Control_Tepl->sensT_vent << 2;
+	calcType = GD.Control.Tepl[fnTepl].sensT_vent >> 6;
+	mask = GD.Control.Tepl[fnTepl].sensT_vent << 2;
 	mask = mask >> 2;
-	error = 1;
+	error = 0;
 	for (i=0;i<6;i++)
 	{
 		if ( (mask >> i & 1) && (getTempSensor(i)) )
@@ -89,28 +162,19 @@ int16_t getTempVent()
 			average += temp;
 			averageCount++;
 			singleSensor = temp;
-			error = 0;
-		}
+			maskN = (maskN >> 1) + 32;
+			error = 1;
+		} else maskN = (maskN >> 1);
 	}
 	average = average / averageCount;
-	if (!error)
+	if (error)
 	{
-		GD.Hot.tempParamVent=pGD_Control_Tepl->sensT_vent;
-		switch (calcType)
-		{
-		case 0: // average
-			GD.Hot.tempVent = average;
-		break;
-		case 1:	//min
-			GD.Hot.tempVent = min;
-		break;
-		case 2:  // max
-			GD.Hot.tempVent = max;
-		break;
-		case 3: // single sens
-			GD.Hot.tempVent = singleSensor;
-		break;
-		}
+		GD.Hot.Tepl[fnTepl].tempParamVent=maskN+(calcType<<6); //GD.Control.Tepl[fnTepl].sensT_vent;
+		GD.Hot.Tepl[fnTepl].tempVent = average;
+		if (calcType & 1)
+			GD.Hot.Tepl[fnTepl].tempVent = min;
+		if (calcType >> 1 & 1)
+			GD.Hot.Tepl[fnTepl].tempVent = max;
 	}
 }
 
@@ -118,22 +182,23 @@ int16_t getTempVent()
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempHeat()
+int16_t getTempHeat(char fnTepl)
 {
 	int16_t error = 0;
 	int16_t temp = 0;
 	int16_t i;
-	char calcType = 0;
-	char mask = 0;
+	int8_t calcType = 0;
+	int8_t mask = 0;
+	int8_t maskN = 0;
 	int16_t max = 0;
 	int16_t min = 5000;
 	int16_t average = 0;
-	char averageCount = 0;
+	int8_t averageCount = 0;
 	int16_t singleSensor = 0;
-	calcType = pGD_Control_Tepl->sensT_heat >> 6;
-	mask = pGD_Control_Tepl->sensT_heat << 2;
+	calcType = GD.Control.Tepl[fnTepl].sensT_heat >> 6;
+	mask = GD.Control.Tepl[fnTepl].sensT_heat << 2;
 	mask = mask >> 2;
-	error = 1;
+	error = 0;
 	for (i=0;i<6;i++)
 	{
 		if ( (mask >> i & 1) && (getTempSensor(i)) )
@@ -146,31 +211,116 @@ int16_t getTempHeat()
 			average += temp;
 			averageCount++;
 			singleSensor = temp;
-			error = 0;
-		}
+			maskN = (maskN >> 1) + 32;
+			error = 1;
+		} else maskN = (maskN >> 1);
 	}
 	average = average / averageCount;
-	if (!error)
+	if (error)
 	{
-		GD.Hot.tempParamHeat=pGD_Control_Tepl->sensT_heat;
-		switch (calcType)
+		GD.Hot.Tepl[fnTepl].tempParamHeat=maskN+(calcType<<6);
+		GD.Hot.Tepl[fnTepl].tempHeat = average;
+		if (calcType & 1)
+			GD.Hot.Tepl[fnTepl].tempHeat = min;
+		if (calcType >> 1 & 1)
+			GD.Hot.Tepl[fnTepl].tempHeat = max;
+
+
+		/*switch (calcType)
 		{
-		case 0: // average
-			GD.Hot.tempHeat = average;
+		case 0:  // average
+			GD.Hot.Tepl[fnTepl].tempHeat = average;
 		break;
-		case 1:	//min
-			GD.Hot.tempHeat = min;
+		case 1:	 // min
+			GD.Hot.Tepl[fnTepl].tempHeat = min;
 		break;
 		case 2:  // max
-			GD.Hot.tempHeat = max;
+			GD.Hot.Tepl[fnTepl].tempHeat = max;
 		break;
-		case 3: // single sens
-			GD.Hot.tempHeat = singleSensor;
+		case 3:  // single sens
+			GD.Hot.Tepl[fnTepl].tempHeat = singleSensor;
 		break;
-		}
+		}*/
 	}
 }
 
+/*!
+\brief Авария датчика температуры воздуха вентиляции в зависимости от выбранного значение в Параметрах управления
+*/
+int8_t getTempVentAlarm(char fnTepl)
+{
+	int16_t error = 0;
+	int16_t temp = 0;
+	int16_t i;
+	int8_t calcType = 0;
+	int8_t mask = 0;
+	int8_t maskN = 0;
+	int16_t max = 0;
+	int16_t min = 5000;
+	int16_t average = 0;
+	int8_t averageCount = 0;
+	int16_t singleSensor = 0;
+	calcType = GD.Control.Tepl[fnTepl].sensT_vent >> 6;
+	mask = GD.Control.Tepl[fnTepl].sensT_vent << 2;
+	mask = mask >> 2;
+	error = 0;
+	for (i=0;i<6;i++)
+	{
+		if ( (mask >> i & 1) && (getTempSensor(i)) )
+		{
+			temp = getTempSensor(i);
+			if (min > temp)
+				min = temp;
+			if (max < temp)
+				max = temp;
+			average += temp;
+			averageCount++;
+			singleSensor = temp;
+			maskN = (maskN >> 1) + 32;
+			error = 1;
+		} else maskN = (maskN >> 1);
+	}
+	return maskN;
+}
+
+/*!
+\brief Авария датчика температуры воздуха обогрева в зависимости от выбранного значение в Параметрах управления
+*/
+int8_t getTempHeatAlarm(char fnTepl)
+{
+	int16_t error = 0;
+	int16_t temp = 0;
+	int16_t i;
+	int8_t calcType = 0;
+	int8_t mask = 0;
+	int8_t maskN = 0;
+	int16_t max = 0;
+	int16_t min = 5000;
+	int16_t average = 0;
+	int8_t averageCount = 0;
+	int16_t singleSensor = 0;
+	calcType = GD.Control.Tepl[fnTepl].sensT_heat >> 6;
+	mask = GD.Control.Tepl[fnTepl].sensT_heat << 2;
+	mask = mask >> 2;
+	error = 0;
+	for (i=0;i<6;i++)
+	{
+		if ( (mask >> i & 1) && (getTempSensor(i)) )
+		{
+			temp = getTempSensor(i);
+			if (min > temp)
+				min = temp;
+			if (max < temp)
+				max = temp;
+			average += temp;
+			averageCount++;
+			singleSensor = temp;
+			maskN = (maskN >> 1) + 32;
+			error = 1;
+		} else maskN = (maskN >> 1);
+	}
+	return maskN;
+}
 
 char ds18b20_ReadROM(void)
 {

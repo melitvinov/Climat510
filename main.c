@@ -1,5 +1,5 @@
 
-#define DEBUG
+//#define DEBUG
 //#define AHU
 #define AGAPOVSKIY_DOUBLE_VALVE
 //#define SIO_PAUSE	1
@@ -341,6 +341,8 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #include "65_control.c"
 #include "405_menu.c"
 #include "65_main.c"
+#include "65_airHeats.c"
+
 #include "src/stm32f10x_LCD240x64.c"
 #include "src/stm32f10x_Rootines.c"
 #include "src/SPI.c"

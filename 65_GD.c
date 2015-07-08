@@ -217,7 +217,15 @@ typedef struct eeTepl	{
 				int8_t		LightStatus;
 				int8_t		COStatus;
 
-				int16_t		Rez1[32];
+				uchar		tempParamHeat;  // new
+				uchar		tempParamVent;  // new
+				uint16_t 	tempHeat;  		// new
+				uint16_t 	tempVent;  		// new
+				uint16_t	airHeatOnOff;   // new
+				uint16_t 	airHeatTimeWork;// new
+
+				int16_t		Rez1[27];
+				//int16_t		Rez1[32];
 
 				int16_t		MaxReqWater;
 				int16_t		Rez[9];
@@ -245,11 +253,7 @@ typedef struct eeHot {
 				uchar		isLight;
 				uchar		blockCO2;
 
-				uchar		tempParamHeat;  // new
-				uchar		tempParamVent;  // new
-
-				uchar		Rez[2];
-				//uchar		Rez[4];
+				uchar		Rez[4];
 				int16_t		MidlSR;
 				int16_t		MidlWind;
 				int16_t		PozFluger;
@@ -261,11 +265,7 @@ typedef struct eeHot {
 /***************************************/				
 				eTepl 		Tepl[cSTepl];
 
-				uint16_t 	tempHeat;  // new
-				uint16_t 	tempVent;  // new
-
-				int16_t		Rez2[8];
-				//int16_t		Rez2[10];
+				int16_t		Rez2[10];
 /***************************************/
 				} eHot;
 
@@ -510,7 +510,13 @@ typedef struct eeTuneClimate
 		int16_t		CorrectionScreen; // экран понижает на
 		int16_t		ScreenCloseSpeed; // скорость закрытия экрана
 
-	    int16_t     Rez[14];
+		int16_t		airHeatTemperOn;
+		int16_t		airHeatTemperOff;
+		int16_t		airHeatMinWork;
+		int16_t		airHeatmaxWork;
+		int16_t		airHeatPauseWork;
+
+	    int16_t     Rez[9];   // 14
 //282
        }
         eTuneClimate;

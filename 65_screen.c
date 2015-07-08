@@ -112,7 +112,7 @@
 		return tempHeat;
 }*/
 
-void CheckModeScreen(char typScr,char chType)
+void CheckModeScreen(char typScr,char chType, char fnTepl)
 {
 //Оптимицация на typScr
 	char tvs_DegSt,tvs_DegEnd;
@@ -133,7 +133,7 @@ void CheckModeScreen(char typScr,char chType)
 
 #warning CHECK THIS
 	// NEW
-	IntY=getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
+	IntY=getTempHeat(fnTepl)-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sc_dTStart,GD.TuneClimate.sc_dTEnd,GD.TuneClimate.sc_dTSunFactor,0);
 	SunZClose=GD.TuneClimate.sc_ZSRClose-IntZ;
 	IntZ=GD.TControl.MeteoSensing[cSmOutTSens];
@@ -229,7 +229,7 @@ void CheckModeScreen(char typScr,char chType)
 	}
 }
 
-void InitScreen(char typScr)
+void InitScreen(char typScr, char fnTepl)
 {
     eScreen *pScr;
 	pScr=&pGD_TControl_Tepl->Screen[typScr];
@@ -238,7 +238,7 @@ void InitScreen(char typScr)
 	if ((pScr->PauseMode<0)||
 		(pScr->PauseMode>GD.TuneClimate.sc_PauseMode))
 		pScr->PauseMode=0;
-	CheckModeScreen(typScr,typScr);
+	CheckModeScreen(typScr,typScr,fnTepl);
 }
 
 void SetPosScreen(char typScr)
@@ -309,7 +309,7 @@ void SetPosScreen(char typScr)
 }
 
 
-void LaunchVent(void)
+void LaunchVent(char fnTepl)
 {
 	if ((((*(pGD_Hot_Hand+cHSmWinN)).Position+(*(pGD_Hot_Hand+cHSmWinS)).Position)>0)&&((GD.TuneClimate.cool_PFactor)))
 		pGD_TControl_Tepl->OutFan=1;
@@ -327,7 +327,7 @@ void LaunchVent(void)
 	IntY=0;
 	if (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 	{
-		IntY= getTempVent()-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
+		IntY= getTempVent(fnTepl)-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
 		if (IntY<0)
 			IntY=-IntY;
 	}
@@ -349,16 +349,17 @@ void LaunchVent(void)
 		
 }
 
-void LaunchCalorifer(void)
+#warning Calorifer !!!!!!!!!!!!!!!!
+void LaunchCalorifer(char fnTepl)
 {
 	if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
 
 #warning CHECK THIS
 	// NEW
-	if(getTempHeat()<(pGD_Hot_Tepl->AllTask.DoTHeat
+	if(getTempHeat(fnTepl)<(pGD_Hot_Tepl->AllTask.DoTHeat
 		-GD.TuneClimate.vt_StartCalorifer))
 		SetBit(pGD_TControl_Tepl->Calorifer,0x01);
-	if ((getTempHeat()>(pGD_Hot_Tepl->AllTask.DoTHeat
+	if ((getTempHeat(fnTepl)>(pGD_Hot_Tepl->AllTask.DoTHeat
 		+GD.TuneClimate.vt_EndCalorifer))||(!GD.TuneClimate.vt_StartCalorifer)) 
 		ClrBit(pGD_TControl_Tepl->Calorifer,0x01);
 //		pGD_TControl_Tepl->Calorifer=0;

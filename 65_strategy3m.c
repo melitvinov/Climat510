@@ -2,7 +2,7 @@
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t strategyGetTempVent()
+/*int16_t strategyGetTempVent()
 {
 	int16_t	tempVent;
 	int16_t temp = 0;
@@ -53,13 +53,13 @@ int16_t strategyGetTempVent()
 			break;
 		}
 		return tempVent;
-}
+}*/
 
 /*!
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t strategyGetTempHeat()
+/*int16_t strategyGetTempHeat()
 {
 	int16_t	tempHeat;
 	int16_t temp = 0;
@@ -110,7 +110,7 @@ int16_t strategyGetTempHeat()
 			break;
 		}
 		return tempHeat;
-}
+}*/
 
 /**************************************************************************/
 /*-*-*-*-*-*-*--Процедура установки границ для водных контуров--*-*-*-*-*-*/
@@ -739,7 +739,7 @@ void __sPotentialPosibilityKontur(char fInv)
 
 
 }	
-void __WorkableKontur(char fnKontur)
+void __WorkableKontur(char fnKontur, char fnTepl)
 {
 
 //------------------------------------------------------------------------
@@ -767,7 +767,7 @@ void __WorkableKontur(char fnKontur)
 		if ((!(*pGD_TControl_Tepl_Kontur).PumpStatus)&&(pGD_TControl_Tepl->Critery>0)&&(fnKontur<cSmKontur5))
 		{
 			if  ((GD.Hot.MidlSR<GD.TuneClimate.f_MinSun)&&(pGD_Hot_Tepl->AllTask.NextTAir-GD.TControl.MeteoSensing[cSmOutTSens]>GD.TuneClimate.f_DeltaOut)||
-			((strategyGetTempHeat()-(*pGD_Hot_Tepl).AllTask.DoTHeat)<0)&&(((pGD_Control_Tepl->c_PFactor%100)<90)||(pGD_TControl_Tepl->StopVentI>0)))
+			((getTempHeat(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTHeat)<0)&&(((pGD_Control_Tepl->c_PFactor%100)<90)||(pGD_TControl_Tepl->StopVentI>0)))
 			{
 				SetBit((*pGD_Hot_Tepl_Kontur).ExtRCS,cbReadyPumpKontur);
 		    	if ((pGD_TControl_Tepl_Kontur->NAndKontur==1)&&(!pGD_TControl_Tepl->qMaxOwnKonturs)) pGD_TControl_Tepl_Kontur->RealPower[1]+=100;
@@ -939,7 +939,7 @@ long __VentToTemp(long sVent)
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки фрамуг--*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sLastCheckWindow(void)
+void __sLastCheckWindow(char fnTepl)
 {
 	int	xdata	DoUn;
 	int xdata	DoOn;	
@@ -1045,7 +1045,7 @@ void __sLastCheckWindow(void)
    	//IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;   // было
 #warning CHECK THIS
 // NEW
-	IntY=strategyGetTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	IntY=getTempVent(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTVent;
 
    	if (((DoUn==MaxUn)&&(DoOn==MaxOn)&&(IntY>0))
 	|| ((DoUn==MinUn)&&(DoOn==MinOn)&&(IntY<0)))
@@ -1185,7 +1185,6 @@ int __sCalcTempKonturs(void)
 	return SumTemp;
 	}
 
-
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура начальных установок для контура--*-*-*-*-*-*/
 /*************************************************************************/
@@ -1254,7 +1253,7 @@ void __sCalcKonturs(void)
 			ClrDog;
 
 
-			__WorkableKontur(ByteX);
+			__WorkableKontur(ByteX,fnTepl);
 			__sRealPosibilityKonturs(ByteX,MinMaxPowerReg);
 			(*pGD_Hot_Tepl_Kontur).Priority=(int)(pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower]);
 			pGD_TControl_Tepl->PowMaxKonturs=MinMaxPowerReg[1];
@@ -1280,7 +1279,7 @@ void __sCalcKonturs(void)
 		(*pGD_TControl_Tepl).Kontur[cSmWindowUnW].CalcT=__TempToVent();
 
 		  
-		__sLastCheckWindow();
+		__sLastCheckWindow(fnTepl);
 
 		pGD_TControl_Tepl->qMaxKonturs=0;
 		pGD_TControl_Tepl->qMaxOwnKonturs=0;

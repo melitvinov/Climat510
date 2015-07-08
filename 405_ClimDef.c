@@ -43,6 +43,8 @@ bit     EndInput;
 bit     BlkW;
 unsigned char   Second;
 
+#warning air heat working time
+int16_t		airHeatWorkingTime;
 
 //int16_t screenMaxPosition;
 //int16_t screenCurPosition;

@@ -22,16 +22,16 @@
 
 //#define cSmTSens		0
 // NEW
-#define cSmTSens1		0
+#define cSmTSens1		0	// 4 датчика температуры
 #define cSmTSens2		1
 #define cSmTSens3		2
 #define cSmTSens4		3
 
 #define cSmRHSens		4
 #define cSmInLightSens	6
+#define cSmCOSens		7
 #define cSmRoofSens		12
 #define cSmGlassSens	14
-#define cSmCOSens		7
 #warning CHECK THIS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //#define cSmTCSens		1
 #define cSmWinNSens		17
@@ -87,10 +87,10 @@ eNameASens code  NameSensConfig[cConfSSens+cConfSMetSens]={
 		  У - тип усреднения датчика*/
 /*Название датчика												Формат	Ед изм	Тип датч	Т	Вых		Мин	  Макс НЭ1	НЭ2	 ЗЭ1  ЗЭ2  НМин	НМкс Усреднение 	Цифровой фильтр*/
 //0
-{"Tem\310 air1#Te\274\276 \263o\267\343\311xa 1",					SSpS0,  cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	0,		0,		c3MidlSens,	50}, /* Температура воздуха 1*/
-{"Tem\310 air2#Te\274\276 \263o\267\343\311xa 2",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	0,		0,		c3MidlSens,	50}, /* Температура контроль 2*/
-{"Tem\310 air3#Te\274\276 \263o\267\343\311xa 3",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	0,		0,		c3MidlSens,	50}, /* Температура контроль 3*/
-{"Tem\310 air4#Te\274\276 \263o\267\343\311xa 4",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	0,		0,		c3MidlSens,	50}, /* Температура контроль 4*/
+{"Tem\310 air1#Te\274\276 \263o\267\343\311xa 1",					SSpS0,  cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	2000,	5000,		c3MidlSens,	50}, /* Температура воздуха 1*/
+{"Tem\310 air2#Te\274\276 \263o\267\343\311xa 2",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	2000,	5000,		c3MidlSens,	50}, /* Температура контроль 2*/
+{"Tem\310 air3#Te\274\276 \263o\267\343\311xa 3",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	2000,	5000,		c3MidlSens,	50}, /* Температура контроль 3*/
+{"Tem\310 air4#Te\274\276 \263o\267\343\311xa 4",					SSpS0,	cuT,	cTypeAnal,	3,	0,	0,	  9900,		2930,	3230,	2000,	5000,	2000,	5000,		c3MidlSens,	50}, /* Температура контроль 4*/
 {"Humidit\311 1#B\273a\266\275oc\277\304 1",						SSpS0,  cuPr,	cTypeRH,	0,	0,	200,  9800,		878,	3097,	0,		7530,	800, 	5000,	cExpMidlSens,	1000}, /* Влажность воздуха 1*/
 {"Humidit\311 2#B\273a\266\275oc\277\304 2",						SSpS0,  cuPr,	cTypeRH,	0,	0,	200,  9800,		878, 	3097,	0,		7530,	800, 	5000,	cExpMidlSens,	1000}, /* Влажность воздуха 2*/
 {"Inside light#B\275\311\277 c\263e\277",							SSSS, 	cuBt,	cTypeAnal,	11,	0,	0,	  1500,		15,  	2250,	0,   	1000, 	0,   	5000,	c3MidlSens,	100}, /* Внутренний свет*/

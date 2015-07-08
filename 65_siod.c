@@ -82,12 +82,12 @@ void SetUpSiod(char fnTepl)
 
 #warning CHECK THIS
 // NEW
-	if ((pGD_Hot_Tepl->AllTask.DoTHeat-getTempHeat())>GD.TuneClimate.sio_TStop) return;
-	if (((getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
+	if ((pGD_Hot_Tepl->AllTask.DoTHeat-getTempHeat(fnTepl))>GD.TuneClimate.sio_TStop) return;
+	if (((getTempHeat(fnTepl)-pGD_Hot_Tepl->AllTask.DoTHeat)<GD.TuneClimate.sio_TStart)
 		&&(((pGD_Hot_Tepl->AllTask.DoRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value)<GD.TuneClimate.sio_RHStart)
 		||(!pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value))) return;	
 
-	IntY=getTempHeat()-pGD_Hot_Tepl->AllTask.DoTHeat;
+	IntY=getTempHeat(fnTepl)-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sio_TStart,GD.TuneClimate.sio_TEnd,GD.TuneClimate.sio_TStartFactor-GD.TuneClimate.sio_TEndFactor,0);
 	IntX=(int)(GD.TuneClimate.sio_TStartFactor-IntZ);
 
@@ -104,6 +104,8 @@ void SetUpSiod(char fnTepl)
 	pGD_TControl_Tepl->PauseSIO=0;
 	pGD_TControl_Tepl->CurVal=0;
 }
+
+
 void DoSiod(void)
 {
 	char NSIO;

@@ -578,11 +578,11 @@ void __cNextTCalc(char fnTepl)
 			pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
 	}
 
-	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-getTempVent();
+	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-getTempVent(fnTepl);
 	/**********************************************/
 	/*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
-	pGD_Hot_Tepl->AllTask.Rez[0]=getTempHeat();
-	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-getTempHeat());
+	pGD_Hot_Tepl->AllTask.Rez[0]=getTempHeat(fnTepl);
+	IntX=((*pGD_Hot_Tepl).AllTask.DoTHeat-getTempHeat(fnTepl));
 
 /**********************************************/	
 /*Вычиляем увеличение от солнечной радиации*/
@@ -756,7 +756,7 @@ void __cNextTCalc(char fnTepl)
 /******************************************************************
 		Далее расчет критерия для фрамуг
 *******************************************************************/
-	IntY=getTempVent()-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	IntY=getTempVent(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTVent;
 
 	(*pGD_Hot_Tepl).NextTCalc.PCorrectionVent=((int)((((long)(IntY))*((long)pGD_Control_Tepl->f_PFactor))/100));
 	if (pGD_TControl_Tepl->StopVentI<2)
@@ -949,21 +949,21 @@ void SetAlarm(void)
 	{
 		SetPointersOnTepl(fnTepl);	
 		pGD_TControl_Tepl->bAlarm=0;
-		//if ((YesBit(pGD_Hot_Tepl->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
+		if ((YesBit(pGD_Hot_Tepl->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
 		//	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-		//	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
-		//{
-		//	__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
-		//	pGD_TControl_Tepl->bAlarm=100;
-		//}
+			||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+		{
+			__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
+			pGD_TControl_Tepl->bAlarm=100;
+		}
 
-#warning CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// теперь мы не знаем какой датчик работает какой нет, мы проверяем что бы работали все.
-		// NEW
-		if ((YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens1].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens2].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens3].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-			&&(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens4].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+		if (getTempHeatAlarm(fnTepl) == 0)
+		{
+			__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
+			pGD_TControl_Tepl->bAlarm=100;
+		}
+
+		if (getTempVentAlarm(fnTepl) == 0)
 		{
 			__SetBitOutReg(fnTepl,cHSmAlarm,0,0);
 			pGD_TControl_Tepl->bAlarm=100;
@@ -1413,18 +1413,18 @@ void SetTepl(char fnTepl)
 //	if(!(*pGD_Hot_Tepl).RCS)
 	{	
 		AllTaskAndCorrection();
-		LaunchCalorifer();
+		LaunchCalorifer(fnTepl);
 
 		__cNextTCalc(fnTepl);
 
 		DecPumpPause();
 		SetUpSiod(fnTepl);
-		InitScreen(cTermHorzScr);
-		InitScreen(cSunHorzScr);
-		InitScreen(cTermVertScr1);
-		InitScreen(cTermVertScr2);
-		InitScreen(cTermVertScr3);
-		InitScreen(cTermVertScr4);
+		InitScreen(cTermHorzScr,fnTepl);
+		InitScreen(cSunHorzScr,fnTepl);
+		InitScreen(cTermVertScr1,fnTepl);
+		InitScreen(cTermVertScr2,fnTepl);
+		InitScreen(cTermVertScr3,fnTepl);
+		InitScreen(cTermVertScr4,fnTepl);
 		SetReg(cHSmCO2,
 			pGD_Hot_Tepl->AllTask.DoCO2,pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value);
 
@@ -1434,7 +1434,7 @@ void SetTepl(char fnTepl)
 			pGD_Hot_Tepl->OtherCalc.MeasDifPress=0;
 		SetReg(cHSmPressReg,
 			pGD_Hot_Tepl->AllTask.DoPressure,pGD_Hot_Tepl->OtherCalc.MeasDifPress);
-		LaunchVent();
+		LaunchVent(fnTepl);
 		SetLighting();
 	}
 }
