@@ -44,7 +44,9 @@ bit     BlkW;
 unsigned char   Second;
 
 #warning air heat working time
-int16_t		airHeatWorkingTime;
+//int16_t		airHeatWorkingTime;
+//unsigned char   aitHeatOnOff;
+int16_t		airHeatPause[8];
 
 //int16_t screenMaxPosition;
 //int16_t screenCurPosition;

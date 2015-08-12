@@ -81,6 +81,7 @@ main()
     ClrDog;
     ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
     ClearAllAlarms();
+    airHeatInit();
 start:
 
     if (not) {

@@ -562,6 +562,7 @@ void SetRTC(void) {
         ClrDog;
         WriteDateTime(&fDateTime);
 }
+
 void GetRTC(void) {
 		eDateTime	fDateTime;
         ReadDateTime(&fDateTime); //CtrTime=0;
@@ -575,8 +576,6 @@ void GetRTC(void) {
          CtrYear=fDateTime.year-2000;
          NowDayOfWeek=fDateTime.wday;
 }
-
-
 
 void CopyEEP()
 {

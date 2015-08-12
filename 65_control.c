@@ -578,7 +578,7 @@ void __cNextTCalc(char fnTepl)
 			pGD_Level_Tepl[cSmTSens][cSmDownAlarmLev]=(*pGD_Hot_Tepl).AllTask.DoTHeat-GD.TuneClimate.c_MaxDifTDown;
 	}
 
-	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-getTempVent(fnTepl);
+	(*pGD_Hot_Tepl).NextTCalc.DifTAirTDo=(*pGD_Hot_Tepl).AllTask.NextTAir-getTempHeat(fnTepl);
 	/**********************************************/
 	/*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
 	pGD_Hot_Tepl->AllTask.Rez[0]=getTempHeat(fnTepl);
@@ -869,16 +869,26 @@ void	DoPumps(void)
 
 }
 
+#warning вкл воздушного обогревателя !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void	DoVentCalorifer(void)
 {
-	if (!(YesBit((*(pGD_Hot_Hand+cHSmVent)).RCS,(/*cbNoMech+*/cbManMech))))
-	{
-		(*(pGD_Hot_Hand+cHSmVent)).Position=pGD_TControl_Tepl->Vent;
-		(*(pGD_Hot_Hand+cHSmVent)).Position+=pGD_TControl_Tepl->OutFan<<1;
-	}
-	if (!(YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(/*cbNoMech+*/cbManMech))))
+
+	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
 		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
+
+
+	//if (!(YesBit((*(pGD_Hot_Hand+cHSmVent)).RCS,(/*cbNoMech+*/cbManMech))))   // было так
+	//{
+	//	(*(pGD_Hot_Hand+cHSmVent)).Position=pGD_TControl_Tepl->Vent;
+	//	(*(pGD_Hot_Hand+cHSmVent)).Position+=pGD_TControl_Tepl->OutFan<<1;
+	//}
+	//if (!(YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(/*cbNoMech+*/cbManMech))))
+	//{
+	//
+	//	(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
+	//}
 }
+
 
 #warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void	DoLights(void)
@@ -1617,6 +1627,8 @@ char tCTepl,ttTepl;
 					TaskTimer(0,ttTepl,tCTepl);
 					SetPointersOnTepl(tCTepl);
 					SetTepl(tCTepl);
+
+					airHeat(tCTepl);
 				}
 				__sCalcKonturs();
 				__sMechWindows();
@@ -1657,7 +1669,9 @@ char tCTepl,ttTepl;
 	if ((!Menu)&&(GD.SostRS==OUT_UNIT))
 		TestMem(1);
 #endif
-	
+
+	airHeatTimers();
+
 	ClrDog;
 	Second=0;
 	if(TimeReset)

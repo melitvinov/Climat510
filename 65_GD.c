@@ -221,6 +221,7 @@ typedef struct eeTepl	{
 				uchar		tempParamVent;  // new
 				uint16_t 	tempHeat;  		// new
 				uint16_t 	tempVent;  		// new
+
 				uint16_t	airHeatOnOff;   // new
 				uint16_t 	airHeatTimeWork;// new
 
@@ -513,7 +514,7 @@ typedef struct eeTuneClimate
 		int16_t		airHeatTemperOn;
 		int16_t		airHeatTemperOff;
 		int16_t		airHeatMinWork;
-		int16_t		airHeatmaxWork;
+		int16_t		airHeatMaxWork;
 		int16_t		airHeatPauseWork;
 
 	    int16_t     Rez[9];   // 14
