@@ -352,7 +352,7 @@ void LaunchVent(char fnTepl)
 #warning Calorifer !!!!!!!!!!!!!!!!
 void LaunchCalorifer(char fnTepl)
 {
-	if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
+//		if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
 
 #warning CHECK THIS
 	// NEW

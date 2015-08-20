@@ -873,8 +873,8 @@ void	DoPumps(void)
 void	DoVentCalorifer(void)
 {
 
-	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
-		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
+//	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
+//		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
 
 
 	//if (!(YesBit((*(pGD_Hot_Hand+cHSmVent)).RCS,(/*cbNoMech+*/cbManMech))))   // было так
@@ -1628,7 +1628,8 @@ char tCTepl,ttTepl;
 					SetPointersOnTepl(tCTepl);
 					SetTepl(tCTepl);
 
-					airHeat(tCTepl);
+					airHeat(tCTepl);    // airHeat
+					ClrDog;
 				}
 				__sCalcKonturs();
 				__sMechWindows();
@@ -1661,6 +1662,10 @@ char tCTepl,ttTepl;
 	}	
 	Volume=0;
 	if( Second < 60) return;
+
+	airHeatTimers();    // airHeat
+	ClrDog;
+
 	WriteToFRAM();
 	MidlWindAndSr();
 	WindDirect();
@@ -1669,8 +1674,6 @@ char tCTepl,ttTepl;
 	if ((!Menu)&&(GD.SostRS==OUT_UNIT))
 		TestMem(1);
 #endif
-
-	airHeatTimers();
 
 	ClrDog;
 	Second=0;

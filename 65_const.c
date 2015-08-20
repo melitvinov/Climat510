@@ -24,7 +24,7 @@
 
 #define Rasxod          (RegRasxod & bRasxod)
 
-#define cVersion		69
+#define cVersion		72 // 69
 /*Версия ПО для ПК*/
 
 #define SUM_BLOCK_EEP		8

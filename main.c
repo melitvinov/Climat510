@@ -331,6 +331,7 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 
 /*------------------------------------------*/
 #include "65_GD.c"
+#include "65_airHeats.c"
 #include "405_Memory.c"
 //#include "405_Clock.c"
 #include "65_Subr.c"
@@ -341,7 +342,6 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #include "65_control.c"
 #include "405_menu.c"
 #include "65_main.c"
-#include "65_airHeats.c"
 
 #include "src/stm32f10x_LCD240x64.c"
 #include "src/stm32f10x_Rootines.c"

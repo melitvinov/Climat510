@@ -166,7 +166,7 @@ void pmInfoProg405(void){
 
 
 void pmDate(void) {
-    Ad_Buf=Str2;
+   Ad_Buf=Str2;
     w_txt(Proect);
     w_int(&GD.Control.rModification,SS);
 	buf[Ad_Buf++]='-';
@@ -199,6 +199,7 @@ void pmDate(void) {
 //		CalcDayOfWeek();
         SetRTC();
         }
+
 }
 
 void pmStrategy(void) {
@@ -830,6 +831,8 @@ void pmNow(void) {
 void	pmProgClimate(void)
 {
     w_txt(Mes34);
+	//w_int(airHeatTimeWork[0],SSS);
+
 	if (x_menu > cSTimer) x_menu=0; 
 	if (!x_menu) {
 		return;

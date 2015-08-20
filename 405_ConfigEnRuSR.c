@@ -266,7 +266,7 @@ eNameConfig NameInputConfig[cConfSInputs]={
 /*6 Авария света*/				{"Light alarm#A\263a\310\270\307 \343oc\263e\277",tpLEVEL,0,MAX_SUM_RELAY}
 };
 
-#define SUM_NAME_PARS 21
+#define SUM_NAME_PARS 25
 code struct  eNameParUpr
         {
         char Name[30];
@@ -293,7 +293,11 @@ NameParUpr[SUM_NAME_PARS]={
 /*17 Нет*/				{"Unused#He \270c\276o\273\304\267\311e\274",SSSS},
 /*18 Экран*/			{"Max screen T#Ma\272c \305\272\310a\275 T",SSSS},
 /*19  Экран затеняющ*/	{"Max screen S#Ma\272c \305\272\310a\275 \244",SSSS},
-/*21  CO2*/				{"CO2 type#T\270\275 CO2",SSSS}
+/*21  CO2*/				{"CO2 type#T\270\275 CO2",SSSS},
+/*22  Досветка*/		{"Light#\Light",SSSS},
+/*23  SIO*/				{"SIO#\SIO",SSSS},
+/*24  T heat*/			{"T heat type#T heat type",SSS},
+/*25  T vent*/		    {"T vent type#T vent type",SSS}
 };
 
 
