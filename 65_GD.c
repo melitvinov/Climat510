@@ -503,10 +503,10 @@ typedef struct eeTuneClimate
 		int16_t 	l_SoftPauseMode;
 		int16_t		o_TeplPosition;
 
-		int16_t		c_RHStart;
-		int16_t		c_RHEnd;
-		int16_t		c_RHOnMin1;
-		int16_t		c_RHOnMin2;
+		int16_t		c_RHStart;		// Контур 1,2 RHизм - RHзад начинает влиять на минимум при
+		int16_t		c_RHEnd;		// Контур 1,2 RHизм - RHзад влияет на минимум до
+		int16_t		c_RHOnMin1;     // Контур 1
+		int16_t		c_RHOnMin2;     // Контур 2
 
 		int16_t		CorrectionScreen; // экран понижает на
 		int16_t		ScreenCloseSpeed; // скорость закрытия экрана

@@ -73,4 +73,6 @@
 #define Mes211 "Mechanic settings#\250a\310a\274e\277\310\303 \274exa\275\270\267\274o\263"
 #define Mes221 "<In\310ut 1 for init>#<B\263o\343 1 \343\273\307 c\262\310oca>"
 #define Mes222 "Init Strateg\311=#C\262\310oc c\277\310a\277e\264\270\270="
+#define Mes223 "Version#Be\310c\270\307"
+
 

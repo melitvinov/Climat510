@@ -527,7 +527,7 @@ void in_val(void) {
 		(*(unsigned char *) AdrVal) = (unsigned char) vre;
 		ValSize = 1;
 	}
-	if (Mark >= SizeForm) {
+	if (Mark >= SizeForm) {  // окончание ввода
 		EndInput = 1;
 		Mark = 0;
 		Menu = 0;
@@ -539,7 +539,16 @@ void in_val(void) {
 			return;
 //		 CopyVal=*(unsigned int *)AdrVal;
 		SizeEEP = ValSize;
-		AdrRAM = AdrVal;
+
+		//char nameT[6]={'T',' ','h','e','a','t'};
+		//char nameTT[6];
+		//char count = 0;
+		//for (count = 0; count < 6; count++)
+		//	nameTT[count] = buf[160 + count];
+		//if (nameT == nameTT)
+		//	AdrRAM = 1;
+		//else
+			AdrRAM = AdrVal;
 		SetInSaveRam();
 	}
 }

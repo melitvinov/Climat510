@@ -69,7 +69,6 @@
     <ExcludeFile>
       <File name="65_subr.c" path="65_subr.c" type="1"/>
       <File name="65_strategy3m.c" path="65_strategy3m.c" type="1"/>
-      <File name="65_airHeats.c" path="65_airHeats.c" type="1"/>
       <File name="65_siod.c" path="65_siod.c" type="1"/>
       <File name="65_screen.c" path="65_screen.c" type="1"/>
       <File name="405_climdef.c" path="405_climdef.c" type="1"/>

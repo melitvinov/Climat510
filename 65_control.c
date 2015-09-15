@@ -454,6 +454,7 @@ void AllTaskAndCorrection(void)
 //		SetBit((*pGD_Hot_Tepl).Kontur[cSmKontur1].RCS,IntX);
 		(*pGD_Hot_Tepl).Kontur[cSmKontur2].MinCalc+=IntZ;
 	}
+
 	IntY=GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
 	if ((*pGD_Hot_Tepl).Kontur[cSmKontur3].MinTask)
 	{	

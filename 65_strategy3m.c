@@ -116,11 +116,8 @@
 /*-*-*-*-*-*-*--Процедура установки границ для водных контуров--*-*-*-*-*-*/
 /**************************************************************************/
 int DefRH(void) {
-	if ((!(*pGD_Hot_Tepl).AllTask.DoRHAir)
-			|| (!(*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value))
-		return 0;
-	return ((*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value
-			- (*pGD_Hot_Tepl).AllTask.DoRHAir);
+	if ((!(*pGD_Hot_Tepl).AllTask.DoRHAir)|| (!(*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value)) return 0;
+	return ((*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value-(*pGD_Hot_Tepl).AllTask.DoRHAir);
 
 }
 
