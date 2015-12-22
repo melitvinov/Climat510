@@ -489,7 +489,8 @@ int16_t RS485_Out2_Transmit(uint16_t fNCtr, uint32_t fSend)
 	Head2[0]=fNCtr;
 	Head2[1]=fSend%256;
 	Head2[2]=(fSend>>8)%256;
-	Head2[3]=(fSend>>16);
+	//Head2[3]=(fSend>>16);		// старая скучная строка
+	Head2[3]=Head2[1];			// специальная строка ....
 	Head2[4]=0x55;
 	chSumUARTOUT=0;
 	i=0;

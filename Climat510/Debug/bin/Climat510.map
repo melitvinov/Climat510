@@ -829,7 +829,7 @@ Linker script and memory map
 
                 0x20010000                _eram = 0x20010000
 
-.text           0x08000000    0x11b94
+.text           0x08000000    0x11b90
  *(.isr_vector)
  .isr_vector    0x08000000      0x154 ..\obj\startup_stm32f10x_cl.o
                 0x08000000                g_pfnVectors
@@ -1596,136 +1596,136 @@ Linker script and memory map
                 0x0800f564       0x20 ..\obj\stm32f10x_RS485Master.o
                 0x0800f564                RS485_Master_ReadDataIRQ
  .text.RS485_Out2_Transmit
-                0x0800f584      0x114 ..\obj\stm32f10x_RS485Master.o
+                0x0800f584      0x110 ..\obj\stm32f10x_RS485Master.o
                 0x0800f584                RS485_Out2_Transmit
  .text.GetIPCComMod
-                0x0800f698       0x14 ..\obj\stm32f10x_RS485Master.o
-                0x0800f698                GetIPCComMod
+                0x0800f694       0x14 ..\obj\stm32f10x_RS485Master.o
+                0x0800f694                GetIPCComMod
  .text.GetIPCNum
-                0x0800f6ac       0x1c ..\obj\stm32f10x_RS485Master.o
-                0x0800f6ac                GetIPCNum
+                0x0800f6a8       0x1c ..\obj\stm32f10x_RS485Master.o
+                0x0800f6a8                GetIPCNum
  .text.ClrAllOutIPCDigit
-                0x0800f6c8       0x6c ..\obj\stm32f10x_RS485Master.o
-                0x0800f6c8                ClrAllOutIPCDigit
+                0x0800f6c4       0x6c ..\obj\stm32f10x_RS485Master.o
+                0x0800f6c4                ClrAllOutIPCDigit
  .text.ResumeOutIPCDigit
-                0x0800f734       0x10 ..\obj\stm32f10x_RS485Master.o
-                0x0800f734                ResumeOutIPCDigit
+                0x0800f730       0x10 ..\obj\stm32f10x_RS485Master.o
+                0x0800f730                ResumeOutIPCDigit
  .text.SetOutIPCDigit
-                0x0800f744       0xbc ..\obj\stm32f10x_RS485Master.o
-                0x0800f744                SetOutIPCDigit
+                0x0800f740       0xbc ..\obj\stm32f10x_RS485Master.o
+                0x0800f740                SetOutIPCDigit
  .text.SetOutIPCReg
-                0x0800f800       0xa0 ..\obj\stm32f10x_RS485Master.o
-                0x0800f800                SetOutIPCReg
+                0x0800f7fc       0xa0 ..\obj\stm32f10x_RS485Master.o
+                0x0800f7fc                SetOutIPCReg
  .text.GetOutIPCDigit
-                0x0800f8a0       0x9c ..\obj\stm32f10x_RS485Master.o
-                0x0800f8a0                GetOutIPCDigit
+                0x0800f89c       0x9c ..\obj\stm32f10x_RS485Master.o
+                0x0800f89c                GetOutIPCDigit
  .text.GetInIPC
-                0x0800f93c       0xb0 ..\obj\stm32f10x_RS485Master.o
-                0x0800f93c                GetInIPC
+                0x0800f938       0xb0 ..\obj\stm32f10x_RS485Master.o
+                0x0800f938                GetInIPC
  .text.GetDiskrIPC
-                0x0800f9ec       0xdc ..\obj\stm32f10x_RS485Master.o
-                0x0800f9ec                GetDiskrIPC
+                0x0800f9e8       0xdc ..\obj\stm32f10x_RS485Master.o
+                0x0800f9e8                GetDiskrIPC
  .text.UpdateInIPC
-                0x0800fac8       0xe8 ..\obj\stm32f10x_RS485Master.o
-                0x0800fac8                UpdateInIPC
+                0x0800fac4       0xe8 ..\obj\stm32f10x_RS485Master.o
+                0x0800fac4                UpdateInIPC
  .text.ModStatus
-                0x0800fbb0       0x40 ..\obj\stm32f10x_RS485Master.o
-                0x0800fbb0                ModStatus
+                0x0800fbac       0x40 ..\obj\stm32f10x_RS485Master.o
+                0x0800fbac                ModStatus
  .text.IMOD_Exchange
-                0x0800fbf0      0x1a0 ..\obj\stm32f10x_RS485Master.o
-                0x0800fbf0                IMOD_Exchange
- .text.SendIPC  0x0800fd90      0x424 ..\obj\stm32f10x_RS485Master.o
-                0x0800fd90                SendIPC
+                0x0800fbec      0x1a0 ..\obj\stm32f10x_RS485Master.o
+                0x0800fbec                IMOD_Exchange
+ .text.SendIPC  0x0800fd8c      0x424 ..\obj\stm32f10x_RS485Master.o
+                0x0800fd8c                SendIPC
  .text.keyboardSetBITKL
-                0x080101b4        0xc ..\obj\keyboard.o
-                0x080101b4                keyboardSetBITKL
+                0x080101b0        0xc ..\obj\keyboard.o
+                0x080101b0                keyboardSetBITKL
  .text.keyboardGetBITKL
-                0x080101c0        0xc ..\obj\keyboard.o
-                0x080101c0                keyboardGetBITKL
+                0x080101bc        0xc ..\obj\keyboard.o
+                0x080101bc                keyboardGetBITKL
  .text.keyboardSetSIM
-                0x080101cc        0xc ..\obj\keyboard.o
-                0x080101cc                keyboardSetSIM
+                0x080101c8        0xc ..\obj\keyboard.o
+                0x080101c8                keyboardSetSIM
  .text.keyboardGetSIM
-                0x080101d8        0xc ..\obj\keyboard.o
-                0x080101d8                keyboardGetSIM
+                0x080101d4        0xc ..\obj\keyboard.o
+                0x080101d4                keyboardGetSIM
  .text.Keyboard_Init
-                0x080101e4       0x60 ..\obj\keyboard.o
-                0x080101e4                Keyboard_Init
+                0x080101e0       0x60 ..\obj\keyboard.o
+                0x080101e0                Keyboard_Init
  .text.KeyboardProcess
-                0x08010244       0xd0 ..\obj\keyboard.o
-                0x08010244                KeyboardProcess
+                0x08010240       0xd0 ..\obj\keyboard.o
+                0x08010240                KeyboardProcess
  .text.NVIC_PriorityGroupConfig
-                0x08010314       0x14 ..\obj\misc.o
-                0x08010314                NVIC_PriorityGroupConfig
+                0x08010310       0x14 ..\obj\misc.o
+                0x08010310                NVIC_PriorityGroupConfig
  .text.NVIC_Init
-                0x08010328       0x84 ..\obj\misc.o
-                0x08010328                NVIC_Init
+                0x08010324       0x84 ..\obj\misc.o
+                0x08010324                NVIC_Init
  .text.SPI_Init
-                0x080103ac       0x44 ..\obj\stm32f10x_spi.o
-                0x080103ac                SPI_Init
- .text.SPI_Cmd  0x080103f0       0x20 ..\obj\stm32f10x_spi.o
-                0x080103f0                SPI_Cmd
+                0x080103a8       0x44 ..\obj\stm32f10x_spi.o
+                0x080103a8                SPI_Init
+ .text.SPI_Cmd  0x080103ec       0x20 ..\obj\stm32f10x_spi.o
+                0x080103ec                SPI_Cmd
  .text.SPI_I2S_SendData
-                0x08010410        0x4 ..\obj\stm32f10x_spi.o
-                0x08010410                SPI_I2S_SendData
+                0x0801040c        0x4 ..\obj\stm32f10x_spi.o
+                0x0801040c                SPI_I2S_SendData
  .text.SPI_I2S_ReceiveData
-                0x08010414        0x8 ..\obj\stm32f10x_spi.o
-                0x08010414                SPI_I2S_ReceiveData
+                0x08010410        0x8 ..\obj\stm32f10x_spi.o
+                0x08010410                SPI_I2S_ReceiveData
  .text.SPI_I2S_GetFlagStatus
-                0x0801041c        0xc ..\obj\stm32f10x_spi.o
-                0x0801041c                SPI_I2S_GetFlagStatus
+                0x08010418        0xc ..\obj\stm32f10x_spi.o
+                0x08010418                SPI_I2S_GetFlagStatus
  .text.i2_fm_Init
-                0x08010428       0x48 ..\obj\I2CSoft.o
-                0x08010428                i2_fm_Init
+                0x08010424       0x48 ..\obj\I2CSoft.o
+                0x08010424                i2_fm_Init
  .text.i2_Start
-                0x08010470       0x1c ..\obj\I2CSoft.o
-                0x08010470                i2_Start
- .text.i2_Stop  0x0801048c       0x18 ..\obj\I2CSoft.o
-                0x0801048c                i2_Stop
+                0x0801046c       0x1c ..\obj\I2CSoft.o
+                0x0801046c                i2_Start
+ .text.i2_Stop  0x08010488       0x18 ..\obj\I2CSoft.o
+                0x08010488                i2_Stop
  .text.i2_ToSDA
-                0x080104a4       0x24 ..\obj\I2CSoft.o
-                0x080104a4                i2_ToSDA
+                0x080104a0       0x24 ..\obj\I2CSoft.o
+                0x080104a0                i2_ToSDA
  .text.i2_SetASK
-                0x080104c8       0x40 ..\obj\I2CSoft.o
-                0x080104c8                i2_SetASK
+                0x080104c4       0x40 ..\obj\I2CSoft.o
+                0x080104c4                i2_SetASK
  .text.i2_GetASK
-                0x08010508       0x5c ..\obj\I2CSoft.o
-                0x08010508                i2_GetASK
+                0x08010504       0x5c ..\obj\I2CSoft.o
+                0x08010504                i2_GetASK
  .text.i2_WriteByte
-                0x08010564       0x40 ..\obj\I2CSoft.o
-                0x08010564                i2_WriteByte
+                0x08010560       0x40 ..\obj\I2CSoft.o
+                0x08010560                i2_WriteByte
  .text.i2_ReadByte
-                0x080105a4       0x60 ..\obj\I2CSoft.o
-                0x080105a4                i2_ReadByte
- .text.fm_Read  0x08010604       0xbc ..\obj\I2CSoft.o
-                0x08010604                fm_Read
+                0x080105a0       0x60 ..\obj\I2CSoft.o
+                0x080105a0                i2_ReadByte
+ .text.fm_Read  0x08010600       0xbc ..\obj\I2CSoft.o
+                0x08010600                fm_Read
  .text.fm_Write
-                0x080106c0       0x90 ..\obj\I2CSoft.o
-                0x080106c0                fm_Write
+                0x080106bc       0x90 ..\obj\I2CSoft.o
+                0x080106bc                fm_Write
  .text.BKP_DeInit
-                0x08010750       0x14 ..\obj\stm32f10x_bkp.o
-                0x08010750                BKP_DeInit
+                0x0801074c       0x14 ..\obj\stm32f10x_bkp.o
+                0x0801074c                BKP_DeInit
  .text.BKP_WriteBackupRegister
-                0x08010764       0x20 ..\obj\stm32f10x_bkp.o
-                0x08010764                BKP_WriteBackupRegister
+                0x08010760       0x20 ..\obj\stm32f10x_bkp.o
+                0x08010760                BKP_WriteBackupRegister
  .text.BKP_ReadBackupRegister
-                0x08010784       0x24 ..\obj\stm32f10x_bkp.o
-                0x08010784                BKP_ReadBackupRegister
+                0x08010780       0x24 ..\obj\stm32f10x_bkp.o
+                0x08010780                BKP_ReadBackupRegister
  .text.IWDG_WriteAccessCmd
-                0x080107a8        0xc ..\obj\stm32f10x_iwdg.o
-                0x080107a8                IWDG_WriteAccessCmd
+                0x080107a4        0xc ..\obj\stm32f10x_iwdg.o
+                0x080107a4                IWDG_WriteAccessCmd
  .text.IWDG_SetPrescaler
-                0x080107b4        0xc ..\obj\stm32f10x_iwdg.o
-                0x080107b4                IWDG_SetPrescaler
+                0x080107b0        0xc ..\obj\stm32f10x_iwdg.o
+                0x080107b0                IWDG_SetPrescaler
  .text.IWDG_SetReload
-                0x080107c0        0xc ..\obj\stm32f10x_iwdg.o
-                0x080107c0                IWDG_SetReload
+                0x080107bc        0xc ..\obj\stm32f10x_iwdg.o
+                0x080107bc                IWDG_SetReload
  .text.IWDG_ReloadCounter
-                0x080107cc       0x10 ..\obj\stm32f10x_iwdg.o
-                0x080107cc                IWDG_ReloadCounter
+                0x080107c8       0x10 ..\obj\stm32f10x_iwdg.o
+                0x080107c8                IWDG_ReloadCounter
  .text.IWDG_Enable
-                0x080107dc       0x10 ..\obj\stm32f10x_iwdg.o
-                0x080107dc                IWDG_Enable
+                0x080107d8       0x10 ..\obj\stm32f10x_iwdg.o
+                0x080107d8                IWDG_Enable
  *(.init)
  *(.fini)
  *crtbegin.o(.ctors)
@@ -1739,37 +1739,37 @@ Linker script and memory map
  *(SORT(.dtors.*))
  *(.dtors)
  *(.rodata*)
- .rodata        0x080107ec        0xc ..\obj\stm32f10x__clock.o
- .rodata        0x080107f8      0xd00 ..\obj\main.o
-                0x080107f8                ExtCG
-                0x08010af8                FirstScreen
+ .rodata        0x080107e8        0xc ..\obj\stm32f10x__clock.o
+ .rodata        0x080107f4      0xd00 ..\obj\main.o
+                0x080107f4                ExtCG
+                0x08010af4                FirstScreen
  .rodata.str1.4
-                0x080114f8      0x69c ..\obj\main.o
+                0x080114f4      0x69c ..\obj\main.o
  *(.eh_fram e*)
 
-.glue_7         0x08011b94        0x0
+.glue_7         0x08011b90        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x08011b94        0x0
+.glue_7t        0x08011b90        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x08011b94        0x0
+.vfp11_veneer   0x08011b90        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x08011b94        0x0
+.v4_bx          0x08011b90        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x08011b94                __exidx_start = .
+                0x08011b90                __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x08011b94                __exidx_end = .
-                0x08011b94                __etext = .
-                0x08011b94                _sidata = __etext
+                0x08011b90                __exidx_end = .
+                0x08011b90                __etext = .
+                0x08011b90                _sidata = __etext
 
-.data           0x20000000     0x1ea4 load address 0x08011b94
+.data           0x20000000     0x1ea4 load address 0x08011b90
                 0x20000000                __data_start__ = .
                 0x20000000                _sdata = __data_start__
  *(vtable)
@@ -1813,7 +1813,7 @@ Linker script and memory map
                 0x20001ea4                __data_end__ = .
                 0x20001ea4                _edata = __data_end__
 
-.bss            0x20001ea4     0xdcc4 load address 0x08013a38
+.bss            0x20001ea4     0xdcc4 load address 0x08013a34
                 0x20001ea4                . = ALIGN (0x4)
                 0x20001ea4                __bss_start__ = .
                 0x20001ea4                _sbss = __bss_start__
@@ -2017,7 +2017,7 @@ Linker script and memory map
  *(.heap*)
                 0x2000fb68                __HeapLimit = .
 
-.co_stack       0x2000fb68      0x400 load address 0x080216fc
+.co_stack       0x2000fb68      0x400 load address 0x080216f8
                 0x2000fb68                . = ALIGN (0x8)
  *(.co_stack .co_stack.*)
  .co_stack      0x2000fb68      0x400 ..\obj\startup_stm32f10x_cl.o
