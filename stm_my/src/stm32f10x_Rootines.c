@@ -810,7 +810,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 
 	}
 	valueS->Value=Mes;
-	ClrBit(valueS->RCS,(cbDownAlarmSens+cbUpAlarmSens));
+	/*ClrBit(valueS->RCS,(cbDownAlarmSens+cbUpAlarmSens));
 	if ((levelS[cSmDownCtrlLev])&&(Mes <= levelS[cSmDownCtrlLev]))
 		SetBit(valueS->RCS,cbDownCtrlSens);
     if ((levelS[cSmUpCtrlLev])&&(Mes >= levelS[cSmUpCtrlLev]))
@@ -824,7 +824,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 	{
     	SetBit(valueS->RCS,cbUpAlarmSens);
         return;
-    }
+    }*/
 }
 
 void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
