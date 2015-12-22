@@ -125,14 +125,16 @@ int16_t teplTmes[8][6];
 
 int16_t getTempSensor(char fnTepl, char sensor)
 {
-	if ( (pGD_Hot_Tepl->InTeplSens[sensor].RCS == 0) || (pGD_Hot_Tepl->InTeplSens[sensor].RCS == 2) )
+	if (pGD_Hot_Tepl->InTeplSens[sensor].RCS == 0)
 	{
 		teplTmes[fnTepl][sensor] = pGD_Hot_Tepl->InTeplSens[sensor].Value;
 		return pGD_Hot_Tepl->InTeplSens[sensor].Value;
 	}
 	if (pGD_Hot_Tepl->InTeplSens[sensor].RCS != 0)
 	{
-			return teplTmes[fnTepl][sensor];
+		if (pGD_Hot_Tepl->InTeplSens[sensor].Value == 0)
+			return 0;
+		return teplTmes[fnTepl][sensor];
 	}
 }
 
