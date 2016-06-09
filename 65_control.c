@@ -876,18 +876,18 @@ void	DoVentCalorifer(void)
 
 //	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
 //		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
-
-
-	//if (!(YesBit((*(pGD_Hot_Hand+cHSmVent)).RCS,(/*cbNoMech+*/cbManMech))))   // было так
-	//{
-	//	(*(pGD_Hot_Hand+cHSmVent)).Position=pGD_TControl_Tepl->Vent;
-	//	(*(pGD_Hot_Hand+cHSmVent)).Position+=pGD_TControl_Tepl->OutFan<<1;
-	//}
-	//if (!(YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(/*cbNoMech+*/cbManMech))))
-	//{
-	//
-	//	(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
-	//}
+//
+//
+	if (!(YesBit((*(pGD_Hot_Hand+cHSmVent)).RCS,(/*cbNoMech+*/cbManMech))))   // было так
+	{
+		(*(pGD_Hot_Hand+cHSmVent)).Position=pGD_TControl_Tepl->Vent;
+		(*(pGD_Hot_Hand+cHSmVent)).Position+=pGD_TControl_Tepl->OutFan<<1;
+	}
+//	if (!(YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(/*cbNoMech+*/cbManMech))))
+//	{
+//
+//		(*(pGD_Hot_Hand+cHSmHeat)).Position=pGD_TControl_Tepl->Calorifer;
+//	}
 }
 
 
@@ -1327,8 +1327,7 @@ void SetMeteo(void)
 void SetLighting(void)
 {
 	char bZad;
-	if (!(pGD_MechConfig->RNum[cHSmLight])) return;
-
+	if (!(pGD_MechConfig->RNum[cHSmLight])) return;  // if hand mode exit
 	IntZ=0;
 
 //	if(SameSign(IntY,IntZ)) pGD_TControl_Tepl->LightExtraPause=0;
@@ -1337,8 +1336,8 @@ void SetLighting(void)
 	if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))
 		pGD_TControl_Tepl->LightPauseMode=0;
 	ClrDog;
-	bZad=0;
-	if (pGD_TControl_Tepl->LightPauseMode) bZad=1;
+	bZad=0;		// if bZab = 0 calc sun sensor
+	if (pGD_TControl_Tepl->LightPauseMode) bZad=1;  // if bZad = 1 don't calc sun senasor
 
 // old
 //	if ((pGD_Hot_Tepl->AllTask.ModeLight<2))//&&(!bZad))	// если режим досветки не авто
@@ -1347,12 +1346,16 @@ void SetLighting(void)
 //		bZad=1;
 //	}
 
-    pGD_TControl_Tepl->LightMode=pGD_Hot_Tepl->AllTask.ModeLight*pGD_Hot_Tepl->AllTask.Light;
-	bZad=1;
+	pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;
+	//bZad=1;
 
 	if (!bZad)
 	{
-		if (GD.Hot.Zax-60>GD.Hot.Time) pGD_TControl_Tepl->LightMode=0;
+		if (GD.Hot.Zax-60>GD.Hot.Time)
+			pGD_TControl_Tepl->LightMode=0;
+		if (GD.TControl.Tepl[0].SensHalfHourAgo>GD.TuneClimate.l_SunOn50)  // sun > 50% then off light
+			pGD_TControl_Tepl->LightMode=0;
+
 		if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn50)
 		{
 //			pGD_TControl_Tepl->LightMode=50;
@@ -1386,13 +1389,17 @@ void SetLighting(void)
 	// new
 	if (pGD_Hot_Tepl->AllTask.ModeLight == 2)    		// авто досветка
 	{
-		if (pGD_Hot_Tepl->AllTask.Light > pGD_TControl_Tepl->LightMode)
+		if (pGD_Hot_Tepl->AllTask.Light < pGD_TControl_Tepl->LightMode)
 			pGD_TControl_Tepl->LightValue = pGD_Hot_Tepl->AllTask.Light;
+		else
+			pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;
 	}
 	else
 		pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;
 	// new
 
+	if (pGD_TControl_Tepl->LightValue > 100)
+		pGD_TControl_Tepl->LightValue = 100;
 
 	//old
 	//pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;		// значение досветки

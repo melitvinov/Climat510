@@ -723,7 +723,7 @@ typedef struct eeTControlTepl
 
 		eRegsSettings	SetupRegs[2];
 //161
-		int16_t				PauseVent;
+		int16_t			PauseVent;
 		int8_t			Calorifer;
 //164
 		int8_t			StopI;

@@ -400,14 +400,19 @@ void airHeatTimers(void)
 
 void airHeat(char fnTepl)
 {
-	int16_t tempT;
+	if ((YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(cbManMech)))) return;
+	int16_t tempT, tempTon, tempToff = 0;
 //	if ( fnTepl != 0) return;
 	tempT = getTempHeat(fnTepl);
+	if (tempT < GD.Hot.Tepl[fnTepl].AllTask.TAir)
+		tempTon = GD.Hot.Tepl[fnTepl].AllTask.TAir - tempT;
+	else tempToff = tempT - GD.Hot.Tepl[fnTepl].AllTask.TAir;
 	if (tempT > 0)
 	{
-		if ((GD.TuneClimate.airHeatTemperOn >= tempT) && (GD.TuneClimate.airHeatTemperOff > tempT) && (airHeatGetHeatPause(fnTepl) == 0))  // обогреватель можно вкл и пауза между вкл прошла
+		//if ((GD.TuneClimate.airHeatTemperOn >= tempTon) && (GD.TuneClimate.airHeatTemperOff > tempToff) && (airHeatGetHeatPause(fnTepl) == 0))  // обогреватель можно вкл и пауза между вкл прошла
+		if ((GD.TuneClimate.airHeatTemperOn <= tempTon) && (airHeatGetHeatPause(fnTepl) == 0))  // обогреватель можно вкл и пауза между вкл прошла
 			airHeatOn(fnTepl);
-		if ((GD.TuneClimate.airHeatTemperOff <= tempT) && (airHeatGetTimeWork(fnTepl) >= (GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
+		if ((GD.TuneClimate.airHeatTemperOff <= tempToff) && (airHeatGetTimeWork(fnTepl) >= (GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
 			airHeatOff(fnTepl);
 	}
 	GD.Hot.Tepl[fnTepl].airHeatTimeWork = airHeatTimeWork[fnTepl]*100;
