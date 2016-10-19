@@ -436,11 +436,13 @@ void pmHand(void) {
 	                  	  	w_int(&pGD_TControl_Tepl->MechBusy[ByteW].Sens->Value,SSSpS);
 	                        buf[Ad_Buf++]=')';
 				  	  	}
-				  	  	Ad_Buf=Str5;
+ 			  	  	    Ad_Buf=Str5;
 						w_txt(Mes136); Ad_Buf++;
                         IntX=(*pGD_MechConfig_Kontur);
                         w_int(&IntX,SpSSpSS);
-						return;
+
+
+                        return;
                 		}
 				ByteZ-=SumTeplZones;
                 if(ByteZ<SumTeplZones){
@@ -468,6 +470,20 @@ void pmHand(void) {
                         w_int(&pGD_Hot_Hand_Kontur->RCS,bS);
 						AutoMan(pGD_Hot_Hand_Kontur->RCS,ByteX);
                         if (!(Y_menu2%2)) BlkW=1;
+
+                        if (ByteW == cHSmSIOPump)
+                        {
+                        	buf[Ad_Buf++]='(';
+                  	  		w_int(&fnSIOfaza[ByteZ],SS);
+                  	    	buf[Ad_Buf++]=',';
+                  	    	w_int(&fnSIOvelvOut[ByteZ],SSSS);
+                  	    	buf[Ad_Buf++]=',';
+                  	    	w_int(&fnSIOpumpOut[ByteZ],SSSS);
+                  	    	buf[Ad_Buf++]=',';
+                  	    	w_int(&fnSIOpause[ByteZ],SSSS);
+                  	    	buf[Ad_Buf++]=')';
+                        }
+
                         Ad_Buf=Str4;
                         w_txt(Mes133); /* ’од клап */ //Boiler val time~~
                         w_int(&pGD_Hot_Hand_Kontur->Position,bS);
@@ -476,6 +492,7 @@ void pmHand(void) {
 						w_txt(Mes140);// Ad_Buf++;
                         IntX=(*pGD_MechConfig_Kontur);
                         w_int(&IntX,SpSSpSS);
+
 
 						return;
                 		}

@@ -224,6 +224,7 @@ typedef struct eeTepl	{
 
 				uint16_t	airHeatOnOff;   // new
 				uint16_t 	airHeatTimeWork;// new
+				uint16_t 	CO2valveTask;	// new
 
 				int16_t		Rez1[27];
 				//int16_t		Rez1[32];
@@ -517,7 +518,12 @@ typedef struct eeTuneClimate
 		int16_t		airHeatMaxWork;
 		int16_t		airHeatPauseWork;
 
-	    int16_t     Rez[9];   // 14
+		int16_t		co2On;
+		int16_t		co2Fram1;
+		int16_t		co2Fram2;
+		int16_t		co2Off;
+
+	    int16_t     Rez[5];  //9
 //282
        }
         eTuneClimate;
@@ -680,12 +686,12 @@ typedef struct eeTControlTepl
 		int32_t			IntegralVent;
 		int32_t			SaveIntegral;
 //24
-		int16_t				qMaxKonturs;
-		int16_t				qMaxOwnKonturs;
-		int16_t				AbsMaxVent;
-		int16_t				LastTVentCritery;
-		int16_t				LastCritery;
-		int16_t				IntVal[cSWaterKontur];
+		int16_t			qMaxKonturs;
+		int16_t			qMaxOwnKonturs;
+		int16_t			AbsMaxVent;
+		int16_t			LastTVentCritery;
+		int16_t			LastCritery;
+		int16_t			IntVal[cSWaterKontur];
 //36
 //		int16_t				PrevSig[cSWaterKontur];
 //46
@@ -698,9 +704,9 @@ typedef struct eeTControlTepl
 		int8_t			nMaxKontur;
 //131
 //		int8_t			NumLight;
-		int16_t				PowMaxKonturs;
-		int16_t				PowOwnMaxKonturs;
-		int16_t				TimeSIO;
+		int16_t			PowMaxKonturs;
+		int16_t			PowOwnMaxKonturs;
+		int16_t			TimeSIO;
 		int8_t			Vent;
 		int8_t			PrevNLight;//CorrScreen;
 //137
@@ -753,24 +759,24 @@ typedef struct eeTControlTepl
 
 //		int32_t			Functional;
 		int32_t			RealPower;//MidlSens[2];
-		int16_t				MaxDifT;//MidlTimeSens[2];
+		int16_t			MaxDifT;//MidlTimeSens[2];
 	
-		int16_t				TPauseSIO;
+		int16_t			TPauseSIO;
 //		eSensorD		SensorD;
 		int8_t			FramUpdate[2];
 		int8_t			PauseChangeLight;
 		int8_t			NewLight;
-		int16_t				COPause;
-//		int16_t				Rez1[7];
+		int16_t			COPause;
+//		int16_t			Rez1[7];
 		
 		int8_t			NOwnKonturs;
 		int8_t			CurrPower;
 		int8_t			SnowTime;
-		int16_t				s_Power;
-		int16_t				ii_PFactor;
+		int16_t			s_Power;
+		int16_t			ii_PFactor;
 		int8_t			VentBlock;
-		int16_t				f_Power;
-		int16_t				f_NMinDelta;
+		int16_t			f_Power;
+		int16_t			f_NMinDelta;
 		int8_t			bAlarm;
 		int8_t			NAndKontur;
 		int8_t			Alarms[MAX_ALARMS];

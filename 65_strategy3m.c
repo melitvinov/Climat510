@@ -1029,7 +1029,13 @@ void __sLastCheckWindow(char fnTepl) {
 	//IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;   // было
 #warning CHECK THIS
 // NEW
-	IntY = getTempVent(fnTepl) - (*pGD_Hot_Tepl).AllTask.DoTVent;
+
+
+	IntY = 0;
+	if (! getTempVent(fnTepl) )
+		IntY = 0;
+	else
+		IntY = getTempVent(fnTepl) - (*pGD_Hot_Tepl).AllTask.DoTVent;
 
 	if (((DoUn == MaxUn) && (DoOn == MaxOn) && (IntY > 0))
 			|| ((DoUn == MinUn) && (DoOn == MinOn) && (IntY < 0)))
@@ -1045,8 +1051,9 @@ void __sLastCheckWindow(char fnTepl) {
 
 	pGD_Hot_Tepl->Kontur[cSmWindowUnW].Do = (DoUn);
 	pGD_Hot_Tepl->Kontur[cSmWindowOnW].Do = (DoOn);
-
 }
+
+
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 
 /*************************************************************************/

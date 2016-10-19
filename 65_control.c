@@ -378,6 +378,8 @@ int	MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
 
 void AllTaskAndCorrection(void)
 {
+	int sum;
+	int val = 0;
 	
 	IntY=GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
 	/*Установка и коррекция по солнцу температуры обогрева*/
@@ -421,7 +423,26 @@ void AllTaskAndCorrection(void)
 	if ((*pGD_Hot_Tepl).AllTask.CO2)
 		{
 //ОПТИМИЗАЦИЯ
-		(*pGD_Hot_Tepl).AllTask.DoCO2=(*pGD_Hot_Tepl).AllTask.CO2;
+// Коррекция СО2 держать по фрамугам
+		(*pGD_Hot_Tepl).AllTask.DoCO2=(*pGD_Hot_Tepl).AllTask.CO2; 	// так было, строчка лишняя но все же решил оставить
+
+		if (pGD_Control_Tepl->co_model!=3)
+		{
+			sum =  (*(pGD_Hot_Hand+cHSmWinN)).Position + (*(pGD_Hot_Hand+cHSmWinS)).Position;
+			if ((sum >= GD.TuneClimate.co2Fram1) && (sum <= GD.TuneClimate.co2Fram2))
+			{
+				if ((*pGD_Hot_Tepl).AllTask.CO2 > GD.TuneClimate.co2Off)
+				{
+					  if (GD.TuneClimate.co2Fram2 > GD.TuneClimate.co2Fram1)
+						  val = GD.TuneClimate.co2Fram2 - GD.TuneClimate.co2Fram1;
+					  val = ((sum - GD.TuneClimate.co2Fram1) * GD.TuneClimate.co2Off) / val;
+					  (*pGD_Hot_Tepl).AllTask.DoCO2 = (*pGD_Hot_Tepl).AllTask.DoCO2 - val;
+				}
+			}
+			if (sum > GD.TuneClimate.co2Fram2)
+				(*pGD_Hot_Tepl).AllTask.DoCO2 = (*pGD_Hot_Tepl).AllTask.DoCO2 - GD.TuneClimate.co2Off;
+		}
+
 		IntX=CorrectionRule(GD.TuneClimate.s_TStart[0],GD.TuneClimate.s_TEnd,
 			GD.TuneClimate.s_CO2Const,cbCorrCO2OnSun);	
 		SetBit((*pGD_Hot_Tepl).RCS,IntX);
@@ -757,7 +778,9 @@ void __cNextTCalc(char fnTepl)
 /******************************************************************
 		Далее расчет критерия для фрамуг
 *******************************************************************/
-	IntY=getTempVent(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	if (getTempVent(fnTepl))
+		IntY=getTempVent(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTVent;
+	else IntY=0;
 
 	(*pGD_Hot_Tepl).NextTCalc.PCorrectionVent=((int)((((long)(IntY))*((long)pGD_Control_Tepl->f_PFactor))/100));
 	if (pGD_TControl_Tepl->StopVentI<2)
@@ -1010,8 +1033,11 @@ void SetDiskr(char fnTepl)
 
 	for(ByteX=cHSmPump;ByteX<cHSmRegs;ByteX++)
 	{
-		if ((ByteX==cHSmSIOVals)||(ByteX==cHSmLight)) continue;
+		//if ((ByteX==cHSmSIOVals)||(ByteX==cHSmLight)) continue;
+		if ((ByteX==cHSmSIOPump)||(ByteX==cHSmSIOVals)||(ByteX==cHSmLight)) continue;
+
 		__SetBitOutReg(fnTepl,ByteX,1,0);
+
 		if (YesBit((*(pGD_Hot_Hand+ByteX)).Position,0x01))
 			__SetBitOutReg(fnTepl,ByteX,0,0);
 		if (((ByteX==cHSmHeat)||(ByteX==cHSmVent))&&(YesBit((*(pGD_Hot_Hand+ByteX)).Position,0x02)))
@@ -1069,6 +1095,7 @@ void SetDiskr(char fnTepl)
 		default:
 			nLight=0;
 			break;
+
 	}
 
 	for (ByteX=0;ByteX<tMaxLight;ByteX++)
@@ -1078,19 +1105,23 @@ void SetDiskr(char fnTepl)
 
 	}
 
-
-
 /*	if (YesBit((*(pGD_Hot_Hand+cHSmVent)).Position,0x01))
 		__SetBitOutReg(fnTepl,cHSmVent,0,0);
 	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).Position,0x01))
 		__SetBitOutReg(fnTepl,cHSmHeat,0,0);*/
 ClrDog;
 	ByteX=1;
-    if (pGD_Control_Tepl->co_model==2) ByteX=2;
+    if (pGD_Control_Tepl->co_model>=2) ByteX=2;
 
 	if ((pGD_TControl_Tepl->SetupRegs[0].On)
 		&&(pGD_Control_Tepl->co_model))
 		__SetBitOutReg(fnTepl,cHSmCO2,0,ByteX);
+
+	// насос
+	//__SetBitOutReg(fnTepl,cHSmSIOPump,1,0);
+	if (YesBit((*(pGD_Hot_Hand+cHSmSIOPump)).Position,0x01))
+		__SetBitOutReg(fnTepl,cHSmSIOPump,0,0);
+
 	for (ByteX=0;ByteX<4;ByteX++)
 	{
 		IntX=1;
@@ -1098,6 +1129,7 @@ ClrDog;
 		if (YesBit((*(pGD_Hot_Hand+cHSmSIOVals)).Position,IntX))
 			__SetBitOutReg(fnTepl,cHSmSIOVals,0,ByteX);
 	}
+
 #ifdef AGAPOVSKIY_DOUBLE_VALVE
 	if (YesBit((*(pGD_Hot_Hand+cHSmSIOVals)).Position,0x02))
 		__SetBitOutReg(fnTepl,cHSmAHUVals,0,0);
@@ -1323,6 +1355,83 @@ void SetMeteo(void)
 	}
 }
 
+void SetCO2(void)
+{
+//	if (!(pGD_MechConfig->RNum[cHSmCO2])) return;  // if hand mode exit
+//	if (pGD_Control_Tepl->co_model == 2)
+//		{
+//	if ((*pGD_Hot_Tepl).AllTask.DoCO2 > pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value)
+//	{
+//		(*(pGD_Hot_Hand+cHSmCO2)).Position=1;
+//		pGD_TControl_Tepl->COPosition=1;
+//	}
+//		}
+
+/*	pGD_TControl_Tepl->COPosition=0;
+	(*(pGD_Hot_Hand+fHSmReg)).Position=0;
+	(*pGD_Hot_Tepl).AllTask.DoCO2
+	pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value;
+	co2On
+	co2Fram1
+	co2Fram2
+	co2Off
+
+
+	char bZad;
+	if (!(pGD_MechConfig->RNum[cHSmLight])) return;  // if hand mode exit
+	IntZ=0;
+	pGD_TControl_Tepl->LightPauseMode--;
+	if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))
+		pGD_TControl_Tepl->LightPauseMode=0;
+	ClrDog;
+	bZad=0;		// if bZab = 0 calc sun sensor
+	if (pGD_TControl_Tepl->LightPauseMode) bZad=1;  // if bZad = 1 don't calc sun senasor
+	pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;
+	if (!bZad)
+	{
+		if (GD.Hot.Zax-60>GD.Hot.Time)
+			pGD_TControl_Tepl->LightMode=0;
+		if (GD.TControl.Tepl[0].SensHalfHourAgo>GD.TuneClimate.l_SunOn50)  // sun > 50% then off light
+			pGD_TControl_Tepl->LightMode=0;
+
+		if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn50)
+		{
+			IntY=GD.Hot.MidlSR;
+			CorrectionRule(GD.TuneClimate.l_SunOn100,GD.TuneClimate.l_SunOn50,50,0);
+			pGD_TControl_Tepl->LightMode=100-IntZ;
+		}
+	}
+	if (pGD_TControl_Tepl->LightMode!=pGD_TControl_Tepl->OldLightMode)
+	{
+		if (!(((int)pGD_TControl_Tepl->LightMode)*((int)pGD_TControl_Tepl->OldLightMode)))
+		{
+			pGD_TControl_Tepl->DifLightMode=pGD_TControl_Tepl->LightMode-pGD_TControl_Tepl->OldLightMode;
+			pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_PauseMode;
+//			pGD_TControl_Tepl->LightExtraPause=o_DeltaTime;
+		}
+		else
+		{
+			pGD_TControl_Tepl->LightPauseMode=GD.TuneClimate.l_SoftPauseMode;
+		}
+	}
+	pGD_TControl_Tepl->OldLightMode=pGD_TControl_Tepl->LightMode;
+	// new
+	if (pGD_Hot_Tepl->AllTask.ModeLight == 2)    		// авто досветка
+	{
+		if (pGD_Hot_Tepl->AllTask.Light < pGD_TControl_Tepl->LightMode)
+			pGD_TControl_Tepl->LightValue = pGD_Hot_Tepl->AllTask.Light;
+		else
+			pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;
+	}
+	else
+		pGD_TControl_Tepl->LightValue=pGD_TControl_Tepl->LightMode;
+	// new
+
+	if (pGD_TControl_Tepl->LightValue > 100)
+		pGD_TControl_Tepl->LightValue = 100;    */
+}
+
+
 #warning light !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void SetLighting(void)
 {
@@ -1436,7 +1545,10 @@ void SetTepl(char fnTepl)
 		__cNextTCalc(fnTepl);
 
 		DecPumpPause();
-		SetUpSiod(fnTepl);
+
+		//SetUpSiod(fnTepl);
+
+
 		InitScreen(cTermHorzScr,fnTepl);
 		InitScreen(cSunHorzScr,fnTepl);
 		InitScreen(cTermVertScr1,fnTepl);
@@ -1454,6 +1566,7 @@ void SetTepl(char fnTepl)
 			pGD_Hot_Tepl->AllTask.DoPressure,pGD_Hot_Tepl->OtherCalc.MeasDifPress);
 		LaunchVent(fnTepl);
 		SetLighting();
+		SetCO2();				// CO2
 	}
 }
 //Есть место для оптимизации!!!!!!!!!!!!!!!!!!!!
@@ -1562,7 +1675,11 @@ char tCTepl,ttTepl;
 			SetSensOnMech();
 			DoMechanics(tCTepl);
 			SetDiskr(tCTepl);
-			DoSiod();
+
+			SetUpSiod(tCTepl);  // !!!
+
+
+			DoSiod(tCTepl);
 			DoPumps();
 //			CheckReadyMeasure();
 			DoVentCalorifer();

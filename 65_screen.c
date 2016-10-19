@@ -322,12 +322,12 @@ void LaunchVent(char fnTepl)
 		pGD_TControl_Tepl->Vent=0;
 		return;
 	}
-#warning CHECK THIS
-	// NEW
+	// Вентилляторы перемешивания
 	IntY=0;
 	if (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
 	{
-		IntY= getTempVent(fnTepl)-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
+		//IntY= getTempVent(fnTepl)-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
+		IntY = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value - pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
 		if (IntY<0)
 			IntY=-IntY;
 	}
@@ -413,17 +413,12 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
 			pGD_TControl_Tepl->COPause--;
 			return;
 		}
-
-
 	}
-
-	
-	
 	
 	IntX=(((long)DoValue-MeasValue)*pGD_ConstMechanic->ConstMixVal[fHSmReg].v_PFactor/*GD.TuneClimate.reg_PFactor[fHSmReg-cHSmCO2]*/)/1000;
 	IntY=(fReg->IntVal/100);
 	IntZ=100;
-	if (pGD_Control_Tepl->co_model==2) IntZ=200;
+	if (pGD_Control_Tepl->co_model>=2) IntZ=200;
 	if (IntY>IntZ-IntX)
 	{
 	   IntY=IntZ-IntX;
@@ -445,19 +440,63 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
 
 	}
 
+
+#warning CO2!!!!
 void RegWorkDiskr(char fHSmReg)
 	{
 	eRegsSettings* fReg;
 	int tMech;
+	int delta;
+	int sum;
+	int COset;
+	int val = 0;
 		fReg=&pGD_TControl_Tepl->SetupRegs[fHSmReg-cHSmCO2];
 		tMech=pGD_TControl_Tepl->COPosition;
 		if ((!pGD_Control_Tepl->co_model)||(fHSmReg!=cHSmCO2)) return;
-		if (pGD_Control_Tepl->co_model==2)
+		//if (pGD_Control_Tepl->co_model==2)
+		if (pGD_Control_Tepl->co_model>=2)
 			tMech-=100;
 		if (tMech<0) tMech=0;
-
 		IntY=0;	
 		ByteZ=0;
+
+
+		if (pGD_Control_Tepl->co_model==3)
+		{
+			COset = (*pGD_Hot_Tepl).AllTask.DoCO2;
+
+			sum =  (*(pGD_Hot_Hand+cHSmWinN)).Position + (*(pGD_Hot_Hand+cHSmWinS)).Position;
+			if ((sum >= GD.TuneClimate.co2Fram1) && (sum <= GD.TuneClimate.co2Fram2))
+			{
+			  if (COset > GD.TuneClimate.co2Off)
+			  {
+				  if (GD.TuneClimate.co2Fram2 > GD.TuneClimate.co2Fram1)
+					  val = GD.TuneClimate.co2Fram2 - GD.TuneClimate.co2Fram1;
+				  val = ((sum - GD.TuneClimate.co2Fram1) * GD.TuneClimate.co2Off) / val;
+				  GD.TuneClimate.co_MaxTime-(((int)tMech)*(GD.TuneClimate.co_MaxTime-GD.TuneClimate.co_MinTime))/100;
+				  COset = COset - val;
+				  //COset = COset - GD.TuneClimate.co2Off;
+			  }
+			}
+			if (sum > GD.TuneClimate.co2Fram2)
+			{
+				COset = COset - GD.TuneClimate.co2Off;
+			}
+		    if (COset > (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value)
+		    {
+			  delta = COset - (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value;
+			  (*pGD_Hot_Tepl).CO2valveTask = delta;
+			  if (delta < GD.TuneClimate.co2On)
+			  {
+				tMech = 0;
+			  }
+		    }
+		    else
+		    {
+		    	tMech = 0;
+		    }
+		}
+
 		fReg->Work=GD.TuneClimate.co_Impuls;
 		if (!tMech) fReg->Work=0; 
 		fReg->Stop=GD.TuneClimate.co_MaxTime-(((int)tMech)*(GD.TuneClimate.co_MaxTime-GD.TuneClimate.co_MinTime))/100;
