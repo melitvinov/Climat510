@@ -395,8 +395,9 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
 	if (fHSmReg==cHSmCO2)
 	{
 		//if (GD.Hot.blockCO2) return; 
-			
-		pGD_Hot_Tepl->NextTCalc.DiffCO2=DoValue-MeasValue;
+		if (DoValue > MeasValue)
+			pGD_Hot_Tepl->NextTCalc.DiffCO2=DoValue-MeasValue;
+		else pGD_Hot_Tepl->NextTCalc.DiffCO2 = 0;
 		if (!pGD_Hot_Tepl->NextTCalc.DiffCO2) 
 			pGD_Hot_Tepl->NextTCalc.DiffCO2=-1;
 //		if ((pGD_Hot_Tepl->NextTCalc.DiffCO2<=0))
@@ -475,26 +476,22 @@ void RegWorkDiskr(char fHSmReg)
 				  val = ((sum - GD.TuneClimate.co2Fram1) * GD.TuneClimate.co2Off) / val;
 				  GD.TuneClimate.co_MaxTime-(((int)tMech)*(GD.TuneClimate.co_MaxTime-GD.TuneClimate.co_MinTime))/100;
 				  COset = COset - val;
-				  //COset = COset - GD.TuneClimate.co2Off;
 			  }
 			}
 			if (sum > GD.TuneClimate.co2Fram2)
 			{
 				COset = COset - GD.TuneClimate.co2Off;
 			}
+			(*pGD_Hot_Tepl).CO2valveTask = 0;
 		    if (COset > (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value)
 		    {
 			  delta = COset - (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value;
 			  (*pGD_Hot_Tepl).CO2valveTask = delta;
 			  if (delta < GD.TuneClimate.co2On)
-			  {
 				tMech = 0;
-			  }
 		    }
 		    else
-		    {
 		    	tMech = 0;
-		    }
 		}
 
 		fReg->Work=GD.TuneClimate.co_Impuls;

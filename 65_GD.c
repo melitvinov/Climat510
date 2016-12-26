@@ -229,7 +229,7 @@ typedef struct eeTepl	{
 				int16_t		Rez1[27];
 				//int16_t		Rez1[32];
 
-				int16_t		MaxReqWater;
+				int16_t		MaxReqWater;  // надо теплоноситель
 				int16_t		Rez[9];
 				eMechanic	HandCtrl[cSHandCtrl];
 				} eTepl;				

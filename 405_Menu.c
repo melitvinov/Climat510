@@ -108,7 +108,7 @@ void pmReset(void) {
     	w_txt(Mes222);   // Init Strategy~
     	w_int(&BlockEEP[3].Erase,oS);
 		}
-	if(EndInput && (BlockEEP[nBlEEP].Erase ==1)) {
+	if(EndInput && (BlockEEP[nBlEEP].Erase == 1)) {
 			EndInput=0;
 			TestMem(nBlEEP+10);
 //			RamToEEP(nBlEEP);

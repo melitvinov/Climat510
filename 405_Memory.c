@@ -135,35 +135,34 @@ char TestRAM(void) {
 }
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
-void	TestFRAM(char EraseBl) {
+void	TestFRAM(char EraseBl)
+{
 	    uint16_t cSum;
 	    uint8_t nBlFRAM;
-        for(nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++){
-        	RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-        	//I2C_Mem_Read(0,
-
-        	RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
-            cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+        for(nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+        {
+          RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+          RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
+          cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
           ClrDog;
-          if(CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum || (EraseBl==(nBlFRAM+10))) {
-/* если неверная контр сумма ЕЕР, то перзапись EEPROM */
-           InitGD(5);
-           SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-           cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-           SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
-           BlockEEP[nBlFRAM].CSum=cSum;
-           BlockEEP[nBlFRAM].Erase=0; //++
-//           RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
-           } //else {BlockEEP[nBlFRAM].Erase=3;}
-/* формирование контр суммы ОЗУ после инициализации */
+          if ( (CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase == 1) )
+          {
+            InitGD(5);
+            SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
+            BlockEEP[nBlFRAM].CSum=cSum;
+            BlockEEP[nBlFRAM].Erase=0; //++
           }
-    	//SendBlockFRAM(sizeof(GD),&BlockEEP,sizeof(BlockEEP));
+          	  /* формирование контр суммы ОЗУ после инициализации */
+        }
 }
 
 /*-- Была запись с ПК в блок NumBlock ,
      цикл перезаписи блока куда была передача ----*/
 void ReWriteFRAM(void) {
-		uint16_t cSum;
+
+	     uint16_t cSum;
          ClrDog;
          ByteX=NumBlock-1;
          SendBlockFRAM(BlockEEP[ByteX].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[ByteX].AdrCopyRAM,BlockEEP[ByteX].Size);
@@ -190,16 +189,20 @@ void TestMem(uchar TipReset) {
 //	   TipReset=2;
 /*------ проверка контр суммы блока CONTROL ---------------------------*/
        if(TipReset>5) InitGD(5);
-       if((!Menu) && TestRAM0()) TipReset=2;
+       if((!Menu) && TestRAM0())
+    	   TipReset=2;
        if(!TipReset) return;
 /*------ проверка контр суммы ОЗУ  -------------------------------*/
+
        ClrDog;
-       if((TipReset==1)&& TestRAM()) TipReset++;
+       if((TipReset==1)&& TestRAM())
+    	   TipReset++;
        if (TipReset<2) return;
        Menu=0;
        ClrDog;
+
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
-	   TestFRAM(TipReset);
+       TestFRAM(TipReset);
        ClrDog;
        ButtonReset();
        GetRTC();

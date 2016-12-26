@@ -107,7 +107,12 @@ start:
         if (!NumBlock && (GD.Hot.News&0x80)) SetRTC();
         ClrDog;
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
-        if (NumBlock) ReWriteFRAM();
+#warning Изменение блока
+        //убрать, тестовая вещт показывает прием пакета
+        //if (GD.Hot.Tepl[0].HandCtrl[1].RCS == 1)
+        //	GD.SostRS=OUT_UNIT;
+        if (NumBlock)
+        	ReWriteFRAM();
 //				}
         GD.SostRS=OUT_UNIT;
         keyboardSetSIM(105);

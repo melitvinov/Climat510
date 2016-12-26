@@ -1030,6 +1030,7 @@ void SetResRam(void)
 {
 	GD.Hot.News|=bResRam;	
 }
+
 void InitGD(char fTipReset) {
 		eCalSensor xdata *eCS;
         ClrDog;

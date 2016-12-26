@@ -424,10 +424,10 @@ void AllTaskAndCorrection(void)
 		{
 //ОПТИМИЗАЦИЯ
 // Коррекция СО2 держать по фрамугам
-		(*pGD_Hot_Tepl).AllTask.DoCO2=(*pGD_Hot_Tepl).AllTask.CO2; 	// так было, строчка лишняя но все же решил оставить
+		  (*pGD_Hot_Tepl).AllTask.DoCO2=(*pGD_Hot_Tepl).AllTask.CO2; 	// так было, строчка лишняя но все же решил оставить
 
-		if (pGD_Control_Tepl->co_model!=3)
-		{
+		  if (pGD_Control_Tepl->co_model!=3)
+		  {
 			sum =  (*(pGD_Hot_Hand+cHSmWinN)).Position + (*(pGD_Hot_Hand+cHSmWinS)).Position;
 			if ((sum >= GD.TuneClimate.co2Fram1) && (sum <= GD.TuneClimate.co2Fram2))
 			{
@@ -441,12 +441,12 @@ void AllTaskAndCorrection(void)
 			}
 			if (sum > GD.TuneClimate.co2Fram2)
 				(*pGD_Hot_Tepl).AllTask.DoCO2 = (*pGD_Hot_Tepl).AllTask.DoCO2 - GD.TuneClimate.co2Off;
-		}
+		  }
 
-		IntX=CorrectionRule(GD.TuneClimate.s_TStart[0],GD.TuneClimate.s_TEnd,
+		  IntX=CorrectionRule(GD.TuneClimate.s_TStart[0],GD.TuneClimate.s_TEnd,
 			GD.TuneClimate.s_CO2Const,cbCorrCO2OnSun);	
-		SetBit((*pGD_Hot_Tepl).RCS,IntX);
-		(*pGD_Hot_Tepl).AllTask.DoCO2+=IntZ;
+		  SetBit((*pGD_Hot_Tepl).RCS,IntX);
+		  (*pGD_Hot_Tepl).AllTask.DoCO2+=IntZ;
 		}
 	/*---------------------------------------------------*/
 	/*Установка и коррекция по солнцу минимальной температуры в контурах 1 и 2*/
@@ -516,26 +516,6 @@ void AllTaskAndCorrection(void)
 			GD.TuneClimate.f_CorrTVentUp,0);
 		(*pGD_Hot_Tepl).AllTask.NextTVent+=IntZ;
 		(*pGD_Hot_Tepl).AllTask.DoTVent+=IntZ;
-
-//	Установка темпеатуры вентилирования
-//	(*pGD_Hot_Tepl).AllTask.DoTVent=(*pGD_Hot_Tepl).AllTask.NextTAir;//GD.TControl.Tepl[0].SensHalfHourAgo;//(*pGD_Hot_Tepl).AllTask.DoTHeat;//+GD.TuneClimate.d_TempVent;
-//	Коррекция по влажности темпеатуры задания
-
-//	IntY=DefRH();
-	//(*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value-(*pGD_Hot_Tepl).AllTask.DoRHAir;
-	//if ((!(*pGD_Hot_Tepl).AllTask.DoRHAir)||(!(*pGD_Hot_Tepl).InTeplSens[cSmRHSens].Value)) IntY=0;
-
-//		Если влажность повышенная,то...
-//	IntX=CorrectionRule(GD.TuneClimate.t_UpRHStart,GD.TuneClimate.t_UpRHEnd,
-//		GD.TuneClimate.t_UpRHTFactor,cbCorrTAirUpOnRH);	
-//	(*pGD_Hot_Tepl).AllTask.DoTHeat-=IntZ;
-//	(*pGD_Hot_Tepl).AllTask.NextTAir-=IntZ;
-//	IntY=-IntY;
-//		Если влажность пониже,то...
-//	IntX=CorrectionRule(GD.TuneClimate.t_DownRHStart,GD.TuneClimate.t_DownRHEnd,
-//		GD.TuneClimate.t_DownRHTFactor,cbCorrTAirDownOnRH);	
-//	(*pGD_Hot_Tepl).AllTask.DoTHeat+=IntZ;
-//	(*pGD_Hot_Tepl).AllTask.NextTAir+=IntZ;
 	ClrDog;
 	/*--------------------------------------------------------------*/
 
@@ -1432,7 +1412,7 @@ void SetCO2(void)
 }
 
 
-#warning light !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#warning light Досветка !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void SetLighting(void)
 {
 	char bZad;
@@ -1455,8 +1435,11 @@ void SetLighting(void)
 //		bZad=1;
 //	}
 
-	pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;
-	//bZad=1;
+	if (pGD_Hot_Tepl->AllTask.ModeLight<2)
+	{
+		pGD_TControl_Tepl->LightMode = pGD_Hot_Tepl->AllTask.ModeLight * pGD_Hot_Tepl->AllTask.Light;
+		bZad=1;
+	}
 
 	if (!bZad)
 	{
