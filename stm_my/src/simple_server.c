@@ -30,8 +30,6 @@
 #include "net.h"
 #include "simple_server.h"
 
-
-
 eAdrGD	*pADRGD;
 uint8_t* EthSost;
 uint8_t* EthBlock;
@@ -114,6 +112,41 @@ unsigned char analyse_get_url(char *str)
 	return(-2);
 	}
 
+/*uint16_t CRC16(char *fbuf, const uint16_t start, const uint16_t end)
+{
+  volatile int i,j;
+  volatile uint16_t bCRC;
+  volatile char ch;
+  bCRC = 0xFFFF;
+  for (i=start; i<end; i++)
+  {
+	  ch = *fbuf;
+    bCRC = bCRC ^ ch;
+    fbuf++;
+    for (j=0; j<8; j++)
+    {
+      if ( (bCRC % 2) > 0 )
+      {
+        bCRC = bCRC >> 1;
+        bCRC = bCRC ^ 0xA001;
+      }
+      else
+        bCRC = bCRC >> 1;
+    }
+  }
+  return bCRC;
+}*/
+
+char CheckSum(char *byte, int size)
+{
+  int i;
+  char res = 0;
+  for (i=0; i < size; i++)    // 263
+  {
+	  res = res + byte[i];
+  }
+  return res;
+}
 
 int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 {
@@ -153,7 +186,21 @@ switch (Sockets[nSock].IP_PHASE)
 //			Sockets[nSock].IP_PHASE=ETH_INIT;
 			return 1;
 		}
+
 		fill_tcp_buf(f_buf,Sockets[nSock].Header.Size,((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr);
+		/*if (Sockets[nSock].Header.Size == 263)
+		{
+			volatile int16_t ii;
+			ii = f_buf[62];
+			ii = ii << 8;
+			ii = ii + f_buf[61];
+			if (ii > 1500)
+			{
+				ii = 10;
+				f_buf[61] = 0x10;  // 95
+				f_buf[62] = 0x27;  // 95
+			}
+		}*/
 		*fbsize=Sockets[nSock].Header.Size;
 
 		Sockets[nSock].IP_PHASE=ETH_INIT;
@@ -161,7 +208,13 @@ switch (Sockets[nSock].IP_PHASE)
 
 		return 1;
 	case(ETH_RECVBLOCK):
-		if (Sockets[nSock].Header.Size<=(plen-54))/*info_data_len/*(plen-54)*/
+		if (Sockets[nSock].Header.Size<=plen-54)
+        {
+          volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
+          if ( crc != fbuf[info_data_len+53] ) return 0;
+        }
+
+		if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
 		{
 			plen=Sockets[nSock].Header.Size;
 			*EthBlock=Sockets[nSock].NumBlock;
@@ -173,8 +226,27 @@ switch (Sockets[nSock].IP_PHASE)
 //				&&(Sockets[nSock].Header.Size<pADRGD[Sockets[nSock].NumBlock].MaxSize))*/
 //			if ((Sockets[nSock].NumBlock<12)&&((Sockets[nSock].Header.NumDirect&0xF0)==IN_UNIT))
 			{
+
 				BufCpy(((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr,&f_buf[data_p],plen);
 				Sockets[nSock].Header.Adr+=plen;
+
+				// test
+				//if (Sockets[nSock].Header.Size == 263)
+				//{
+				//	CRC16(&f_buf[data_p], 0, 50);
+
+					//volatile int16_t ii;
+					//ii = f_buf[98];
+					//ii = ii << 8;
+					//ii = ii + f_buf[97];
+					//if (ii > 1500)
+					//{
+					//	ii = 10;
+					//	f_buf[105] = 0x10;  // 95     // 61 макс 1 конт
+					//	f_buf[106] = 0x27;  // 95	 // 62 макс 1 конт
+					//}
+				//}
+				// test
 			}
 		Sockets[nSock].Header.Size-=plen;
 		*fbsize=0;
@@ -187,7 +259,7 @@ int simple_servercycle(void)
 {
 	uchar tIPAddr[4];
 	char i,nS,freeSlot;
-	unsigned int	j;
+	volatile unsigned int j;
 //		OSTimeDlyHMSM(0, 0, 0, 50);
         // get the next new packet:
         plen = enc28j60PacketReceive(BUFFER_SIZE, fbuf);
@@ -273,15 +345,23 @@ int simple_servercycle(void)
 	                }
 	            else
 	            {
-					j=checksum(&fbuf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN+info_data_len,2);
-					if (j)	return;
+	            	//if (Sockets[nS].IP_PHASE == ETH_RECVBLOCK)
+	            	//{
+	            	//	fbuf[27] = 0xFF;
+	            	//}
 
+					j=checksum(&fbuf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN+info_data_len,2);
+					if (j)
+					{
+						//j = 0xFF;
+						return;
+					}
 	            }
 	            check_ip_scr(fbuf,tIPAddr);
 //	            GlobData++;
 	            BufCpy(Sockets[nS].IP_source,tIPAddr,4);
 	            SocketUpdate(nS,fbuf,dat_p,&plen);
-#warning IP send packet!!!!!!!!!!!!!!
+
 	            if (plen)
 	            	make_tcp_ack_with_data(fbuf,plen,0); // send data
 	            else

@@ -1629,6 +1629,26 @@ void	TransferWaterToBoil(void)
         Создана от 14.04.04
 --------------------------------------------------*/
 
+int volatile settingsArray[8];
+
+void saveSettings(char tCTepl)
+{
+	settingsArray[0] = GD.Hot.Tepl[tCTepl].tempParamHeat;
+	settingsArray[1] = GD.Hot.Tepl[tCTepl].tempParamVent;
+	settingsArray[2] = GD.Hot.Tepl[tCTepl].tempHeat;
+	settingsArray[3] = GD.Hot.Tepl[tCTepl].tempVent;
+	settingsArray[4] = GD.Hot.Tepl[tCTepl].newsZone;
+}
+
+void loadSettings(char tCTepl)
+{
+	GD.Hot.Tepl[tCTepl].tempParamHeat = settingsArray[0];
+	GD.Hot.Tepl[tCTepl].tempParamVent = settingsArray[1];
+	GD.Hot.Tepl[tCTepl].tempHeat = settingsArray[2];
+	GD.Hot.Tepl[tCTepl].tempVent = settingsArray[3];
+	GD.Hot.Tepl[tCTepl].newsZone = settingsArray[4];
+}
+
 void Control(void) 
 	{
 char tCTepl,ttTepl;
@@ -1652,7 +1672,8 @@ char tCTepl,ttTepl;
 		OutR[9]=0;
 		OutR[10]=0;
 		SetAlarm();
-		for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
+
+    	for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
 		{
 			SetPointersOnTepl(tCTepl);
 			SetSensOnMech();
@@ -1720,6 +1741,7 @@ char tCTepl,ttTepl;
 				GD.TControl.Delay=0;
 				for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
 				{
+					saveSettings(tCTepl);
 					MemClr(&GD.Hot.Tepl[tCTepl].ExtRCS,(
 						sizeof(char)*2+sizeof(eClimTask)+sizeof(eOtherCalc)+
 						sizeof(eNextTCalc)+sizeof(eKontur)*cSKontur+20));
@@ -1732,6 +1754,7 @@ char tCTepl,ttTepl;
 					}
 					IntZ=GD.Hot.Time;
 					ClrDog;
+					loadSettings(tCTepl);
 					TaskTimer(0,ttTepl,tCTepl);
 					SetPointersOnTepl(tCTepl);
 					SetTepl(tCTepl);

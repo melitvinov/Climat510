@@ -27,6 +27,118 @@ return 1;
 }
 */
 //;------FullCheck------------------
+char volatile konturMax[6];
+char volatile mecPosArray[7];
+
+void saveMech(char tCTepl)
+{
+	mecPosArray[0] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position;
+	mecPosArray[1] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position;
+	mecPosArray[2] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position;
+	mecPosArray[3] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position;
+	mecPosArray[4] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position;
+	mecPosArray[5] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position;
+	mecPosArray[6] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
+}
+
+void loadKontur(char tCTepl)
+{
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
+	GD.Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
+}
+
+void saveKontur(char tCTepl)
+{
+	konturMax[0] = GD.Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
+	konturMax[1] = GD.Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
+	konturMax[2] = GD.Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
+	konturMax[3] = GD.Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
+	konturMax[4] = GD.Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
+	konturMax[5] = GD.Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
+}
+
+void loadMech(char tCTepl)
+{
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].RCS = 1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].RCS = 1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].RCS =	1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].RCS =	1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].RCS =	1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].RCS =	1;
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS = 1;
+
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position = mecPosArray[0];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position = mecPosArray[1];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position = mecPosArray[2];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position = mecPosArray[3];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position = mecPosArray[4];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position = mecPosArray[5];
+	GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =	mecPosArray[6];
+}
+
+char volatile repeatNews[8];
+
+void initCheckConfig()
+{
+	int i;
+	for (i=0;i<8;i++)
+		repeatNews[i] = 0;
+}
+
+void checkConfig()
+{
+	char volatile tCTepl,sys;
+	char volatile checkMech, checkKontur;
+	for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
+	{
+		checkMech = 0;
+		checkKontur = 0;
+		for (sys=0;sys<6;sys++)
+		{
+		  if (GD.Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
+		   	checkKontur = 1;
+		}
+		ClrDog;
+		for (sys=0;sys<6;sys++)
+		{
+	        if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH+sys].RCS == 0)
+	        	checkMech = 1;
+		}
+		ClrDog;
+        if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS == 0)
+        	checkMech = 1;
+
+    	if (checkMech == 1)
+    	{
+    		GD.Hot.Tepl[tCTepl].newsZone = 0x0A;
+    		loadMech(tCTepl);
+    		repeatNews[tCTepl] = 4;
+    	} else
+    	{
+    		saveMech(tCTepl);
+    	}
+    	ClrDog;
+    	if (checkKontur == 1)
+    	{
+    		GD.Hot.Tepl[tCTepl].newsZone = 0x0F;
+    		loadKontur(tCTepl);
+    		repeatNews[tCTepl] = 4;
+    	} else
+    	{
+    		saveKontur(tCTepl);
+    	}
+    	ClrDog;
+    	if (repeatNews[tCTepl])
+    		repeatNews[tCTepl]--;
+    	if (repeatNews[tCTepl] <= 0)
+    		GD.Hot.Tepl[tCTepl].newsZone = 0;
+	}
+
+}
 
 
 main()
@@ -83,6 +195,7 @@ main()
     ClearAllAlarms();
     siodInit();
     airHeatInit();   // airHeat
+    initCheckConfig();
 start:
 
     if (not) {
@@ -108,9 +221,10 @@ start:
         ClrDog;
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
 #warning Изменение блока
-        //убрать, тестовая вещт показывает прием пакета
-        //if (GD.Hot.Tepl[0].HandCtrl[1].RCS == 1)
-        //	GD.SostRS=OUT_UNIT;
+        //убрать, тестовая вещь показывает прием пакета
+
+       	checkConfig();
+
         if (NumBlock)
         	ReWriteFRAM();
 //				}

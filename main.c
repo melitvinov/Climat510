@@ -513,5 +513,3 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #include "src/enc28j60.c"
 #include "src/ip_arp_udp_tcp.c"
 #include "src/simple_server.c"
-
-

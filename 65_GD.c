@@ -226,11 +226,14 @@ typedef struct eeTepl	{
 				uint16_t 	airHeatTimeWork;// new
 				uint16_t 	CO2valveTask;	// new
 
-				int16_t		Rez1[27];
+
+
+				int16_t		Rez1[27];       // 27
 				//int16_t		Rez1[32];
 
 				int16_t		MaxReqWater;  // надо теплоноситель
-				int16_t		Rez[9];
+				uint16_t    newsZone;		// new
+				int16_t		Rez[8];    // 9
 				eMechanic	HandCtrl[cSHandCtrl];
 				} eTepl;				
 
@@ -550,8 +553,7 @@ typedef struct eeTeplControl
 		int8_t		sensT_heat;
 		int8_t		sensT_vent;
 
-
-		int16_t		Rez[19];
+   	    int16_t		Rez[19];
 //+42 байта
 		} eTeplControl;
 
