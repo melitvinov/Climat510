@@ -1,3 +1,8 @@
+
+// XXX: for eAdrGD
+#include "simple_server.h"
+
+
 /* Ќазначение битов регистра новостей - GD.SostPol.News */
 #define SumTeplZones	GD.Control.ConfSTepl
 

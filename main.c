@@ -12,10 +12,11 @@
 #include "stm32f10x_Rootines.h"
 #include "stm32f10x_i2cRel.h"
 #include "stm32f10x_dma.h"
-#include "405_EngRus.c"
-#include "65_const.c"
-#include "405_ClimDef.c"
-#include "405_ConfigEnRuSR.c"
+
+#include "405_EngRus.h"
+#include "65_const.h"
+#include "405_ClimDef.h"
+#include "405_ConfigEnRuSR.h"
 
 #define cConfSTepl		6
 //#define BIGLCD
@@ -507,9 +508,9 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #include "405_menu.c"
 #include "65_main.c"
 
-#include "src/stm32f10x_LCD240x64.c"
-#include "src/stm32f10x_Rootines.c"
-#include "src/SPI.c"
-#include "src/enc28j60.c"
-#include "src/ip_arp_udp_tcp.c"
-#include "src/simple_server.c"
+#include "stm32f10x_LCD240x64.c"
+#include "stm32f10x_Rootines.c"
+#include "SPI.c"
+#include "enc28j60.c"
+#include "ip_arp_udp_tcp.c"
+#include "simple_server.c"
