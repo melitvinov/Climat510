@@ -510,7 +510,3 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 
 #include "stm32f10x_LCD240x64.c"
 #include "stm32f10x_Rootines.c"
-#include "SPI.c"
-#include "enc28j60.c"
-#include "ip_arp_udp_tcp.c"
-#include "simple_server.c"

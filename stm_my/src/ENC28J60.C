@@ -10,9 +10,9 @@ static unsigned int NextPacketPtr;
 unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
 	{
 	unsigned char dat = 0;
-	
+
 	ENC28J60_CSL();
-	
+
 	dat = op | (address & ADDR_MASK);
 	SPI1_ReadWrite(dat);
 	dat = SPI1_ReadWrite(0xFF);
@@ -29,7 +29,7 @@ unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
 void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data)
 	{
 	unsigned char dat = 0;
-	  
+
 	ENC28J60_CSL();
 	// issue write command
 	dat = op | (address & ADDR_MASK);
@@ -61,7 +61,7 @@ void enc28j60WriteBuffer(unsigned int len, unsigned char* data)
 	ENC28J60_CSL();
 	// issue write command
 	SPI1_ReadWrite(ENC28J60_WRITE_BUF_MEM);
-	
+
 	while(len)
 		{
 		len--;
@@ -109,7 +109,8 @@ void enc28j60PhyWrite(unsigned char address, unsigned int data)
 	// wait until the PHY write completes
 	while(enc28j60Read(MISTAT) & MISTAT_BUSY)
 		{
-	    	Sound;
+        #warning "here was a sound"
+//      	Sound;
 			//Del_10us(1);
 			//_nop_();
 		}
@@ -188,12 +189,12 @@ void enc28j60Init(unsigned char* macaddr)
 	enc28j60Write(MABBIPG, 0x12);
 	// Set the maximum packet size which the controller will accept
         // Do not send packets longer than MAX_FRAMELEN:
-	enc28j60Write(MAMXFLL, MAX_FRAMELEN&0xFF);	
+	enc28j60Write(MAMXFLL, MAX_FRAMELEN&0xFF);
 	enc28j60Write(MAMXFLH, MAX_FRAMELEN>>8);
 	// do bank 3 stuff
 	// write MAC address
 	// NOTE: MAC address in ENC28J60 is byte-backward
-	enc28j60Write(MAADR5, macaddr[0]);	
+	enc28j60Write(MAADR5, macaddr[0]);
 	enc28j60Write(MAADR4, macaddr[1]);
 	enc28j60Write(MAADR3, macaddr[2]);
 	enc28j60Write(MAADR2, macaddr[3]);

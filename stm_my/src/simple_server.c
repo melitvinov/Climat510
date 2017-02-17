@@ -6,7 +6,7 @@
  * See http://www.gnu.org/licenses/gpl.html
  *
  * Ethernet remote device and sensor
- * UDP and HTTP interface 
+ * UDP and HTTP interface
         url looks like this http://baseurl/password/command
         or http://baseurl/password/
  *
@@ -257,7 +257,7 @@ switch (Sockets[nSock].IP_PHASE)
 #warning IP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int simple_servercycle(void)
 {
-	uchar tIPAddr[4];
+	uint8_t tIPAddr[4];
 	char i,nS,freeSlot;
 	volatile unsigned int j;
 //		OSTimeDlyHMSM(0, 0, 0, 50);
@@ -271,7 +271,7 @@ int simple_servercycle(void)
             return;
         	}
         // arp is broadcast if unknown but a host may also
-        // verify the mac address by sending it to 
+        // verify the mac address by sending it to
         // a unicast address.
         if(eth_type_is_arp_and_my_ip(fbuf,plen))
         	{
@@ -288,7 +288,7 @@ int simple_servercycle(void)
 
                 if(fbuf[IP_PROTO_P]==IP_PROTO_ICMP_V && fbuf[ICMP_TYPE_P]==ICMP_TYPE_ECHOREQUEST_V)
         	{
-            // a ping packet, let's send pong	
+            // a ping packet, let's send pong
 			make_echo_reply_from_request(fbuf, plen);
 			//USART_DMASendText(USART1,"make_echo_reply_from_request\n");
 			return;

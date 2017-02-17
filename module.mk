@@ -23,7 +23,12 @@ SRC += stm_my/src/stm32f10x__clock.c
 SRC += keyboard/keyboard.c
 
 # these are 'coarse fixed'
-#SRC += 405_Display.c
+#SRC += stm_my/src/stm32f10x_LCD240x64.c
+
+SRC += stm_my/src/spi.c
+SRC += stm_my/src/enc28j60.c
+SRC += stm_my/src/ip_arp_udp_tcp.c
+SRC += stm_my/src/simple_server.c
 
 CINCS += . stm_my/inc stm_lib/inc cmsis_boot cmsis keyboard
 
