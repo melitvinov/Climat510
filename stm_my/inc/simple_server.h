@@ -26,25 +26,26 @@
 
 typedef struct eeHeader
 {
-	int16_t Adr;
-	int16_t Size;
-	uint8_t	NumDirect;
+    int16_t Adr;
+    int16_t Size;
+    uint8_t NumDirect;
 
 }eHeader;
 
-typedef struct eeAdrGD {
-	uint8_t*	Adr;
-	uint16_t	MaxSize;
+typedef struct eeAdrGD
+{
+    uint8_t*    Adr;
+    uint16_t    MaxSize;
 }eAdrGD;
 
 typedef struct eeSocket
-		{
-			uint8_t	IP_source[4];
-			char	IP_PHASE;
-			int		Timeout;
-			char	NumBlock;
-			eHeader Header;
-		} eSocket;
+{
+    uint8_t IP_source[4];
+    char    IP_PHASE;
+    int     Timeout;
+    char    NumBlock;
+    eHeader Header;
+} eSocket;
 
 
 

@@ -55,7 +55,7 @@
 #define IP_TOTLEN_H_P 0x10
 #define IP_TOTLEN_L_P 0x11
 
-#define IP_PROTO_P 0x17  
+#define IP_PROTO_P 0x17
 
 #define IP_PROTO_ICMP_V 1
 #define IP_PROTO_TCP_V 6

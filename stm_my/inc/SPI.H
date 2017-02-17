@@ -4,8 +4,8 @@
 
 
 
-void	SPI1_Init(void);
+void    SPI1_Init(void);
 
-unsigned char	SPI1_ReadWrite(unsigned char writedat);
+unsigned char   SPI1_ReadWrite(unsigned char writedat);
 
 #endif

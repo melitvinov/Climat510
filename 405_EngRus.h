@@ -13,7 +13,7 @@
 #define Mes39 "Heating (measure then task)#O\277o\276\273e\275\270e (\270\267\274e\310e\275o \275\270\266e \267a\343a\275o)"
 #define Mes40 "Theat=#To\277o\276="
 #define Mes41 "Tvent=#T\263e\275\277="
-#define Mes42 "Treal=#T\310ea\273=" 
+#define Mes42 "Treal=#T\310ea\273="
 #define Mes43 "RHtask=#RH\267a\343="
 #define Mes44 "RHreal=#RH\310ea\273="
 #define Mes45 "COtask=#CO\267a\343="

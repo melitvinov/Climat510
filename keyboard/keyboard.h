@@ -12,7 +12,8 @@
 /*!
 \brief Таблица соответствия кодов кнопок и их функционального назначения
 */
-typedef enum {
+typedef enum
+{
     KEY_UP      = 13,
     KEY_RIGHT   = 14,
     KEY_LEFT    = 12,

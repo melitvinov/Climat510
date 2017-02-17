@@ -53,11 +53,13 @@ char KeyboardProcess(void)
     uint16_t sendB;
     uint16_t u16Temp=0;
     Keyboard_Init();
-    if (KeyDelay>1) {
+    if (KeyDelay>1)
+    {
         KeyDelay--;return 0;
     }
 
-    for (i=0;i<16;i++) {
+    for (i=0;i<16;i++)
+    {
 
         //GPIO_Write(PORT_KEYB_OUT, u16Temp);
         u16Temp = GPIO_ReadOutputData(PORT_KEYB_OUT)&(~KEYB_OUT);
@@ -68,7 +70,8 @@ char KeyboardProcess(void)
         sendB=i/4;
         sendB=0x01<<sendB;
         u16Temp= GPIO_ReadInputData(PORT_KEYB_IN)&KEYB_IN;
-        if (!(u16Temp&sendB)) {
+        if (!(u16Temp&sendB))
+        {
             SIM=(KEY_PRESSED)i; BITKL=1;
             KeyDelay=4;
             return 1;

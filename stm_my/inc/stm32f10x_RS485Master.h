@@ -84,27 +84,28 @@
 
 
 
-typedef struct sIModulConf {
-	uint8_t		Type;
-	uint8_t		Input;
-	uint8_t		Output;
-	uint8_t		Corr;
-	uint16_t		U1;
-	uint16_t		V1;
-	uint16_t		U2;
-	uint16_t		V2;
+typedef struct sIModulConf
+{
+    uint8_t     Type;
+    uint8_t     Input;
+    uint8_t     Output;
+    uint8_t     Corr;
+    uint16_t        U1;
+    uint16_t        V1;
+    uint16_t        U2;
+    uint16_t        V2;
 
 }TIModulConf;
 
 typedef struct eeFanData
-			{
-				uint8_t			Actual;
-				uint16_t 		Cond;
-				uint16_t     	ActualSpeed;
-				uint16_t     	ActualPower;
-				uint16_t     	ActualPWM;
+{
+    uint8_t         Actual;
+    uint16_t        Cond;
+    uint16_t        ActualSpeed;
+    uint16_t        ActualPower;
+    uint16_t        ActualPWM;
 
-				} eFanData;
+} eFanData;
 
 
 /*------------ Признаки обмена данных --------*/

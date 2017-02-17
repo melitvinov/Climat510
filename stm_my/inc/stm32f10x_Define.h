@@ -82,7 +82,7 @@ void InitP1(void);
 //void InitRAM(char iBlock);
 void InitSiod(void);
 void SetInSaveRam(void);
-void	SetDreinCount(void);
+void    SetDreinCount(void);
 
 
 
