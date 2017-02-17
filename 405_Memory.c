@@ -1,35 +1,6 @@
 #define ADDRESS_FRAM_SUM	31000 //(sizeof(GD)+sizeof(eBlockEEP)*SUM_BLOCK_EEP)
 //================= ПРОЕКТ 403 =====================
-/*-------------------------------------------------
-        Начальна инициализаци при старте процессора
----------------------------------------------------*/
-#ifndef STM32_UNIT
-void init8051(void) {
-        ClrDog;
-        P2=0;
-        TMOD=0x21;      /* перегружаемый 8 разрдный T1 и 16 разрд T0 */
-        TCON=0x55;      /* запуск таймеров T0,T1 и по фронту INT0,INT1 */
-        IP=0x15;        /* приоритет PS,INT0,INT1 */
-        TH0=0xff;
-/* Инициализаци последовательного порта */
- /*        ET1=0;         запрет прерываний таймера 1*/
-        SCON=0xF0;      /*режим 3 (9бит УАПП)*/
-        TMOD=0x21;      /*Таймер 1 с перезагрузкой , Таймер 0 - 16 разр*/
-        TH1=0xFD;       /*Скорость 9600bps с кварцем 11.059 МГц */
-        TR1=1;          /*Таймер 1 - включить счет*/
-        PS=1;           /*Приоритет порта высший*/
-/*        ES=1;           Разрешит прерыван послед порта*/
-/* установить порт1 на вывод и С0-С7 на ввод и порт2 на вывод */
-        Port1=0;
-        adru=u_port1;
-        adra=0;
-        Port1=1;
-        Port2=0;
-        adru=u_port2;
-        Port2=1;
-        ClrDog;
-}
-#endif 
+
 
 //=================================================
 //          Подпрограммы работы с памятью
@@ -48,26 +19,10 @@ void MemCopy(char *pp1, char *pp2, uint32_t n) { //dest,source,number
         ClrDog;
 		}
 
-uchar   nBlEEP;
-
-#ifndef STM32_UNIT
-typedef struct eBlockEEP {
-        int AdrCopyRAM;
-        uint    Size;
-        uint    CSum;
-        char    Erase;
-        };
-		
-
-int		AdrRAM;	  //int
-#else
 uchar*	AdrRAM;
 
-#endif
-	
 uint    AdrEEP;
 uint    SizeEEP;
-char    WriteEEP;
 
 
 uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)

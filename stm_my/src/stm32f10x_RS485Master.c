@@ -62,24 +62,24 @@ typedef struct sModulData {
 	eFanData*	DataPtr;
 	} TModulData;
 
-TModulData ModulData[OUT_MODUL_SUM];
+static TModulData ModulData[OUT_MODUL_SUM];
 
 
 unsigned char	HeadOUT[10];
-uint8_t	ReadBuf[1000];
-char PHASE_RS_OUT;
-int	 RSOutTime;
-int	ptrUARTOUT;
-uint8_t chSumUARTOUT;
+static uint8_t	ReadBuf[1000];
+static char PHASE_RS_OUT;
+static int	 RSOutTime;
+static int	ptrUARTOUT;
+static uint8_t chSumUARTOUT;
 //uint8_t	pSostRS485OUT;
-uint8_t *pDataRSOUT;
-uint16_t StatusByte;
-uint8_t	cOperInModule;
-uint8_t cCycle;
-uint8_t	ncFan;
-uint8_t	cModule;
-CallBackRS GLF;
-uint8_t bOutIPCBlock;
+static uint8_t *pDataRSOUT;
+static uint16_t StatusByte;
+static uint8_t	cOperInModule;
+static uint8_t cCycle;
+static uint8_t	ncFan;
+static uint8_t	cModule;
+static CallBackRS GLF;
+static uint8_t bOutIPCBlock;
 
 
 

@@ -132,18 +132,18 @@
 #define USART_PC_CLR9BIT(Val)	(Val &=0x00ff)
 
 
-char PHASE_RS;
-int	 RSTime;
-unsigned char	Head[10];
-int	ptrUART;
-uint8_t chSumUART;
-uint16_t  fSendByte;
-uint16_t fAdrSend;
-uint8_t	*pSostRS485;
-eAdrGD	*pADRGD;
-uint8_t	*pNFCtr;
-uint8_t *pNumBlock;
-uint8_t *pDataRS;
+static char PHASE_RS;
+static int	 RSTime;
+static unsigned char	Head[10];
+static int	ptrUART;
+static uint8_t chSumUART;
+static uint16_t  fSendByte;
+static uint16_t fAdrSend;
+static uint8_t	*pSostRS485;
+static eAdrGD	*pADRGD;
+static uint8_t	*pNFCtr;
+static uint8_t *pNumBlock;
+static uint8_t *pDataRS;
 
 /**********************************************************************************************************/
 /*            STM32F10x Прерывание, обрабатывающее запросы последовательного порта                        */

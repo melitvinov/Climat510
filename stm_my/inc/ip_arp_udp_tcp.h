@@ -1,7 +1,7 @@
 /*********************************************
  * vim:sw=8:ts=8:si:et
  * To use the above modeline in vim you must have "set modeline" in your .vimrc
- * Author: Guido Socher 
+ * Author: Guido Socher
  * Copyright: GPL V2
  *
  * IP/ARP/UDP/TCP functions
@@ -35,9 +35,6 @@ static unsigned char macaddr[6];
 static unsigned int info_hdr_len=0;
 static unsigned int info_data_len=0;
 static unsigned char seqnum=0xa; // my initial tcp sequence number
-
-unsigned char *ipaddr;
-
 
 
 // you must call this function once before you use any of the other functions:

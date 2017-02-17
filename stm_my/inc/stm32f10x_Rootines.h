@@ -22,32 +22,24 @@ void InitIPCTimer(void);
 
 void InitRTC(void);
 
-//void Keyboard_Init(void);
-
-//char CheckKeyboardSTM();
-
-void WriteDateTime();
-
-char ReadDateTime();
-
 void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
 
 void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
 
-void WriteToFRAM();
+void WriteToFRAM(void);
 
-void ReadFromFRAM();
+void ReadFromFRAM(void);
 
-void CopyEEP();
-void CalcEEPSum();
-void w1Init();
-void w1_check();
-int16_t w1reset();
-void w1_wr();
-void w1_rd();
-void CrcCalc();
-void Reg48ToI2C();
-void OutReg();
+void CopyEEP(void);
+void CalcEEPSum(void);
+void w1Init(void);
+void w1_check(void);
+int16_t w1reset(void);
+void w1_wr(void);
+void w1_rd(void);
+void CrcCalc(void);
+void Reg48ToI2C(void);
+void OutReg(void);
 
-void Measure();
-void CheckInputConfig();
+void Measure(void);
+void CheckInputConfig(void);

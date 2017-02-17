@@ -14,11 +14,16 @@
  ======================================================*/
 #include "keyboard.h"
 
+// XXX: from climdef
+uchar   SizeForm=0;
+
 int CopyVal;
 int MinimVal, MaximVal;
 char ValSize;
 uchar SumYMenu;
+
 void in_val(void);
+
 void SetValue(int vVal) {
 	if (ValSize == 1)
 		(*(unsigned char *) AdrVal) = (unsigned char) vVal;
@@ -195,7 +200,7 @@ void w_txt(char code *bu)
 		}
 	}
 	while ((*bu)&&((*bu)!='#')) {
-		buf[Ad_Buf++]=(*(bu++));
+		lcdbuf[Ad_Buf++]=(*(bu++));
 	};
 }
 /*void w_txt(char code *bu)
@@ -221,82 +226,82 @@ void w_int(void *bu, char frmt) {
 	switch (frmt) {
 	case SRelay:
 		vre = (*(uint16_t *) bu);
-		buf[Ad_Buf++] = '=';
+		lcdbuf[Ad_Buf++] = '=';
 		ClrDog;
 		if (!BlkW) {
 			SaveInt = vre;
 			AdinB = Ad_Buf;
 		}
 		if (TestRelay(vre) > 0)
-			buf[Ad_Buf++] = '1';
+			lcdbuf[Ad_Buf++] = '1';
 		else
-			buf[Ad_Buf++] = '0';
+			lcdbuf[Ad_Buf++] = '0';
 		Ad_Buf = ((Ad_Buf / 20) * 20) + 26;
-		buf[Ad_Buf++] = '[';
-		buf[Ad_Buf++] = vre / 10 + '0';
-		buf[Ad_Buf++] = vre % 10 + '0';
-		buf[Ad_Buf++] = ']';
+		lcdbuf[Ad_Buf++] = '[';
+		lcdbuf[Ad_Buf++] = vre / 10 + '0';
+		lcdbuf[Ad_Buf++] = vre % 10 + '0';
+		lcdbuf[Ad_Buf++] = ']';
 		break;
 	case bS:
 		if (!BlkW)
 			SaveChar = ByteX;
 		if (ByteX & (*(char *) bu))
-			buf[Ad_Buf++] = '1';
+			lcdbuf[Ad_Buf++] = '1';
 		else
-			buf[Ad_Buf++] = '0';
+			lcdbuf[Ad_Buf++] = '0';
 		ClrDog;
 		break;
 	case SSpS0:
 		if ((*(int16_t *) bu) < 0) {
-			buf[Ad_Buf] = '-';
+			lcdbuf[Ad_Buf] = '-';
 			Ad_Buf++;
 			vre = -(*(int16_t *) bu);
 		} else
 			vre = *(uint16_t *) bu;
 		vre += 5;
 		vre /= 10;
-		buf[Ad_Buf + 3] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 1] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 1] = vre % 10 + '0';
 		vre /= 10;
 		ClrDog;
-		buf[Ad_Buf] = vre + '0';
-		buf[Ad_Buf + 2] = '.';
+		lcdbuf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf + 2] = '.';
 		Ad_Buf += 4;
 		break;
 	case SpSSpSS:
 		vre = *(uint16_t *) bu;
-		buf[Ad_Buf + 6] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 6] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 5] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 5] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 3] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 2] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 2] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf] = vre + '0';
-		buf[Ad_Buf + 1] = '.';
-		buf[Ad_Buf + 4] = '.';
+		lcdbuf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf + 1] = '.';
+		lcdbuf[Ad_Buf + 4] = '.';
 		ClrDog;
 		Ad_Buf += 7;
 		break;
 
 	case SSpSS:
 		vre = *(uint16_t *) bu;
-		buf[Ad_Buf + 4] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 3] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 1] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 1] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf] = vre + '0';
-		buf[Ad_Buf + 2] = '.';
+		lcdbuf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf + 2] = '.';
 		ClrDog;
 		if (vre > 9) {
-			buf[Ad_Buf] = '!';
-			buf[Ad_Buf + 1] = '0';
-			buf[Ad_Buf + 3] = '0';
-			buf[Ad_Buf + 4] = '0';
+			lcdbuf[Ad_Buf] = '!';
+			lcdbuf[Ad_Buf + 1] = '0';
+			lcdbuf[Ad_Buf + 3] = '0';
+			lcdbuf[Ad_Buf + 4] = '0';
 		}
 		Ad_Buf += 5;
 		break;
@@ -304,7 +309,7 @@ void w_int(void *bu, char frmt) {
 	case SSSS:
 		vre = *(uint16_t *) bu;
 		for (i = frmt & 0xF; i > 0; i--) {
-			buf[Ad_Buf - 1 + i] = vre % 10 + '0';
+			lcdbuf[Ad_Buf - 1 + i] = vre % 10 + '0';
 			vre /= 10;
 		}
 		Ad_Buf += frmt & 0xF;
@@ -313,81 +318,81 @@ void w_int(void *bu, char frmt) {
 	case SSdSS:
 		vre = *(uint16_t *) bu;
 		if (Second & 1)
-			buf[Ad_Buf + 2] = ':';
-		buf[Ad_Buf + 4] = vre % 10 + '0';
+			lcdbuf[Ad_Buf + 2] = ':';
+		lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 3] = vre % 6 + '0';
+		lcdbuf[Ad_Buf + 3] = vre % 6 + '0';
 		vre /= 6;
-		buf[Ad_Buf + 1] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 1] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf] = vre + '0';
 		Ad_Buf += 5;
 		ClrDog;
 		break;
 	case DsMsY:
 	case SSsSS:
 		vre = *(uint16_t *) bu;
-		buf[Ad_Buf + 2] = '/';
+		lcdbuf[Ad_Buf + 2] = '/';
 		i = vre % 256;
-		buf[Ad_Buf + 1] = i % 10 + '0';
-		buf[Ad_Buf] = i / 10 + '0';
+		lcdbuf[Ad_Buf + 1] = i % 10 + '0';
+		lcdbuf[Ad_Buf] = i / 10 + '0';
 		i = vre / 256;
-		buf[Ad_Buf + 4] = i % 10 + '0';
-		buf[Ad_Buf + 3] = i / 10 + '0';
+		lcdbuf[Ad_Buf + 4] = i % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = i / 10 + '0';
 		Ad_Buf += 5;
 		ClrDog;
 		if (frmt == DsMsY) {
-			buf[Ad_Buf] = '/';
-			buf[Ad_Buf + 2] = CtrYear % 10 + '0';
-			buf[Ad_Buf + 1] = CtrYear / 10 + '0';
+			lcdbuf[Ad_Buf] = '/';
+			lcdbuf[Ad_Buf + 2] = CtrYear % 10 + '0';
+			lcdbuf[Ad_Buf + 1] = CtrYear / 10 + '0';
 			Ad_Buf += 3;
 		}
 		break;
 	case SSSpS:
 		vre = *(uint16_t *) bu;
-		buf[Ad_Buf + 3] = '.';
-		buf[Ad_Buf + 4] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = '.';
+		lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 2] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 2] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 1] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 1] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf] = vre + '0';
 		Ad_Buf += 5;
 		ClrDog;
 		break;
 	case SpSSS:
 		vre = *(uint16_t *) bu;
-		buf[Ad_Buf + 1] = '.';
-		buf[Ad_Buf + 4] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 1] = '.';
+		lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 3] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 3] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf + 2] = vre % 10 + '0';
+		lcdbuf[Ad_Buf + 2] = vre % 10 + '0';
 		vre /= 10;
-		buf[Ad_Buf] = vre + '0';
+		lcdbuf[Ad_Buf] = vre + '0';
 		Ad_Buf += 5;
 		ClrDog;
 		break;
 	case StStStS:
 		for (i = 0; i < 4; i++) {
 			vrel = ((unsigned char *) bu)[i];
-			buf[Ad_Buf + i * 4 + 2] = vrel % 10 + '0';
+			lcdbuf[Ad_Buf + i * 4 + 2] = vrel % 10 + '0';
 			vrel /= 10;
-			buf[Ad_Buf + i * 4 + 1] = vrel % 10 + '0';
+			lcdbuf[Ad_Buf + i * 4 + 1] = vrel % 10 + '0';
 			vrel /= 10;
-			buf[Ad_Buf + i * 4] = vrel % 10 + '0';
-			buf[Ad_Buf + i * 4 + 3] = '-';
+			lcdbuf[Ad_Buf + i * 4] = vrel % 10 + '0';
+			lcdbuf[Ad_Buf + i * 4 + 3] = '-';
 		}
 		Ad_Buf += 15;
-		buf[Ad_Buf] = ' ';
+		lcdbuf[Ad_Buf] = ' ';
 		ClrDog;
 		break;
 
 	default:
 		vre = (uint16_t)(*(unsigned char *) bu);
 		for (i = frmt & 0xF; i > 0; i--) {
-			buf[Ad_Buf - 1 + i] = (unsigned char) vre % 10 + '0';
+			lcdbuf[Ad_Buf - 1 + i] = (unsigned char) vre % 10 + '0';
 			vre /= 10;
 		}
 		Ad_Buf += frmt & 0xF;
@@ -401,8 +406,8 @@ void in_val(void) {
 	unsigned char vrel;
 	uchar i;
 	vre = 0;
-	buf[AdinB + Mark++] = keyboardGetSIM() + '0';
-	if ((buf[AdinB + Mark] > '9') || (buf[AdinB + Mark] < '0'))
+	lcdbuf[AdinB + Mark++] = keyboardGetSIM() + '0';
+	if ((lcdbuf[AdinB + Mark] > '9') || (lcdbuf[AdinB + Mark] < '0'))
 		Mark++;
 	switch (Form) {
 	case 0:
@@ -411,32 +416,32 @@ void in_val(void) {
 //                        break;
 
 	case SRelay:
-		if (buf[AdinB] == '1')
+		if (lcdbuf[AdinB] == '1')
 			SetRelay(SaveInt);
 		else
 			ClrRelay(SaveInt);
 		ValSize = 0;
 		break;
 	case bS:
-		if (buf[AdinB] == '1')
+		if (lcdbuf[AdinB] == '1')
 			(*(char *) AdrVal) |= SaveChar;
 		else
 			(*(char *) AdrVal) &= ~SaveChar;
 		ValSize = 0;
 		break;
 	case SSdSS:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 1] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0';
 		vre *= 60;
-		vre += (buf[AdinB + 3] - '0') * 10 + buf[AdinB + 4] - '0';
+		vre += (lcdbuf[AdinB + 3] - '0') * 10 + lcdbuf[AdinB + 4] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		ClrDog;
 		break;
 	case DsMsY:
-		CtrYear = (buf[AdinB + 6] - '0') * 10 + buf[AdinB + 7] - '0';
+		CtrYear = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
 	case SSsSS:
-		ValSize = (buf[AdinB] - '0') * 10 + buf[AdinB + 1] - '0'; /*день мес€ца*/
-		vre = (buf[AdinB + 3] - '0') * 10 + buf[AdinB + 4] - '0'; /*мес€ц*/
+		ValSize = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0'; /*день мес€ца*/
+		vre = (lcdbuf[AdinB + 3] - '0') * 10 + lcdbuf[AdinB + 4] - '0'; /*мес€ц*/
 		if (EndInput) {
 			if (!ValSize)
 				ValSize = 1;
@@ -454,48 +459,48 @@ void in_val(void) {
 		ClrDog;
 		break;
 	case SSpS0:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 1] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 3] - '0';
+		vre += lcdbuf[AdinB + 3] - '0';
 		vre *= 10;
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
 	case SSpSS:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 1] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 3] - '0';
+		vre += lcdbuf[AdinB + 3] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 4] - '0';
+		vre += lcdbuf[AdinB + 4] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
 	case SpSSpSS:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 2] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 2] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 3] - '0';
+		vre += lcdbuf[AdinB + 3] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 5] - '0';
+		vre += lcdbuf[AdinB + 5] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 6] - '0';
+		vre += lcdbuf[AdinB + 6] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
 	case SSSpS:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 1] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 2] - '0';
+		vre += lcdbuf[AdinB + 2] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 4] - '0';
+		vre += lcdbuf[AdinB + 4] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
 	case SpSSS:
-		vre = (buf[AdinB] - '0') * 10 + buf[AdinB + 2] - '0';
+		vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 2] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 3] - '0';
+		vre += lcdbuf[AdinB + 3] - '0';
 		vre *= 10;
-		vre += buf[AdinB + 4] - '0';
+		vre += lcdbuf[AdinB + 4] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
@@ -503,7 +508,7 @@ void in_val(void) {
 
 	case SSSS:
 		for (ValSize = 0; ValSize < SizeForm; ValSize++)
-			vre = vre * 10 + buf[AdinB + ValSize] - '0';
+			vre = vre * 10 + lcdbuf[AdinB + ValSize] - '0';
 		(*(uint16_t *) AdrVal) = vre;
 		ValSize = 2;
 		break;
@@ -511,11 +516,11 @@ void in_val(void) {
 	case StStStS:
 		for (i = 0; i < 4; i++) {
 			vrel = 0;
-			vrel += (buf[AdinB + i * 4] - '0');
+			vrel += (lcdbuf[AdinB + i * 4] - '0');
 			vrel *= 10;
-			vrel += (buf[AdinB + i * 4 + 1] - '0');
+			vrel += (lcdbuf[AdinB + i * 4 + 1] - '0');
 			vrel *= 10;
-			vrel += (buf[AdinB + i * 4 + 2] - '0');
+			vrel += (lcdbuf[AdinB + i * 4 + 2] - '0');
 			((unsigned char *) AdrVal)[i] = vrel;
 		}
 		ValSize = 4;
@@ -523,7 +528,7 @@ void in_val(void) {
 
 	default:
 		for (ValSize = 0; ValSize < SizeForm; ValSize++)
-			vre = vre * 10 + buf[AdinB + ValSize] - '0';
+			vre = vre * 10 + lcdbuf[AdinB + ValSize] - '0';
 		(*(unsigned char *) AdrVal) = (unsigned char) vre;
 		ValSize = 1;
 	}
@@ -544,7 +549,7 @@ void in_val(void) {
 		//char nameTT[6];
 		//char count = 0;
 		//for (count = 0; count < 6; count++)
-		//	nameTT[count] = buf[160 + count];
+		//	nameTT[count] = lcdbuf[160 + count];
 		//if (nameT == nameTT)
 		//	AdrRAM = 1;
 		//else

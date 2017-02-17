@@ -176,7 +176,7 @@ const char ExtCG[SumExtCG*8]={
 
 #define BufSize			240	//160
 
-char   buf[BufSize+10];	//TempEnd+6];
+char   lcdbuf[BufSize+10];	//TempEnd+6];
 char GrafView;
 
 

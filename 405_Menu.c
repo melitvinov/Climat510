@@ -10,6 +10,10 @@
 
 #define SUM_NAME_TUNE sizeof(NameConst)
 
+// XXX: this stuff is from climdef.h
+int16_t		SaveInt2;
+uchar   nBlEEP;
+
 uchar	StartMenuY;
 uchar	NowCurRow,NewCurRow;
 int		SaveSample,Savebuf;
@@ -33,7 +37,6 @@ uchar	numRow;
         Form=0;
         Ad_Buf=0;
 		AdinB=0;
-		CalPort=0;
         ClrDog;
 		if(Y_menu > MaxY_menu) Y_menu=MaxY_menu;
 //***************************************************
@@ -47,11 +50,11 @@ uchar	numRow;
 				YMenu(numRow+StartMenuY);
 				}
 			NewCurRow=Y_menu - StartMenuY + 1;
-			buf[NewCurRow*DisplCols-19]='\312';
+			lcdbuf[NewCurRow*DisplCols-19]='\312';
 //			buf[NewCurRow*DisplCols-18]='\312';
-			if(Second & 1) buf[NewCurRow*DisplCols-18]='\312';	//'\076';
-				else buf[NewCurRow*DisplCols-20]='\312';
-			SendBlock(&buf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
+			if(Second & 1) lcdbuf[NewCurRow*DisplCols-18]='\312';	//'\076';
+				else lcdbuf[NewCurRow*DisplCols-20]='\312';
+			SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
 //---- Вывести инверсный фон -----
 			if (NewCurRow !=NowCurRow) {
 //				SetRow(0xFF,NewCurRow);
@@ -169,7 +172,7 @@ void pmDate(void) {
    Ad_Buf=Str2;
     w_txt(Proect);
     w_int(&GD.Control.rModification,SS);
-	buf[Ad_Buf++]='-';
+	lcdbuf[Ad_Buf++]='-';
     w_int(&GD.Control.rSInTeplSens,SS);
 //	w_txt("-M");
 //    w_int(&GD.Config[cfSumTap],oS);
@@ -178,9 +181,9 @@ void pmDate(void) {
     Ad_Buf=Str3;
     w_txt(Mes70); //Time ~
     w_int(&CtrTime,SSdSS);
-    buf[Ad_Buf++]=':';
-    buf[Ad_Buf++]=Second/10+'0';
-    buf[Ad_Buf++]=Second%10+'0';
+    lcdbuf[Ad_Buf++]=':';
+    lcdbuf[Ad_Buf++]=Second/10+'0';
+    lcdbuf[Ad_Buf++]=Second%10+'0';
     if(!Y_menu2) BlkW=1;
     Ad_Buf=Str4;
     ClrDog;
@@ -254,7 +257,7 @@ void pmParam() {
 								OutStr=NameSensConfig[ByteX-SUM_NAME_INSENS].Name;
                         	w_txt(OutStr);
 							Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
-                        	buf[Ad_Buf++]=':';
+                        	lcdbuf[Ad_Buf++]=':';
 	                        w_int(&GD.MechConfig[ByteZ].RNum[ByteW],SpSSpSS);
 							if(Y_menu2 == ByteY) BlkW=1;
  							//w_txt(Mes87); //-rela\321
@@ -281,7 +284,7 @@ void pmParam() {
 							ByteW=ByteX;
                         	w_txt(OutStr);
 							Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
-                        	buf[Ad_Buf++]=':';
+                        	lcdbuf[Ad_Buf++]=':';
 	                        w_int(&GD.MechConfig[ByteZ].Systems[ByteW],SSSi);
 							if(Y_menu2 == ByteY) BlkW=1;
  							//w_txt(Mes87); //-rela\321
@@ -306,7 +309,7 @@ void pmParam() {
 							ByteX=ByteY % SUM_NAME_PARS;
                 			w_txt(NameParUpr[ByteX].Name);
 							Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
-							buf[Ad_Buf++]='=';
+							lcdbuf[Ad_Buf++]='=';
 	                        w_int(&GD.Control.Tepl[ByteZ].c_MaxTPipe[ByteY],NameParUpr[ByteX].Ed);
 							if(Y_menu2 == ByteY) BlkW=1;
 							Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
@@ -329,7 +332,7 @@ void pmParam() {
 							w_txt(Mes92);
 							w_int(&ByteW,SS);
 							Ad_Buf=((Ad_Buf / DisplCols))*DisplCols+20;
-							buf[Ad_Buf++]='=';
+							lcdbuf[Ad_Buf++]='=';
 	                        w_int(&GD.TuneClimate.s_TStart[ByteY],NameConst[ByteX].Frm);
 							if(Y_menu2 == ByteY)
 								BlkW=1;
@@ -337,7 +340,7 @@ void pmParam() {
 
 							}
                         return; }
-				ByteZ--;  //if (!GD.Config[cfReturn1Val] && !GD.Config[cfRegulRetEC]) 
+				ByteZ--;  //if (!GD.Config[cfReturn1Val] && !GD.Config[cfRegulRetEC])
                 if(!ByteZ)
 				{
 		                Y_menu2%=8;
@@ -358,7 +361,7 @@ void pmParam() {
 						if (!Menu) SaveChar=0;
                         if(Y_menu2==2) BlkW=1;
                        	Ad_Buf=Str5;
-						if (Y_menu2<=3) 
+						if (Y_menu2<=3)
 						{
                         	w_txt(Mes5);
                         	w_int(&GD.Control.ConfSTepl,oS);
@@ -383,11 +386,11 @@ void pmParam() {
                        return;
 				}
                 if(ByteZ > 1)	x_menu=0;
-				pmReset();                
+				pmReset();
 }
-void AutoMan(char RCS,int fint) 
+void AutoMan(char RCS,int fint)
 {
-	if (YesBit(RCS,fint)) 
+	if (YesBit(RCS,fint))
       w_txt(Mes139);
 	else
       w_txt(Mes138);
@@ -399,7 +402,7 @@ void pmHand(void) {
                 Ad_Buf=Str2;
                 ByteZ=x_menu-1;
                 if(ByteZ<SumTeplZones){  					/* Клапан полива N */
-						SetPointersOnTepl(ByteZ);	
+						SetPointersOnTepl(ByteZ);
 				        while (Y_menu2< cSRegCtrl*2)
 						{
 							ByteW=Y_menu2/2;
@@ -408,7 +411,7 @@ void pmHand(void) {
 						}
                         if(Y_menu2 >= cSRegCtrl*2) {Y_menu2=0;w_txt(Mes89); return;}
 
-						SetPointersOnKontur(ByteW);	
+						SetPointersOnKontur(ByteW);
                         Ad_Buf=Str2;
 						w_txt(Mes7);
 						Ad_Buf++;
@@ -425,16 +428,16 @@ void pmHand(void) {
                         Ad_Buf=Str4;
                         w_txt(Mes133); /* Ход клап */ //Boiler val time~~
                         w_int(&pGD_Hot_Hand_Kontur->Position,SSS);
-                        buf[Ad_Buf++]='%';
+                        lcdbuf[Ad_Buf++]='%';
                         BlkW=1;
-						buf[Ad_Buf++]='(';
+						lcdbuf[Ad_Buf++]='(';
                   	  	w_int(&pGD_TControl_Tepl->MechBusy[ByteW].TimeRealMech,SSSi);
 				  	  	w_txt("s) #c) ");
 				  	  	if  (pGD_TControl_Tepl->MechBusy[ByteW].Sens)
 				  	  	{
-	                        buf[Ad_Buf++]='(';
+	                        lcdbuf[Ad_Buf++]='(';
 	                  	  	w_int(&pGD_TControl_Tepl->MechBusy[ByteW].Sens->Value,SSSpS);
-	                        buf[Ad_Buf++]=')';
+	                        lcdbuf[Ad_Buf++]=')';
 				  	  	}
  			  	  	    Ad_Buf=Str5;
 						w_txt(Mes136); Ad_Buf++;
@@ -446,7 +449,7 @@ void pmHand(void) {
                 		}
 				ByteZ-=SumTeplZones;
                 if(ByteZ<SumTeplZones){
-						SetPointersOnTepl(ByteZ);	
+						SetPointersOnTepl(ByteZ);
 				        while (Y_menu2< cSDiskrCtrl*2)
 						{
 							ByteW=cSRegCtrl+Y_menu2/2;
@@ -455,8 +458,8 @@ void pmHand(void) {
 						}
                         if(Y_menu2 >= cSDiskrCtrl*2) {Y_menu2=0;w_txt(Mes89); return;}
 						SetPointersOnTepl(ByteZ);
-	
-						SetPointersOnKontur(ByteW);	
+
+						SetPointersOnKontur(ByteW);
                         Ad_Buf=Str2;
 						w_txt(Mes7);
 						Ad_Buf++;
@@ -473,15 +476,15 @@ void pmHand(void) {
 
                         if (ByteW == cHSmSIOPump)
                         {
-                        	buf[Ad_Buf++]='(';
+                        	lcdbuf[Ad_Buf++]='(';
                   	  		w_int(&fnSIOfaza[ByteZ],SS);
-                  	    	buf[Ad_Buf++]=',';
+                  	    	lcdbuf[Ad_Buf++]=',';
                   	    	w_int(&fnSIOvelvOut[ByteZ],SSSS);
-                  	    	buf[Ad_Buf++]=',';
+                  	    	lcdbuf[Ad_Buf++]=',';
                   	    	w_int(&fnSIOpumpOut[ByteZ],SSSS);
-                  	    	buf[Ad_Buf++]=',';
+                  	    	lcdbuf[Ad_Buf++]=',';
                   	    	w_int(&fnSIOpause[ByteZ],SSSS);
-                  	    	buf[Ad_Buf++]=')';
+                  	    	lcdbuf[Ad_Buf++]=')';
                         }
 
                         Ad_Buf=Str4;
@@ -497,39 +500,6 @@ void pmHand(void) {
 						return;
                 		}
                 x_menu=0;
-}
-
-void DigitSens(void) {
-//                  NowDigCal=ByteX;
-                  w_txt(Mes144); //(digital)
-                  Ad_Buf=Str5;
-                  //Y_menu2%=3;
-				  switch (ds18b20_ReadROM())
-				  {
-					case 1:
-						w_txt(Mes145); //No sensor
-						break;
-					case 2:
-						w_txt(Mes146); //Multi sensor
-						break;
-					case 0:
-	                	w_txt("On-line:"); //On line:
-						w_int(&Buf1W[0],StStStS);
-				  		buf[Ad_Buf++]='-';
-						w_int(&Buf1W[4],StStStS);
-				  }
-
-//                  Ad_Buf=Str5;
-//				  w_txt("ResLong=");
-//				  w_int(&ResLong,SSS);
-//				  w_txt("Line long=");
-//				  w_int(&ToHi,SSS);
-                  Ad_Buf=Str4;
-				  w_txt("Num:");
-				  w_int(&eCS->U1,StStStS);
-                  if (ByteY==1) BlkW=1;
-				  buf[Ad_Buf++]='-';
-				  w_int(&eCS->V1,StStStS);
 }
 
 
@@ -563,7 +533,7 @@ void pmCalibr(void) {
         w_int(&SaveChar,oS);
         if ((!SaveChar)||(SaveChar>8))  SaveChar=1;
         if (Y_menu2<2) BlkW=1;
-        else  
+        else
 			if (EndInput)
 			{
         		EndInput=0;
@@ -605,7 +575,7 @@ void pmCalibr(void) {
 		ByteZ=ByteX+1;			//номер датчика  с 1
    		ByteX+=cConfSSens;	//номер датчика после тепличных в общих именах с 0
 	}
-	else 
+	else
 	{
        	w_txt(Mes7);
 		ByteW=x_menu-1;		//номер теплицы с 0
@@ -622,7 +592,7 @@ void pmCalibr(void) {
 	Ad_Buf++;
 	eCS=&GD.Cal.InTeplSens[0][IntY];
     w_txt(NameSensConfig[ByteX].Name);
-    buf[Ad_Buf++]='=';
+    lcdbuf[Ad_Buf++]='=';
     w_int(&IntX,NameSensConfig[ByteX].Frm);
 //    PrintEd(NamesOfSens[ByteX].Ed);
 	ByteY=Y_menu2%5;		//номер меню в датчике
@@ -645,10 +615,10 @@ void pmCalibr(void) {
     w_txt(Mes150);
 
     if ((EndInput)&&(ByteY>=3))
-	{	//конец ввода и ввели эталон	
+	{	//конец ввода и ввели эталон
     	ByteZ=(ByteY-3);			//номер эталона
-    	if (!ByteZ) 
-		{				
+    	if (!ByteZ)
+		{
        		eCS->V1+=(SaveInt-eCS->V0);
        		eCS->U1+=(GD.uInTeplSens[0][IntY]-eCS->U0);
 	       	eCS->V0=SaveInt;
@@ -665,35 +635,35 @@ void pmCalibr(void) {
        	EndInput=0;
 	}
     Ad_Buf=Savebuf;
-			
-   	if(!Menu) 
+
+   	if(!Menu)
 	{
    		SaveInt=eCS->V0;
    		SaveInt2=eCS->V1;
     }
     Ad_Buf=Str4;
     w_txt(Mes154);
-    buf[Ad_Buf++]='(';
+    lcdbuf[Ad_Buf++]='(';
     w_int(&eCS->U0,SSSS);
     w_txt(Mes150);
-    buf[Ad_Buf++]=')';
+    lcdbuf[Ad_Buf++]=')';
 	w_int(&SaveInt,NameSensConfig[ByteX].Frm);
 	if (ByteY==3) BlkW=1;
     Ad_Buf=Str5;
     w_txt(Mes155);
-    buf[Ad_Buf++]='(';
+    lcdbuf[Ad_Buf++]='(';
     w_int(&eCS->U1,SSSS);
     w_txt(Mes150);
-    buf[Ad_Buf++]=')';
+    lcdbuf[Ad_Buf++]=')';
 	w_int(&SaveInt2,NameSensConfig[ByteX].Frm);
-    return;  
+    return;
 }
 
 //==================== Параметры мехнаизмов ======================
-void pmParMechanic(void) {                          
+void pmParMechanic(void) {
 	w_txt(Mes211); //Condition
 	x_menu%=(SumTeplZones+1);
-    if (!x_menu) return;	
+    if (!x_menu) return;
 	Y_menu2%=cSRegCtrl*4;//cSMech;
     ByteX=x_menu-1;
     Ad_Buf=Str2;
@@ -722,7 +692,7 @@ void pmParMechanic(void) {
 }
 
 //==================== Состояние ======================
-void pmNow(void) {                          
+void pmNow(void) {
 	uint8_t Cond;
 	uint8_t Err,Failure;
 	uint8_t MaxIn;
@@ -769,7 +739,7 @@ void pmNow(void) {
     	Ad_Buf=Str2;
         w_txt("Fans zone ");
         w_int(ByteY,oS);
-		buf[Ad_Buf++]='-';
+		lcdbuf[Ad_Buf++]='-';
         w_int(ByteZ,oS);
     	Ad_Buf=Str3;
     	for (ByteX=0;ByteX<MAX_FAN_COUNT;ByteX++)
@@ -779,10 +749,10 @@ void pmNow(void) {
     		if (GD.FanBlock[x_menu-SumTeplZones-1][0].FanData[ByteX].Actual)
     		{
 
-    			buf[Ad_Buf++]='0';
+    			lcdbuf[Ad_Buf++]='0';
     		}
     		else
-    			buf[Ad_Buf++]='1';
+    			lcdbuf[Ad_Buf++]='1';
 
     	}
 /*        Ad_Buf=Str4;
@@ -793,10 +763,10 @@ void pmNow(void) {
     		if (GD.FanBlock[x_menu-SumTeplZones-1][1].FanData[ByteX].Actual)
     		{
 
-    			buf[Ad_Buf++]='0';
+    			lcdbuf[Ad_Buf++]='0';
     		}
     		else
-    		buf[Ad_Buf++]='1';
+    		lcdbuf[Ad_Buf++]='1';
 
     	}
 //    	w_txt("05/02");*/
@@ -817,26 +787,26 @@ void pmNow(void) {
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens2].Value,SSpS0);
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens3].Value,SSpS0);
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens4].Value,SSpS0);
-	buf[Ad_Buf++]='|';
+	lcdbuf[Ad_Buf++]='|';
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmRHSens].Value,SSpS0);
-	buf[Ad_Buf++]='|';
+	lcdbuf[Ad_Buf++]='|';
 	w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmCOSens].Value,SSSS);
 	for (ByteX=0;ByteX<cSWaterKontur-1;ByteX++)
 	{
-		buf[Ad_Buf++]='|';
+		lcdbuf[Ad_Buf++]='|';
 		IntX=GD.Hot.Tepl[ByteY].InTeplSens[cSmWaterSens+ByteX].Value/10;
 		w_int(&IntX,SSS);
 		Ad_Buf++;
 	}
     Ad_Buf=Str5;
 	w_int(&GD.Hot.Tepl[ByteY].AllTask.DoTHeat,SSpS0);
-	buf[Ad_Buf++]='|';
+	lcdbuf[Ad_Buf++]='|';
 	w_int(&GD.Hot.Tepl[ByteY].AllTask.DoRHAir,SSpS0);
-	buf[Ad_Buf++]='|';
+	lcdbuf[Ad_Buf++]='|';
 	w_int(&GD.Hot.Tepl[ByteY].AllTask.DoCO2,SSSS);
 	for (ByteX=0;ByteX<cSWaterKontur-1;ByteX++)
 	{
-		buf[Ad_Buf++]='|';
+		lcdbuf[Ad_Buf++]='|';
 		IntX=GD.Hot.Tepl[ByteY].Kontur[ByteX].Do/10;
 		w_int(&IntX,SSS);
 		Ad_Buf++;
@@ -850,7 +820,7 @@ void	pmProgClimate(void)
     w_txt(Mes34);
 	//w_int(airHeatTimeWork[0],SSS);
 
-	if (x_menu > cSTimer) x_menu=0; 
+	if (x_menu > cSTimer) x_menu=0;
 	if (!x_menu) {
 		return;
 		}
@@ -863,12 +833,12 @@ void	pmProgClimate(void)
     Ad_Buf=Str3;
 	if(Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
 	if(Y_menu2 > (StartY_menu2+2)) StartY_menu2 = Y_menu2-2;
-    for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++) 
+    for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++)
 	{
 		ByteX=ByteY % SUM_NAME_TIMER;
        	w_txt(&NameTimer[ByteX].Name);
 		Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
-		buf[Ad_Buf++]='=';
+		lcdbuf[Ad_Buf++]='=';
 	   	w_int(&GD.Timer[ByteZ].Zone[NameTimer[ByteX].Index],NameTimer[ByteX].Frm);
 		if(Y_menu2 == ByteY) BlkW=1;
 		Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;

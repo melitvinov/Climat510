@@ -289,7 +289,7 @@ void InitLCD(void) {
 void clear_d(void) {
         unsigned char ic;
         BlkW=0;
-        for (ic=0;ic<BufSize;ic++) buf[ic]=' ';
+        for (ic=0;ic<BufSize;ic++) lcdbuf[ic]=' ';
 }
 //---------------------------------------------------
 //        Вывод буфера в индикатор
@@ -299,9 +299,9 @@ void TimeToBuf(void) {
 	Ad_Buf=PozTime;
 //    buf[Ad_Buf++]=' ';
 	w_int(&CtrTime,SSdSS);
-    buf[Ad_Buf++]=':';
-    buf[Ad_Buf++]=Second/10+'0';
-    buf[Ad_Buf++]=Second%10+'0';
+    lcdbuf[Ad_Buf++]=':';
+    lcdbuf[Ad_Buf++]=Second/10+'0';
+    lcdbuf[Ad_Buf++]=Second%10+'0';
 	Ad_Buf++;
 	w_int(&CtrData,DsMsY);
 }
@@ -310,7 +310,7 @@ int ic;
 
 	BlkW=1;
     Ad_Buf=Str2d;
-    for (ic=Str2d; ic < Str2; ic++) buf[ic]=' ';
+    for (ic=Str2d; ic < Str2; ic++) lcdbuf[ic]=' ';
    // Ad_Buf=Str4;
 /*    if (ds18b20_ReadROM())
     	Ad_Buf+=2;
@@ -319,7 +319,7 @@ int ic;
 	w_int(&Buf1W[4],StStStS);
     w_int(&SumAnswers,SSSS);*/
     pmInfoProg405();
-	SendBlock(&buf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
+	SendBlock(&lcdbuf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
 //    pmInfoProg405();
 
 //	w_txt(I2C1_Buffer_Tx);
@@ -344,8 +344,8 @@ uchar	CurRow,CurCol;
 
 //---- output CharSet ----------------
 
-	SendBlock(&buf[0],TxtHomeAddr,DisplCols);
-	SendBlock(&buf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
+	SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
+	SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
     if(Menu) SendCmd(cmd8LineCurs);
        else  SendCmd(cmd3LineCurs);
 //-- установить курсор --

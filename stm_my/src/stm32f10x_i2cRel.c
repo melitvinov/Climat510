@@ -285,7 +285,7 @@ typedef struct
 
 		} eI2CFITO;
 
-eI2CFITO	I2C_MAIN;
+static eI2CFITO	I2C_MAIN;
 
 uint8_t I2C_MainLoad(uint8_t fAddrDev,uint16_t fAddrMem,uint8_t* fData,uint8_t fType, uint16_t fptrData, uint8_t fDir)
 {

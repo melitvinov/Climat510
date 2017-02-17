@@ -30,7 +30,7 @@
 	#define SumRelay40
 #endif
 
-#define	cMaxStopI		20	 
+#define	cMaxStopI		20
 
 #define cResetCritery	150
 #define cResetDifTDo	100
@@ -51,10 +51,10 @@
 /*Количество сохраняемых в EEPROM блоков*/
 
 #define cSTimer			40
-/*Количество программ для задания*/			
+/*Количество программ для задания*/
 
 #define cSTimerSave		20
-/*Количество программ для задания*/			
+/*Количество программ для задания*/
 
 #define cSArx			3
 /*Количество храминых дней с архивом*/
@@ -316,7 +316,7 @@
 /*Константы RCS датчиков*/
 #define cbNoWorkSens	0x01  //Порт 0 - датчик не подсоединен
 #define	cbNotGoodSens	0x02  //Скачок измерения - только для внутреннего использования
-#define cbUpAlarmSens	0x04  //Превышена верхняя аварийная граница из "Допусков" 
+#define cbUpAlarmSens	0x04  //Превышена верхняя аварийная граница из "Допусков"
 #define	cbDownAlarmSens	0x08  //Превышена нижняя аварийная граница из "Допусков"
 #define	cbUpCtrlSens	0x10  //Превышена верхняя контрольная граница из "Допусков"
 #define cbMinMaxVSens	0x20  //Вне физического предела измерений
@@ -419,48 +419,13 @@
 #define cumV			13
 #define cuPpm			14
 
-/*Переменные общего назначения*/
-uchar   nPort;
-uchar   nInput;
-uchar   nPortD;
-uchar   nInputD;
-uchar	nTypeSens;
 
-uchar	nSensArea;
-uchar	nSensAreaNow;
-uchar	nSensTepl;
-uchar	nSensTeplNow;
-uchar	nSensTeplSave;
-
-uchar	nSensor;
-uchar	nNextSensor;
-
-char 	nTimer;
-char 	nTimer1;
-char 	nProgs;
-char 	nNextProgs;
-
-uchar Volume;
-uchar TicVol;
-uchar MaskRas;
-int   PastPerRas;
-int   TecPerRas;
-char	CalPort;
 uint16_t	NMinPCOut;
 
 /*-----------------------------------*/
 
 
-
-/*Переменные связи с асемблером*/
-uchar   OutR[11];
 uchar   RegLEV;
-uchar	DemoMode;
-int     MesINT1;
-uint16_t	IntCount;
-int		Rezerv1;
-int		Rezerv2;
-int		Rezerv3;
 
 char NowDayOfWeek;
 
@@ -472,7 +437,7 @@ typedef struct eeDefStrategy {
 		char OptimalPower;
 		char EcoPower;
 		char Power;
-		char Separate;	
+		char Separate;
 		char KonturHelp;
 		} eDefStrategy;
 
@@ -730,7 +695,7 @@ eNameConst code NameConst[]={
 /*-----------------------------------------
 				Параметры - ОБЩИЕ
 ------------------------------------------*/
- 
+
 {200,SSpS0},
 {500,SSpS0},
 

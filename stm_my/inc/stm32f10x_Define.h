@@ -9,8 +9,6 @@
 
 #define code
 
-#define STM32_UNIT
-
 typedef uint16_t uint;
 typedef uint8_t uchar;
 typedef uint8_t bit;
@@ -76,7 +74,7 @@ void ButtonReset(void);
 void InitRegRetEC(void);
 void w_txt(char *bu);
 void pmInfo(void);
-int16_t w1reset();
+int16_t w1reset(void);
 void w1_wr(void);
 void w1_rd(void);
 void CrcCalc(void);
@@ -85,17 +83,6 @@ void InitP1(void);
 void InitSiod(void);
 void SetInSaveRam(void);
 void	SetDreinCount(void);
-
-uint	Int1Count;
-uint	Int2Count;
-uint	Int3Count;
-uchar	Sec;
-
-
-
-#define NOP asm("nop")
-
-#define Sound   GPIOA->ODR^=GPIO_Pin_4;
 
 
 

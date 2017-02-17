@@ -29,7 +29,7 @@ void USART_PC_Configuration(uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint
  * fbrate - скорость обмена 9600
 
  */
-void CheckRSTime();
+void CheckRSTime(void);
 /*Дл обнуления передатчика, если завис*/
 
 

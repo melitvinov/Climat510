@@ -30,24 +30,18 @@
 #include "net.h"
 #include "simple_server.h"
 
-eAdrGD	*pADRGD;
-uint8_t* EthSost;
-uint8_t* EthBlock;
-uint16_t* PORTNUMBER;
-uint8_t* IPAddr;
-uint8_t* MACAddr;
+static eAdrGD	*pADRGD;
+static uint8_t* EthSost;
+static uint8_t* EthBlock;
+static uint16_t* PORTNUMBER;
+static uint8_t* IPAddr;
+static uint8_t* MACAddr;
 
 
-unsigned int plen;
-unsigned int dat_p;
-unsigned char ffi=0;
-unsigned char fcmd_pos=0;
-unsigned char fcmd;
-unsigned char payloadlen=0;
-char fstr[30];
-char cmdval;
+static unsigned int plen;
+static unsigned int dat_p;
 
-int16_t GlobData;
+static eSocket	Sockets[MAX_SOCKET_COUNT];
 
 
 //extern void delay_ms(unsigned char ms);
@@ -329,7 +323,6 @@ int simple_servercycle(void)
             	}
 	        if (fbuf[TCP_FLAGS_P] & TCP_FLAGS_ACK_V)
 				{
-	            GlobData++;
 	            init_len_info(fbuf); // init some data structures
 	            // we can possibly have no data, just ack:
 	            dat_p=get_tcp_data_pointer();

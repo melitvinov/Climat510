@@ -11,6 +11,8 @@ static uint8_t KeyDelay;
 static bit BITKL;
 static KEY_PRESSED SIM;
 
+#define NOP asm("nop")
+
 void keyboardSetBITKL(uchar press)
 {
     BITKL = press;

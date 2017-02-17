@@ -51,7 +51,7 @@ typedef struct  eeTimer
         uchar   	TPipe4;
 
 		uchar		MinTPipe5;
-	
+
         uchar   	MinTPipe1;
         uchar   	MinTPipe2;
 
@@ -80,7 +80,7 @@ typedef struct eeSensing {
 	0x01 - 1 - выключен
 	0x02 - 1 - выход за пределы измеряемого диапазона
 	0x04 - 1 - выход за пределы диапазона измерительного напряжения
-	0x08 - 1 - превышена верхняя аварийная граница измерения 
+	0x08 - 1 - превышена верхняя аварийная граница измерения
 	0x10 - 1 - превышена верхняя контрольная граница измерения
 	0x20 - 1 - превышена нижняя контрольная граница измерения
 	0x40 - 1 - превышена нижняя аварийная граница измерения
@@ -88,7 +88,7 @@ typedef struct eeSensing {
 				} eSensing;
 
 typedef struct eeKontur {
-				
+
 				int16_t		Optimal;
 				int16_t		MaxCalc;
 				int16_t		MinTask;
@@ -123,26 +123,26 @@ typedef struct eeClimTask {
 
 				int16_t		RHAir;
 				int16_t		DoRHAir;
-	
+
 				int16_t		CO2;
 				int16_t		DoCO2;
 
 				int8_t		Win;
 				int16_t		SIO;
-				
+
 				int16_t		DoPressure;
 
 				int8_t		Vent;
 
 				int8_t		Screen[3];
-				
+
 				int8_t		Light;
 				int8_t		ModeLight;
 
 				int8_t		Status;
 
 				int16_t		Rez[10];
-				} eClimTask; 
+				} eClimTask;
 
 typedef struct eeNextTCalc {
 				int16_t		DifTAirTDo;//Разница междуизмеренным и заданным
@@ -159,9 +159,9 @@ typedef struct eeNextTCalc {
 
 				int16_t		Critery;//Цель-изменить теплоноситель на	20
 				int16_t		ICorrectionVent;//Прогноз температуры (для приоритетов)	22
-				
+
 				int16_t		dSumCalc;//Приращение внешних влияний	24
-				
+
 				int16_t		PCorrectionVent;//Остаток от предыдущих расчетов	26
 
 				int16_t		CorrectionScreen; // экран понижает на
@@ -197,12 +197,12 @@ typedef struct eeTepl	{
 	0х01 - 1 - нет задания температуры
 	0х02 - 1 - нет измерения температуры
 	0х04 - 1 - температура скорректирована по солнцу
-	0х08 - 1 - температура 
+	0х08 - 1 - температура
 */
 				eClimTask	AllTask;
 				eOtherCalc	OtherCalc;
 
-				eNextTCalc	NextTCalc;						
+				eNextTCalc	NextTCalc;
 				eKontur		Kontur[cSWaterKontur+2];
 
 				int8_t		SystemStatus;
@@ -235,7 +235,7 @@ typedef struct eeTepl	{
 				uint16_t    newsZone;		// new
 				int16_t		Rez[8];    // 9
 				eMechanic	HandCtrl[cSHandCtrl];
-				} eTepl;				
+				} eTepl;
 
 
 typedef struct eeHot {
@@ -267,7 +267,7 @@ typedef struct eeHot {
 				uint16_t 	Data;
 				uchar 		Year;
 				uchar 		Demo;
-/***************************************/				
+/***************************************/
 				eTepl 		Tepl[cSTepl];
 
 				int16_t		Rez2[10];
@@ -576,7 +576,7 @@ typedef struct eeControl
 		uint8_t			Cod;
 	//	uint8_t			Saverez;
         int16_t     		Rez[5];
-	
+
 	} eControl;
 
 #ifdef AHU1
@@ -614,7 +614,7 @@ typedef struct eeRegsSettings
 		int16_t				Work;
 		int8_t				On;
 		int16_t				Pause;
-		
+
 	} eRegsSettings;
 
 typedef struct eeScreen
@@ -657,7 +657,7 @@ typedef struct eeScreen
 
 
 		} eMechBusy;
-	
+
 typedef struct eeTControlKontur
 	{
 		int16_t				LastDoT;
@@ -674,7 +674,7 @@ typedef struct eeTControlKontur
 		int8_t				NAndKontur;
 		int8_t				PumpPause;
 	} eTControlKontur;
-		
+
 typedef struct eeTControlTepl
 	{
 		eTControlKontur	Kontur[cSKontur];
@@ -718,7 +718,7 @@ typedef struct eeTControlTepl
 
 		int16_t			nReset;
 		int16_t			COPosition;
-		
+
 		int32_t			Rez3[2];
 //141
 
@@ -762,7 +762,7 @@ typedef struct eeTControlTepl
 //		int32_t			Functional;
 		int32_t			RealPower;//MidlSens[2];
 		int16_t			MaxDifT;//MidlTimeSens[2];
-	
+
 		int16_t			TPauseSIO;
 //		eSensorD		SensorD;
 		int8_t			FramUpdate[2];
@@ -770,7 +770,7 @@ typedef struct eeTControlTepl
 		int8_t			NewLight;
 		int16_t			COPause;
 //		int16_t			Rez1[7];
-		
+
 		int8_t			NOwnKonturs;
 		int8_t			CurrPower;
 		int8_t			SnowTime;
@@ -804,7 +804,7 @@ typedef struct eeTControl
 		int8_t			bSnow;
 		uint8_t			NowCod;
 		uchar			tCodTime;
-	} eTControl;	
+	} eTControl;
 
 
 
@@ -840,7 +840,7 @@ struct  eGData{
 		eConstMech		ConstMechanic[cSTepl];
 		eStrategy		Strategy[cSTepl][cSStrategy];
 		eMechConfig		MechConfig[cSTepl];
-		eTuneClimate	TuneClimate;		
+		eTuneClimate	TuneClimate;
         eTControl       TControl;
         eLevel          Level;
         int16_t         uInTeplSens[cSTepl][cConfSSens];
@@ -848,20 +848,19 @@ struct  eGData{
         } GD;
 
 eTimer xdata *pGD_Timer;
-eKontur xdata *pGD_Hot_Tepl_Kontur; 
-eTControlKontur xdata *pGD_TControl_Tepl_Kontur; 
-eMechanic xdata *pGD_Hot_Hand_Kontur; 
-eTeplControl xdata *pGD_Control_Tepl; 
-eTepl xdata *pGD_Hot_Tepl; 
-eTControlTepl xdata *pGD_TControl_Tepl; 
+eKontur xdata *pGD_Hot_Tepl_Kontur;
+eTControlKontur xdata *pGD_TControl_Tepl_Kontur;
+eMechanic xdata *pGD_Hot_Hand_Kontur;
+eTeplControl xdata *pGD_Control_Tepl;
+eTepl xdata *pGD_Hot_Tepl;
+eTControlTepl xdata *pGD_TControl_Tepl;
 eConstMech xdata *pGD_ConstMechanic;
-eMechanic xdata *pGD_Hot_Hand; 
+eMechanic xdata *pGD_Hot_Hand;
 eStrategy xdata *pGD_Strategy_Tepl;
 eStrategy xdata *pGD_Strategy_Kontur;
 eMechConfig	xdata *pGD_MechConfig;
 uint16_t	xdata *pGD_MechConfig_Kontur;
 eConstMixVal xdata	*pGD_ConstMechanic_Mech;
-eMechBusy xdata *MBusy;
 eSensLevel xdata *pGD_Level_Tepl;
 typedef struct eeBlockEEP {
         uchar*		AdrCopyRAM;
@@ -874,7 +873,7 @@ eBlockEEP  BlockEEP[SUM_BLOCK_EEP];
 
 
 void InitBlockEEP(void){
-/*---!!!!ВНИМАНИЕ!!!! По глупости 
+/*---!!!!ВНИМАНИЕ!!!! По глупости
 номер в массиве BlockEEP должен соответствовать
 на единицу меньше номеру в массиве AdrGD
 т.е порядки структур должны быть строго одинаковы
@@ -937,6 +936,6 @@ void ButtonReset(void) {
         GD.Control.rSInTeplSens=cConfSSens;
         GD.Control.rSMechanic=cSRegCtrl;
         ClrDog;
-        GD.Control.rSTepl=GD.Control.ConfSTepl;//cNowSTepl;		
+        GD.Control.rSTepl=GD.Control.ConfSTepl;//cNowSTepl;
         GD.Control.rVersion=cVersion;
 }

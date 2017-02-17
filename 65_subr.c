@@ -422,103 +422,6 @@ void airHeat(char fnTepl)
 //***********************************************************************************************************
 
 
-
-char ds18b20_ReadROM(void)
-{
-//  if (Second&1)
-  {	
-  //	w1_test();
-	//if (ToLowTime<1) ToLowTime=1;
-	//w1_check();
-    w1reset();
-    if (SendByte1W<4) return 1;
-	SendByte1W=DS18B20_READ_ADDR;
-  	w1_wr();
-//	return 0;
-  }	  
-  for(ByteX=0;ByteX<8;ByteX++)
-  {		
-  	w1_rd();
-	Buf1W[ByteX]=SendByte1W;
-  }
-//  w1reset();
-  SendByte1W=8;
-  CrcCalc();
-//  Buf1W[7]=0;
-  if (SendByte1W) return 2;
-  return 0;		
-
-}
-
-void ds18b20_WriteROM(void)
-{
-  SendByte1W=DS18B20_SEND_ADDR;
-  w1_wr();
-  for(ByteX=0;ByteX<8;ByteX++)
-  {
-	SendByte1W=pBuf[ByteX];
-  	w1_wr();
-  }
-}
-
-void ds18b20_FillReg(void)
-{
-	w1reset();
-//	if (SendByte1W<4) return 1;
-	ds18b20_WriteROM();
-	SendByte1W=DS18B20_SEND_EEPROM;
-  	w1_wr();
-	SendByte1W=0;
-  	w1_wr();
-	SendByte1W=0;
-  	w1_wr();
-	SendByte1W=0x7f;
-  	w1_wr();
-
-}
-
-char ds18b20_ReadTemp(void)
-{
-
-  w1reset();	
-//  if (SendByte1W<4) return 1;
-  ds18b20_WriteROM();
-  SendByte1W=DS18B20_READ_TEMP;
-  w1_wr();
-  for(ByteX=0;ByteX<9;ByteX++)
-  {		
-  	w1_rd();
-	Buf1W[ByteX]=SendByte1W;
-  }
-  w1reset();
-  SendByte1W=9;
-  CrcCalc();
-  if (SendByte1W) return 2;
-  return 0;		
-}
-
-
-/*char ds18b20_Read(void)
-{
-  w1reset();	
-  WriteROM1W();
-  if (ReadData1W()) return 2;	
-  return 0;		
-}
-*/
-void ds18b20_ConvertTemp(void)
-{
-
-  w1reset();	 
-//  ds18b20_WriteROM();
-  SendByte1W=DS18B20_SKIP_ROM;
-  w1_wr();
-  SendByte1W=DS18B20_CONVERTT;
-  w1_wr();
-}
-
-
-
 char SameSign(int Val1,int Val2)
 {
 	if (((Val1>0)&&(Val2>0))
@@ -533,7 +436,7 @@ void SetPointersOnTepl(char fnTepl)
 	pGD_TControl_Tepl=&GD.TControl.Tepl[fnTepl];
 	pGD_Control_Tepl=&GD.Control.Tepl[fnTepl];
 	pGD_Hot_Hand=&GD.Hot.Tepl[fnTepl].HandCtrl[0];
-	pGD_ConstMechanic=&GD.ConstMechanic[fnTepl];	
+	pGD_ConstMechanic=&GD.ConstMechanic[fnTepl];
 	pGD_MechConfig=&GD.MechConfig[fnTepl];
 	pGD_Level_Tepl=&GD.Level.InTeplSens[fnTepl];
 	pGD_Strategy_Tepl=&GD.Strategy[fnTepl];
@@ -583,13 +486,13 @@ int abs(int f_in)
 
 void ogrMin(int16_t *f_in,int16_t f_gr)
 {
-	if ((*f_in)<f_gr) 
+	if ((*f_in)<f_gr)
 		(*f_in)=f_gr;
 }
 
 void ogrMax(int16_t *f_in,int16_t f_gr)
 {
-	if ((*f_in)>f_gr) 
+	if ((*f_in)>f_gr)
 		(*f_in)=f_gr;
 }
 
@@ -601,7 +504,7 @@ void ogrMax(int16_t *f_in,int16_t f_gr)
 	if (!GD.MechConfig[fnTepl][fnKontur])
 		return 0;
 	for (t2=0;t2<cSTepl;t2++)
-		if (GD.MechConfig[t2][fnKontur]==GD.MechConfig[fnTepl][fnKontur]) 
+		if (GD.MechConfig[t2][fnKontur]==GD.MechConfig[fnTepl][fnKontur])
 		{
 			t1|=(1<<GD.MechConfig[t2][fnKontur]);
 			GD.TControl.Tepl[fnTepl].Kontur[fnKontur].NAndKontur++;
@@ -618,7 +521,7 @@ char CheckSeparate (char fnKontur)
 		return 0;
 	t1=0;
 	for (t2=0;t2<cSTepl;t2++)
-		if (GD.MechConfig[t2].RNum[fnKontur]==(*pGD_MechConfig_Kontur)) 
+		if (GD.MechConfig[t2].RNum[fnKontur]==(*pGD_MechConfig_Kontur))
 		{
 			t1|=(1<<t2);
 			pGD_TControl_Tepl_Kontur->NAndKontur++;
@@ -650,13 +553,13 @@ void CheckDigitMidl(eSensing *ftemp,char fdelta)
 		ClrBit(ftemp->RCS,cbNotGoodSens);
 	else
 	{
-		if ((Mes>ftemp->Value+fdelta)||(Mes<(ftemp->Value)-fdelta)) 
+		if ((Mes>ftemp->Value+fdelta)||(Mes<(ftemp->Value)-fdelta))
 		{
 			SetBit(ftemp->RCS,cbNotGoodSens);
 			Mes=ftemp->Value;
 		}
 	}
-	
+
 }
 
 void CheckSensLevs(char full,char met)
@@ -668,7 +571,7 @@ void CheckSensLevs(char full,char met)
 	int16_t			*lS;
 	int16_t			*levelS;
 	SetPointersOnTepl(nSensTeplNow);
-	uS=&GD.uInTeplSens[nSensTeplNow][ByteX];	
+	uS=&GD.uInTeplSens[nSensTeplNow][ByteX];
 	nameS=&NamesSensConfig[ByteX];
 	valueS=&(pGD_Hot_Tepl->InTeplSens[ByteX]);
 	llS=&(pGD_TControl_Tepl->LastLastInTeplSensing[ByteX]);
@@ -676,7 +579,7 @@ void CheckSensLevs(char full,char met)
 	levelS=pGD_Level_Tepl[ByteX];
 	if (met)
 	{
-		uS=&GD.uMeteoSens[ByteX];	
+		uS=&GD.uMeteoSens[ByteX];
 		nameS=&NamesOfSens[ByteX+cSInTeplSens];
 		valueS=&GD.Hot.MeteoSens[ByteX];
 		llS=&GD.TControl.LastLastMeteoSensing[ByteX];
@@ -687,16 +590,16 @@ void CheckSensLevs(char full,char met)
 	{
 
 		if(((*uS)<nameS->uMin)&&(nameS->uMin)||((*uS)>nameS->uMax)&&(nameS->uMax))
-			SetBit(valueS->RCS,cbMinMaxUSens);				
+			SetBit(valueS->RCS,cbMinMaxUSens);
 	}
-	if (Mes < nameS->Min) 
+	if (Mes < nameS->Min)
 	{
 		if ((nameS->TypeSens==cTypeSun)||(nameS->TypeSens==cTypeRain))
 			Mes=nameS->Min;
 		else
 		{
 			SetBit(valueS->RCS,cbMinMaxVSens);
-			Mes=0;          
+			Mes=0;
 		}
 	}
 	if (Mes > nameS->Max)
@@ -706,18 +609,18 @@ void CheckSensLevs(char full,char met)
 		else
 		{
 			SetBit(valueS->RCS,cbMinMaxVSens);
-			Mes=0;          
-		}		
+			Mes=0;
+		}
 	}
 //	CheckDigitMidl(valueS,nameS->DigitMidl);
 	switch (nameS->TypeMidl)
-	{ 
-		case cNoMidlSens:				
+	{
+		case cNoMidlSens:
 			break;
 		case c2MidlSens:
 			(*llS)=0;
 		case c3MidlSens:
-			IntX=(*llS);       
+			IntX=(*llS);
 			IntY=(*lS);
 			(*llS)=IntY;
         	(*lS)=Mes;
@@ -729,7 +632,7 @@ void CheckSensLevs(char full,char met)
 
 			break;
 		case cExpMidlSens:
-			
+
 			IntY=(*llS);
 			IntZ=0;
 			if (IntY) IntZ++;
@@ -746,19 +649,19 @@ void CheckSensLevs(char full,char met)
 	if (nameS->TypeSens==cTypeFram)
 	{
 		if (pGD_TControl_Tepl->MechBusy[nSensor-cSmWinNSens+cHSmWinN].PauseMech>89) return;
-		pGD_TControl_Tepl->FramUpdate[nSensor-cSmWinNSens]=1; 
+		pGD_TControl_Tepl->FramUpdate[nSensor-cSmWinNSens]=1;
 	}
 	ClrBit(valueS->RCS,(cbDownAlarmSens+cbUpAlarmSens));
-	if ((levelS[cSmDownCtrlLev])&&(Mes <= levelS[cSmDownCtrlLev])) 
+	if ((levelS[cSmDownCtrlLev])&&(Mes <= levelS[cSmDownCtrlLev]))
 		SetBit(valueS->RCS,cbDownCtrlSens);
-    if ((levelS[cSmUpCtrlLev])&&(Mes >= levelS[cSmUpCtrlLev])) 
+    if ((levelS[cSmUpCtrlLev])&&(Mes >= levelS[cSmUpCtrlLev]))
     	SetBit(valueS->RCS,cbUpCtrlSens);
-	if ((levelS[cSmDownAlarmLev])&&(Mes <= levelS[cSmDownAlarmLev])) 
+	if ((levelS[cSmDownAlarmLev])&&(Mes <= levelS[cSmDownAlarmLev]))
 	{
 		SetBit(valueS->RCS,cbDownAlarmSens);
 		return;
 	}
-    if ((levelS[cSmUpAlarmLev])&&(Mes >= levelS[cSmUpAlarmLev])) 
+    if ((levelS[cSmUpAlarmLev])&&(Mes >= levelS[cSmUpAlarmLev]))
 	{
     	SetBit(valueS->RCS,cbUpAlarmSens);
         return;
@@ -782,7 +685,7 @@ void  Calibr(void){
 	{
 		case cWaterSensing:
 		{
-				ByteY=cSmWaterSens;		
+				ByteY=cSmWaterSens;
 				nSensor+=cSmWaterSens;
 		}
 		case cInSensing:
@@ -803,25 +706,25 @@ void  Calibr(void){
 			met=1;
 			break;
 		}
-	}		
+	}
 	fSens->RCS=(fSens->RCS&(cbNotGoodSens+cbDownAlarmSens+cbUpAlarmSens));
-	switch (fNameSens->TypeSens) 
+	switch (fNameSens->TypeSens)
 	{
 		case cTypeMeteo:
 		{
-       	    LngX=MesINT1/256; 
-			if(LngX<0) 
+       	    LngX=MesINT1/256;
+			if(LngX<0)
 			LngX=256+LngX;
 			Mes=MesINT1&255;
 		    fuSens[0]=Mes;
         	fuSens[1]=LngX;
-			if(Mes) 
+			if(Mes)
 			{
 				fSens[1].Value=LngX*360/Mes;
 			   	Mes=12700/Mes;
 			}
 		    if(fSens[1].Value>360)
-				fSens[1].Value=0;		
+				fSens[1].Value=0;
 		    ByteX=nSensor;
 			CheckSensLevs(0,1);
 			fSens[1].RCS=(fSens[1].RCS&cbNotGoodSens);
@@ -861,12 +764,12 @@ void  Calibr(void){
 						Mes=(((long)Mes)*10/16);
 					else
 						Mes=(Mes/16);
-					
+
 				}
 //				ds18b20_ConvertTemp();
 				//ds18b20_FillReg();
 
-				ByteX=nSensor;				
+				ByteX=nSensor;
 				CheckSensLevs(0,met);
 //				for(ByteW=0;ByteW<7;ByteW++)
 //					Buf1W[ByteW]=((char*)(fCalSens->uCal))[ByteW];
@@ -882,7 +785,7 @@ void  Calibr(void){
 			ClrDog;
 	    	Mes=(int)((long int)Mes*(long int)1000/(long int)GD.Cal.Port);
         	fuSens[0]=Mes;
-			if(Mes>5000) 
+			if(Mes>5000)
 			Mes=0;
         	LngX=((long)fCalSens->V1-(long)fCalSens->V0)
         		*((long)Mes-(long)fCalSens->U0);
@@ -931,12 +834,12 @@ void GenerateTypeSensing(void)
     nSensArea=cWaterSensing;
 	nSensTeplSave=nSensTepl;
     nSensTepl=0;
-		
+
 }
 
 void SetSensorOn(void)
 {
-	if(CalPort) 
+	if(CalPort)
 	{
 		nPort=(nPortSave-1)*8+SaveChar-1;
 	    nInput=SaveChar;
@@ -948,7 +851,7 @@ void SetSensorOn(void)
 	nSensTeplNow=nSensTepl;
 	nSensAreaNow=nSensArea;
 	while(1)
-	{	
+	{
 		if (!nNextSensor)
 			GenerateTypeSensing();
 		ByteX=cSmWaterSens;
@@ -967,11 +870,11 @@ void SetSensorOn(void)
 				nNextSensor%=ByteX;
 				if ((!GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].Input))
 				{
-					GD.uInTeplSens[nSensTepl][ByteY+nNextSensor]=0;				
+					GD.uInTeplSens[nSensTepl][ByteY+nNextSensor]=0;
 			        GD.Hot.Tepl[nSensTepl].InTeplSens[ByteY+nNextSensor].RCS=0;
 		        	SetBit(GD.Hot.Tepl[nSensTepl].InTeplSens[ByteY+nNextSensor].RCS,cbNoWorkSens);
 		        	GD.Hot.Tepl[nSensTepl].InTeplSens[ByteY+nNextSensor].Value=0;
- 
+
 					continue;
 				}
 		       	nPort=(GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].Input-1);//*8+GD.Cal.InTeplSens[nSensTepl][ByteY+nNextSensor].nInput-1;
@@ -979,18 +882,18 @@ void SetSensorOn(void)
 				nTypeSens=NamesSensConfig[ByteY+nNextSensor].TypeSens;
 
 				break;
-			}	  
+			}
 			case cOutSensing:
 			{
 				nNextSensor++;
 				nNextSensor%=cSMeteoSens;
 
 				if (!GD.Cal.MeteoSens[nNextSensor].Input)
-				{	
+				{
 					GD.uMeteoSens[nNextSensor]=0;
 					GD.Hot.MeteoSens[nNextSensor].RCS=0;
 		        	SetBit(GD.Hot.MeteoSens[nNextSensor].RCS,cbNoWorkSens);
-				
+
 					continue;
 				}
 		       	nPort=(GD.Cal.MeteoSens[nNextSensor].Input-1);//*8+GD.Cal.MeteoSens[nNextSensor].nInput-1;
@@ -1017,7 +920,7 @@ void SetSensorOn(void)
 
 void CheckReadyMeasure(void)
 {
-   if(ReadyIZ) 
+   if(ReadyIZ)
 	{
 		SetSensorOn();
         ClrDog;
@@ -1028,20 +931,19 @@ void CheckReadyMeasure(void)
 */
 void SetResRam(void)
 {
-	GD.Hot.News|=bResRam;	
+	GD.Hot.News|=bResRam;
 }
 
 void InitGD(char fTipReset) {
 		eCalSensor xdata *eCS;
         ClrDog;
         keyboardSetSIM(100);
-		NDat=0;
 		if (fTipReset>2) MemClr(&GD.Hot,(sizeof(eHot)));
         MemClr(&GD.Control,sizeof(eControl)
                 +sizeof(eFullCal)
                 +sizeof(eLevel)
                 +sizeof(eTimer)*cSTimer);
-ClrDog; 
+ClrDog;
         MemClr(&GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
         MemClr(&GD.uInTeplSens[0][0],sizeof(uint16_t)*(cConfSMetSens+cSTepl*cConfSSens));
 ClrDog;
@@ -1050,17 +952,6 @@ ClrDog;
         GD.Hot.Data=257;
         GD.Hot.Time=8*60;
         GD.Hot.News|=bReset;
-        OutR[0]=0;
-        OutR[1]=0;
-        OutR[2]=0;
-        OutR[3]=0;
-        OutR[4]=0;
-        OutR[5]=0;
-        OutR[6]=0;
-        OutR[7]=0;
-        OutR[8]=0;
-        OutR[9]=0;
-        OutR[10]=0;
 		Y_menu=0;
         x_menu=0;
 	//	TimeReset=3;
@@ -1156,8 +1047,8 @@ int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet)
 		IntZ=0;
 		return 0;
 	}
-	if (IntY>fEndCorr)	
-		IntZ=fCorrectOnEnd;	
+	if (IntY>fEndCorr)
+		IntZ=fCorrectOnEnd;
 	else
 		IntZ=(int)((((long)(IntY-fStartCorr))*fCorrectOnEnd)/(fEndCorr-fStartCorr));
 	return fbSet;
@@ -1166,7 +1057,7 @@ int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet)
 void WindDirect(void)
 {
 	GD.Hot.PozFluger&=1;
-	if (GD.TuneClimate.o_TeplPosition==180) 
+	if (GD.TuneClimate.o_TeplPosition==180)
 	{
 		GD.Hot.PozFluger=0;
 		return;
@@ -1203,56 +1094,42 @@ void WindDirect(void)
 	Mask<<=(nBit-1+fnSm);
 	nByte=BitMech[fnTepl][fnMech][fnBit]/16;
 	if (fnclr)
-		OutR[nByte]&=(~Mask);		
-	else	
+		OutR[nByte]&=(~Mask);
+	else
 		OutR[nByte]|=Mask;
-	
+
 }*/
 
 void SetRelay(uint16_t nRelay)
 {
-char bRelay;
+    char bRelay;
 	if (GetIPCComMod(nRelay))
 	{
 		SetOutIPCDigit(1,nRelay,&bRelay);
-		return;
 	}
-	if(!(nRelay--)) return;
-	bRelay=1;
-	bRelay<<=(nRelay % 8);
-	if (nRelay>79) return;
-	OutR[nRelay / 8] |=bRelay;
 }
 //----------------------------------------
 void ClrRelay(uint16_t nRelay)
 {
-char bRelay;
+    char bRelay;
 	if (GetIPCComMod(nRelay))
 	{
 		SetOutIPCDigit(0,nRelay,&bRelay);
-		return;
 	}
-	if(!(nRelay--)) return;
-	bRelay=1;
-	bRelay<<=(nRelay % 8);
-	OutR[nRelay / 8] &=~(bRelay);
 }
 
 char TestRelay(uint16_t nRelay)
 {
-char bRelay;
+    char bRelay;
 	if (GetIPCComMod(nRelay)) return GetOutIPCDigit(nRelay,&bRelay);
-	if(!(nRelay--)) return 0;
-	bRelay=1;
-	bRelay<<=(nRelay % 8);
-	if (OutR[nRelay / 8] & bRelay) return 1;
-	else return 0;
+    // XXX: is it right to report 0 ?
+	return 0;
 }
 
 
 void __SetBitOutReg(char fnTepl,char fnMech,char fnclr,char fnSm)
 {	uint16_t nBit,nByte,Mask;
-	if (fnTepl==-1) 
+	if (fnTepl==-1)
 	  nBit=fnMech;
 	else
 	  nBit=GD.MechConfig[fnTepl].RNum[fnMech];
@@ -1262,16 +1139,4 @@ void __SetBitOutReg(char fnTepl,char fnMech,char fnclr,char fnSm)
 		SetOutIPCDigit(!fnclr,nBit+fnSm,&Mask);
 		return;
 	}
-	nBit--;
-	nBit+=fnSm;
-	nByte=nBit>>3;
-	nBit=nBit&7;
-	Mask=1;
-	Mask<<=nBit;
-	if (nByte>10) return;
-	if (fnclr)
-		OutR[nByte]&=(~Mask);		
-	else	
-		OutR[nByte]|=Mask;
-	
 }

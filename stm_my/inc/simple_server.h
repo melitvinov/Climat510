@@ -46,8 +46,6 @@ typedef struct eeSocket
 			eHeader Header;
 		} eSocket;
 
-eSocket	Sockets[MAX_SOCKET_COUNT];
-
 
 
 

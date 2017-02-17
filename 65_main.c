@@ -140,6 +140,7 @@ void checkConfig()
 
 }
 
+#define Sound   GPIOA->ODR^=GPIO_Pin_4;
 
 main()
 {
@@ -147,12 +148,8 @@ main()
     keyboardSetBITKL(0);
     //BITKL=0;
 
-#ifndef STM32_UNIT
-    init8051();
-#else
     ClrAllOutIPCDigit();
     Init_STM32();
-#endif
 
     ClrDog;
 #ifdef SumRelay48
@@ -214,9 +211,9 @@ start:
     if (GD.SostRS == (uchar)IN_UNIT) {  /*Если приняли блок с ПК */
         /*--Если запись 0бл и признак времени то установить время */
 //            if(PlaceBuf()) {
-#ifdef STM32_UNIT
+
         NMinPCOut=0;
-#endif
+
         if (!NumBlock && (GD.Hot.News&0x80)) SetRTC();
         ClrDog;
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
@@ -232,13 +229,11 @@ start:
         keyboardSetSIM(105);
     }
     if (bSec) {
-#ifdef STM32_UNIT
         if (Second==58) {
             CheckWithoutPC();
             CheckInputConfig();
         }
         CheckRSTime();
-#endif
 #ifndef NOTESTMEM
 
         if (GD.SostRS==OUT_UNIT) TestMem(0);

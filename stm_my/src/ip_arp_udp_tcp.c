@@ -2,7 +2,7 @@
  * vim:sw=8:ts=8:si:et
  * To use the above modeline in vim you must have "set modeline" in your .vimrc
  *
- * Author: Guido Socher 
+ * Author: Guido Socher
  * Copyright: GPL V2
  * See http://www.gnu.org/licenses/gpl.html
  *
@@ -20,6 +20,8 @@
 #include "ip_arp_udp_tcp.h"
 #include "enc28j60.h"
 
+static unsigned char *ipaddr;
+
 // The Ip checksum is calculated over the ip header only starting
 // with the header length field and a total length of 20 bytes
 // unitl ip.dst
@@ -27,7 +29,7 @@
 // the calculation.
 // len for ip is 20.
 //
-// For UDP/TCP we do not make up the required pseudo header. Instead we 
+// For UDP/TCP we do not make up the required pseudo header. Instead we
 // use the ip.src and ip.dst fields of the real packet:
 // The udp checksum calculation starts with the ip.src field
 // Ip.src=4bytes,Ip.dst=4 bytes,Udp header=8bytes + data length=16+len
@@ -44,11 +46,11 @@
 // The RFC has also a C code example: http://www.faqs.org/rfcs/rfc1071.html
 unsigned  int checksum(unsigned char *fbuf, unsigned  int len,unsigned char type)
 	{
-	// type 0=ip 
+	// type 0=ip
 	//      1=udp
 	//      2=tcp
 	unsigned long sum = 0;
-	
+
 	//if(type==0){
 	//        // do not add anything
 	//}
@@ -61,7 +63,7 @@ unsigned  int checksum(unsigned char *fbuf, unsigned  int len,unsigned char type
 		}
 	if(type==2)
 		{
-		sum+=IP_PROTO_TCP_V; 
+		sum+=IP_PROTO_TCP_V;
 		// the length here is the length of tcp (data+header len)
 		// =length given to this function - (IP.scr+IP.dst length)
 		sum+=len-8; // = real tcp len
@@ -111,7 +113,7 @@ void init_ip_arp_udp_tcp(unsigned char *mymac,unsigned char *myip,unsigned int w
 unsigned char eth_type_is_arp_and_my_ip(unsigned char *buf,unsigned  int len)
 	{
 	unsigned char i=0;
-	//  
+	//
 	if (len<41)
 		{
 	    return(0);
@@ -262,9 +264,9 @@ void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss
 	    // put inital seq number
 	    buf[TCP_SEQ_H_P+0]= 0;
 	    buf[TCP_SEQ_H_P+1]= 0;
-	    // we step only the second byte, this allows us to send packts 
+	    // we step only the second byte, this allows us to send packts
 	    // with 255 bytes or 512 (if we step the initial seqnum by 2)
-	    buf[TCP_SEQ_H_P+2]= seqnum; 
+	    buf[TCP_SEQ_H_P+2]= seqnum;
 	    buf[TCP_SEQ_H_P+3]= 0;
 	    // step the inititial seq num by something we will not use
 	    // during this tcp session:
@@ -273,9 +275,9 @@ void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss
 	// zero the checksum
 	buf[TCP_CHECKSUM_H_P]=0;
 	buf[TCP_CHECKSUM_L_P]=0;
-	
+
 	// The tcp header length is only a 4 bit field (the upper 4 bits).
-	// It is calculated in units of 4 bytes. 
+	// It is calculated in units of 4 bytes.
 	// E.g 24 bytes: 24/4=6 => 0x60=header len field
 	//buf[TCP_HEADER_LEN_P]=(((TCP_HEADER_LEN_PLAIN+4)/4)) <<4; // 0x60
 	if (mss)
@@ -284,7 +286,7 @@ void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss
 		    // 1408 in hex is 0x580
 		    buf[TCP_OPTIONS_P]=2;
 		    buf[TCP_OPTIONS_P+1]=4;
-		    buf[TCP_OPTIONS_P+2]=0x05; 
+		    buf[TCP_OPTIONS_P+2]=0x05;
 		    buf[TCP_OPTIONS_P+3]=0x80;
 		    // 24 bytes:
 		    buf[TCP_HEADER_LEN_P]=0x60;
@@ -319,7 +321,7 @@ void make_arp_answer_from_request(unsigned char *buf)
         i++;
 		}
 	// eth+arp is 42 bytes:
-	enc28j60PacketSend(42,buf); 
+	enc28j60PacketSend(42,buf);
 	}
 
 void make_echo_reply_from_request(unsigned char *buf,unsigned  int len)
@@ -429,7 +431,7 @@ unsigned  int fill_tcp_data_p(unsigned char *buf,unsigned  int pos, const unsign
 	// fill in tcp data at position pos
 	//
 	// with no options the data starts after the checksum + 2 more bytes (urgent ptr)
-	while ((c = pgm_read_byte(progmem_s++))) 
+	while ((c = pgm_read_byte(progmem_s++)))
 		{
 	    buf[TCP_CHECKSUM_L_P+3+pos]=c;
 	    pos++;
@@ -445,7 +447,7 @@ unsigned  int fill_tcp_data(unsigned char *buf,unsigned  int pos, const char *s)
 	// fill in tcp data at position pos
 	//
 	// with no options the data starts after the checksum + 2 more bytes (urgent ptr)
-	while (*s) 
+	while (*s)
 		{
 	    buf[TCP_CHECKSUM_L_P+3+pos]=*s;
 	    pos++;
@@ -471,7 +473,7 @@ unsigned  int fill_tcp_buf(unsigned char *buf,unsigned  int fsize, const char *s
 	}
 
 // Make just an ack packet with no tcp data inside
-// This will modify the eth/ip/tcp header 
+// This will modify the eth/ip/tcp header
 void make_tcp_ack_from_any(unsigned char *buf)
 	{
 	unsigned  int j;
@@ -487,9 +489,9 @@ void make_tcp_ack_from_any(unsigned char *buf)
 			{
 	        make_tcphead(buf,info_data_len,0,1); // no options
 			}
-	
+
 	// total length field in the IP header must be set:
-	// 20 bytes IP + 20 bytes tcp (when no options) 
+	// 20 bytes IP + 20 bytes tcp (when no options)
 	j=IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN;
 	buf[IP_TOTLEN_H_P]=j>>8;
 	buf[IP_TOTLEN_L_P]=j& 0xff;
@@ -519,7 +521,7 @@ void make_tcp_ack_with_data(unsigned char *buf,unsigned  int dlen, char fin)
 
 //	if (fin)
 //		buf[TCP_FLAGS_P]=TCP_FLAGS_ACK_V|TCP_FLAGS_PUSH_V|TCP_FLAGS_FIN_V;
-	
+
 	// total length field in the IP header must be set:
 	// 20 bytes IP + 20 bytes tcp (when no options) + len of data
 	j=IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+dlen;

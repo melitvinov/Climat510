@@ -12,6 +12,7 @@ typedef struct {
 	uint8_t  dst;	/* 0 Winter, !=0 Summer */
 } eDateTime;
 
+// XXX: this buddy is defined a lot of times
 char NowDayOfWeek;
 
 /*struct TDateTime {

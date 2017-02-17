@@ -7,8 +7,6 @@
 #define FIRSTYEAR   2000		// start year
 #define FIRSTDAY    6			// 0 = Sunday
 
-static const uint8_t DaysInMonth[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 
 typedef struct {
 	uint16_t year;	/* 1..4095 */

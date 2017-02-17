@@ -1,6 +1,7 @@
 #include "stm32f10x_clock.h"
 #include "stm32f10x_pwr.h"
 
+static const uint8_t DaysInMonth[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 static uint8_t isDST( const eDateTime *t )
 {

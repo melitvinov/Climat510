@@ -1,6 +1,4 @@
 //Работа порта RS-485
-#include "stm_Debugs.h"
-
 
 #ifndef __STM32F10X_RS485MASTER_H
 #define __STM32F10X_RS485MASTER_H

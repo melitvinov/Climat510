@@ -44,12 +44,6 @@
 #define cSTepl			8
 
 
-#ifdef DEBUG
-uint16_t SumAnswers=0;
-char DEBUG_Buf1[4]={4,5,6,7};
-char DEBUG_Buf2[4]={0,1,2,3};
-#endif
-
 
 uint16_t InitSystems[cSTepl][10]={
 //Зона1
@@ -488,15 +482,12 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #define SumRelay48
 
 #define cNumValSiodMax	4
-#define cNumValSiodDef	2
 
-#define cnLight			5
 #define VIN
 //#define DEMO
 
 /*------------------------------------------*/
 #include "65_GD.c"
-#include "65_airHeats.c"
 #include "405_Memory.c"
 //#include "405_Clock.c"
 #include "65_Subr.c"

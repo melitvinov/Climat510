@@ -10,6 +10,10 @@
 #include "stm32f10x_iwdg.h"
 #include "I2CSoft.h"
 
+// this stuff is from climdef.h
+int8_t ToHiTime;
+int8_t ToLowTime;
+uchar	nSensor;
 
 uint8_t* mymac = 0x1FFFF7EE;
 
@@ -337,139 +341,6 @@ void w1Init()
 	GPIO_Init(PORT1WIRE, &GPIO_InitStructure);
 }
 
-int16_t w1reset()
-{
-	uint16_t timeout,fRes=0;
-	PORT1WIRE->BSRR|=PIN1WIRE;
-	for(timeout=0;timeout<10;timeout++);
-	PORT1WIRE->BRR|=PIN1WIRE;
-	for(timeout=0;timeout<450;timeout++);
-	PORT1WIRE->BSRR|=PIN1WIRE;
-	PORT1WIRE->CRH=PORT1WIRE->CRH&0xFFF0FFFF;
-	PORT1WIRE->CRH|=0x80000;
-	for(timeout=0;timeout<8;timeout++);
-	for(timeout=0;timeout<200;timeout++)
-	{
-		if  (!(PORT1WIRE->IDR&PIN1WIRE))
-		{
-			fRes++;
-
-		}
-	//	else if (fRes) break;
-
-	}
-	PORT1WIRE->CRH=PORT1WIRE->CRH&0xFFF0FFFF;
-	PORT1WIRE->CRH|=0x70000;
-	PORT1WIRE->BSRR|=PIN1WIRE;
-	SendByte1W=fRes;
-
-}
-
-void w1_check()
-{
-	uint16_t timeout;
-	ToHiTime=0;
-	ToLowTime=0;
-	PORT1WIRE->BSRR|=PIN1WIRE;
-	for(timeout=0;timeout<10;timeout++);
-	PORT1WIRE->BRR|=PIN1WIRE;
-	for(timeout=0;timeout<200;timeout++)
-	{
-		if  ((PORT1WIRE->IDR&PIN1WIRE))
-		{
-			ToLowTime++;
-
-		}
-		else break;
-	}
-	PORT1WIRE->BSRR|=PIN1WIRE;
-	for(timeout=0;timeout<200;timeout++)
-	{
-		if  (!(PORT1WIRE->IDR&PIN1WIRE))
-		{
-			ToHiTime++;
-
-		}
-		else break;
-	}
-}
-
-void w1_wr()
-{
-	uint16_t timeout;
-	uint8_t i;
-	for(i=0;i<8;i++)
-	{
-		PORT1WIRE->BRR|=PIN1WIRE;
-		for(timeout=0;timeout<3;timeout++);
-		if ((SendByte1W>>i)&0x01)
-			PORT1WIRE->BSRR|=PIN1WIRE;
-		for(timeout=0;timeout<90;timeout++);
-		PORT1WIRE->BSRR|=PIN1WIRE;
-		for(timeout=0;timeout<25;timeout++);
-	}
-
-}
-void w1_rd()
-{
-	uint8_t i;
-	uint16_t timeout,fRes=0,fShortTime,fLongTime;
-	SendByte1W=0;
-	fShortTime=45;
-	fLongTime=0;
-	for(i=0;i<8;i++)
-	{
-		fRes=0;
-		PORT1WIRE->BRR|=PIN1WIRE;
-//Минимальная пауза 0 циклов
-		for(timeout=0;timeout<3;timeout++);
-		PORT1WIRE->CRH=PORT1WIRE->CRH&0xFFF0FFFF;
-		PORT1WIRE->CRH|=0x80000;		PORT1WIRE->BSRR|=PIN1WIRE;
-		//for(timeout=0;timeout<5;timeout++)
-		for(timeout=0;timeout<20;timeout++)
-		{
-			if  ((PORT1WIRE->IDR&PIN1WIRE))
-			{
-				fRes++;
-			}
-		}
-		for(timeout=0;timeout<20;timeout++);
-		if (fRes>7)//От 2-х до 8-ми
-			SendByte1W|=(0x01<<i);
-		PORT1WIRE->CRH=PORT1WIRE->CRH&0xFFF0FFFF;
-		PORT1WIRE->CRH|=0x70000;
-		PORT1WIRE->BSRR|=PIN1WIRE;
-		for(timeout=0;timeout<15;timeout++);
-		if (fRes<fShortTime) fShortTime=fRes;
-		if (fRes>fLongTime) fLongTime=fRes;
-	}
-	ToHiTime=fShortTime;
-	ToLowTime=fLongTime;
-
-
-}
-void CrcCalc()
-{
-	unsigned char *mas;
-	unsigned char Len;
-	unsigned char i,dat,crc,fb,st_byt;
-	mas=Buf1W;
-	Len=SendByte1W;
-	  st_byt=0; crc=0;
-	  do{
-	    dat=mas[st_byt];
-	    for( i=0; i<8; i++) {  // счетчик битов в байте
-	      fb = crc ^ dat;
-	      fb &= 1;
-	      crc >>= 1;
-	      dat >>= 1;
-	      if( fb == 1 ) crc ^= 0x8c; // полином
-	    }
-	    st_byt++;
-	  } while( st_byt < Len ); // счетчик байтов в массиве
-	  SendByte1W=crc;
-}
-
 void Reg48ToI2C()
 {
 uint16_t i;
@@ -664,8 +535,9 @@ void Init_MEAS_INPUT()
 }
 
 void EXTI9_5_IRQHandler(void) {
-   if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
-	   IntCount++;
+   if (EXTI_GetITStatus(EXTI_Line9) != RESET)
+   {
+
    }
    // Да если и нет, то всё равно:
 
