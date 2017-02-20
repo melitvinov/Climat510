@@ -34,14 +34,9 @@ uchar   Mark=0;
 
 //uchar   buf[90];
 void    *AdrVal;
-uchar   TecChan;
-bit     ReadyIZ;
-bit     FalseIZ;
 bit     bSec;
 //bit     BITKL;
 bit     Menu;
-bit     B_video;
-bit     B_input;
 bit     EndInput;
 bit     BlkW;
 unsigned char   Second;

@@ -25,10 +25,14 @@ for (i=0;i < (DestSize-1);i++) {
     }
 return 1;
 }
+
+
 */
 //;------FullCheck------------------
 char volatile konturMax[6];
 char volatile mecPosArray[7];
+
+bit     B_video;
 
 void saveMech(char tCTepl)
 {
@@ -144,7 +148,7 @@ void checkConfig()
 
 #define Sound   GPIOA->ODR^=GPIO_Pin_4;
 
-main()
+void main(void)
 {
     char    timeDog;
     keyboardSetBITKL(0);
@@ -230,7 +234,7 @@ main()
         checkConfig();
 
         if (NumBlock)
-            ReWriteFRAM();
+            ReWriteFRAM(NumBlock);
 //				}
         GD.SostRS=OUT_UNIT;
         keyboardSetSIM(105);

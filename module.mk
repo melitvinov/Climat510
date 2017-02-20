@@ -23,7 +23,7 @@ SRC += stm_my/src/stm32f10x__clock.c
 SRC += keyboard/keyboard.c
 
 # these are 'coarse fixed'
-#SRC += stm_my/src/stm32f10x_LCD240x64.c
+SRC += 405_Memory.c
 
 SRC += stm_my/src/spi.c
 SRC += stm_my/src/enc28j60.c

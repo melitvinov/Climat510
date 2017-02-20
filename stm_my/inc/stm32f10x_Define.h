@@ -51,9 +51,7 @@ void CopyEEP(void);
 void CalcEEPSum(void);
 void GetRTC(void);
 void SetRTC(void);
-//void InitZgen(void);
-char TestRAM(void);
-void TestMem(uchar);
+
 void ReWriteEEP(void);
 void SetIdent(void);
 void SetValve(char nValve);
@@ -62,7 +60,6 @@ void FindNewVal(void);
 void SetOutReg24(void);
 //void SetOutReg32(void);
 void SetOutReg64(void);
-void MemClr(void *pp1,uint32_t n);
 void InitBoil(void);
 void SetBoilValve(void);
 void DoBoilVal(void);
@@ -72,7 +69,7 @@ void in_val (void);
 void InitBlockEEP(void);
 void ButtonReset(void);
 void InitRegRetEC(void);
-void w_txt(char *bu);
+void w_txt(const char *bu);
 void pmInfo(void);
 int16_t w1reset(void);
 void w1_wr(void);
@@ -81,7 +78,6 @@ void CrcCalc(void);
 void InitP1(void);
 //void InitRAM(char iBlock);
 void InitSiod(void);
-void SetInSaveRam(void);
 void    SetDreinCount(void);
 
 

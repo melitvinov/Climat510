@@ -47,9 +47,6 @@
 #define cVersion		72 // 69
 /*Версия ПО для ПК*/
 
-#define SUM_BLOCK_EEP	8
-/*Количество сохраняемых в EEPROM блоков*/
-
 #define cSTimer			40
 /*Количество программ для задания*/
 

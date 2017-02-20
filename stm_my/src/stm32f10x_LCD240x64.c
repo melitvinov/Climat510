@@ -127,7 +127,8 @@ void Delay(vu32 nCount)
     for (; nCount != 0; nCount--);
 }
 
-uint8_t  ReadStatus (char Need){
+uint8_t  ReadStatus (char Need)
+{
     uint8_t res, TimeOut;
     res=0;
     TimeOut=0;
@@ -154,7 +155,8 @@ uint8_t  ReadStatus (char Need){
     }
 }
 
-void SendCmd(uchar Cmd){
+void SendCmd(uchar Cmd)
+{
     ReadStatus(3);
 
 //    CLREA;
@@ -169,7 +171,8 @@ void SendCmd(uchar Cmd){
 
 }
 
-void SendByte(uchar Data){
+void SendByte(uchar Data)
+{
     ReadStatus(3);
 //    CLREA;
     LCD_DATA_OUT(Data);
@@ -183,7 +186,8 @@ void SendByte(uchar Data){
 
 }
 
-void Send2(uchar Cmd, int Data){
+void Send2(uchar Cmd, int Data)
+{
 //	uchar snd;
     //snd=(uchar)(Data%256);
     SendByte(Data%256);
@@ -192,7 +196,8 @@ void Send2(uchar Cmd, int Data){
     SendCmd(Cmd);
 }
 
-void SendBlock(char *Src, int Dst, int Size){
+void SendBlock(const char *Src, int Dst, int Size)
+{
     char ch;
     Send2(cmdAddrPtr,Dst);
     SendCmd(cmdOnAutoWr);
@@ -216,7 +221,8 @@ void SendBlock(char *Src, int Dst, int Size){
     SendCmd(cmdOffAuto);
 }
 
-void SendBlockPM(char *Src, int Dst, int Size){
+void SendBlockPM(char *Src, int Dst, int Size)
+{
     char ch;
     Send2(cmdAddrPtr,Dst);
     SendCmd(cmdOnAutoWr);
@@ -238,7 +244,8 @@ void SendBlockPM(char *Src, int Dst, int Size){
     SendCmd(cmdOffAuto);
 }
 
-void SendSim(char vSim, char NumStr){
+void SendSim(char vSim, char NumStr)
+{
     char vDisplCols;
     vDisplCols=DisplCols;
     Send2(cmdAddrPtr,TxtHomeAddr+NumStr*DisplCols);
@@ -262,7 +269,8 @@ void SendSim(char vSim, char NumStr){
 
 //-------------- Инициализировать дисплей -------
 
-void IniLCDMem(void) {
+void IniLCDMem(void)
+{
     Send2(cmdTxtHome,TxtHomeAddr);
     Send2(cmdGrfHome,GrfHomeAddr);
     Send2(cmdTxtArea,TxtArea);
@@ -277,7 +285,8 @@ void IniLCDMem(void) {
     if (x_menu) SendSim(Tire,1);
 
 }
-void InitLCD(void) {
+void InitLCD(void)
+{
     LCD_STARTUP;
     LCD_CTRL_DIR_OUT();
     SetWR;
@@ -291,7 +300,8 @@ void InitLCD(void) {
 /*---------------------------------------------------
         Очистка буфера
 ----------------------------------------------------*/
-void clear_d(void) {
+void clear_d(void)
+{
     unsigned char ic;
     BlkW=0;
     for (ic=0;ic<BufSize;ic++) lcdbuf[ic]=' ';
@@ -299,7 +309,8 @@ void clear_d(void) {
 //---------------------------------------------------
 //        Вывод буфера в индикатор
 //---------------------------------------------------
-void TimeToBuf(void) {
+void TimeToBuf(void)
+{
     BlkW=1;
     Ad_Buf=PozTime;
 //    buf[Ad_Buf++]=' ';
@@ -310,7 +321,8 @@ void TimeToBuf(void) {
     Ad_Buf++;
     w_int(&CtrData,DsMsY);
 }
-void VideoSost(void) {
+void VideoSost(void)
+{
     int ic;
 
     BlkW=1;
@@ -335,7 +347,8 @@ void VideoSost(void) {
     //SendBlock(&buf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
 }
 
-void Video(void) {
+void Video(void)
+{
     uchar   CurRow,CurCol;
     //  if (CheckKeyboardXMEGA()) return;
     if (GrafView)
@@ -364,7 +377,8 @@ void Video(void) {
 
 }
 
-void SendFirstScreen(char tmSec){
+void SendFirstScreen(char tmSec)
+{
     int i;
     if (!tmSec) return;
     GrafView=tmSec;
@@ -388,7 +402,8 @@ void SendFirstScreen(char tmSec){
     SendCmd(cmdOffAuto);
 }
 
-void ClearGraf(void){
+void ClearGraf(void)
+{
     int i;
     InitLCD();
     Send2(cmdAddrPtr,GrfHomeAddr);

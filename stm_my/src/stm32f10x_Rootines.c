@@ -10,7 +10,10 @@
 #include "stm32f10x_iwdg.h"
 #include "I2CSoft.h"
 
-// this stuff is from climdef.h
+// XXX: isolation
+#include "405_memory.h"
+
+// XXX: this stuff is from climdef.h
 int8_t ToHiTime;
 int8_t ToLowTime;
 uchar   nSensor;
@@ -29,7 +32,7 @@ void CheckWithoutPC(void)
     {
         NMinPCOut=0;
         USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
-        simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac,&PORTNUM);
+        simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&PORTNUM);
         GD.TControl.Tepl[0].WithoutPC++;
     }
     NMinPCOut++;
@@ -65,7 +68,7 @@ void Init_STM32(void) {
     InitRTC();
     PORTNUM=DEF_PORTNUM;
 
-    simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac,&PORTNUM);
+    simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&PORTNUM);
 
 
     w1Init();
@@ -357,41 +360,6 @@ void Reg48ToI2C()
 
 void OutReg()
 {
-}
-
-void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
-{
-    uint16_t CSum;
-    uint16_t i,fSS;
-    //I2C_Mem_Write(0,fStartAddr,AdrBlock,sizeBlock);
-    for (i=0;i<sizeBlock/2000+1;i++)
-    {
-        ClrDog;
-        fSS=2000;
-        if (i==sizeBlock/2000)
-            fSS=sizeBlock%2000;
-        fm_Write(fStartAddr+i*2000,AdrBlock+i*2000,fSS,&CSum);
-    }
-
-//	I2C_MainLoad(0,AdrBlock,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Transmitter);
-}
-
-void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
-{
-    uint16_t CSum;
-    uint16_t i,fSS;
-
-    //I2C_Mem_Read(0,fStartAddr,AdrBlock,sizeBlock);
-    //I2C_MainLoad(0xA0,0,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Receiver);
-    for (i=0;i<sizeBlock/2000+1;i++)
-    {
-        ClrDog;
-        fSS=2000;
-        if (i==sizeBlock/2000)
-            fSS=sizeBlock%2000;
-
-        fm_Read(fStartAddr+i*2000,AdrBlock+i*2000,fSS,&CSum);
-    }
 }
 
 
@@ -755,6 +723,67 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
 }
 
 
+/*------------------------------------------------
+        Тестирование и установка данных при сбросе "Тест"
+        и ежесекундно
+TipRes
+0-мягкий старт-уст адресов и проверка Control
+1-кнопка ТЕСТ и вкл питания
+2-инициализация RAM - GD
+10+2-инициализация EEP- Программы
+10+1-инициализация EEP- Калибровки
+10+0-инициализация EEP- Параметры
+--------------------------------------------------*/
+void TestMem(uchar TipReset)
+{
+    ClrDog;
+    InitBlockEEP();  /*подпрограмма в GD */
+    ButtonReset();
+//	   TipReset=2;
+/*------ проверка контр суммы блока CONTROL ---------------------------*/
+    if (TipReset>5) InitGD(5);
+    if ((!Menu) && TestRAM0())
+        TipReset=2;
+    if (!TipReset) return;
+/*------ проверка контр суммы ОЗУ  -------------------------------*/
+
+    ClrDog;
+    if ((TipReset==1)&& TestRAM())
+        TipReset++;
+    if (TipReset<2) return;
+    Menu=0;
+    ClrDog;
+
+/*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
+    TestFRAM(TipReset);
+    ClrDog;
+    ButtonReset();
+    GetRTC();
+}
+
+/*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
+void	TestFRAM(char EraseBl)
+{
+	    uint16_t cSum;
+	    uint8_t nBlFRAM;
+        for(nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+        {
+          RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+          RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
+          cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+          ClrDog;
+          if ( (CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase == 1) )
+          {
+            InitGD(5);
+            SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
+            BlockEEP[nBlFRAM].CSum=cSum;
+            BlockEEP[nBlFRAM].Erase=0; //++
+          }
+          	  /* формирование контр суммы ОЗУ после инициализации */
+        }
+}
 
 void Measure()
 {
@@ -812,7 +841,7 @@ void CheckInputConfig()
         }
     for (tTepl=0;tTepl<cSTepl;tTepl++)
         for (nSens=0;nSens<cConfSSens;nSens++)
-            UpdateInIPC(GetSensConfig(tTepl,nSens),&GD.Cal.InTeplSens[tTepl][nSens]);
+            UpdateInIPC(GetSensConfig(tTepl,nSens), &GD.Cal.InTeplSens[tTepl][nSens]);
     for (nSens=0;nSens<cConfSMetSens;nSens++)
         UpdateInIPC(GetMetSensConfig(nSens),&GD.Cal.MeteoSens[nSens]);
 

@@ -21,6 +21,7 @@ int CopyVal;
 int MinimVal, MaximVal;
 char ValSize;
 uchar SumYMenu;
+bit     B_input;
 
 void in_val(void);
 
@@ -199,7 +200,7 @@ void KeyBoard(void) {
 /*---------------------------------------------------
  Вывод текста в буфер
  ----------------------------------------------------*/
-void w_txt(char code *bu)
+void w_txt(const char code *bu)
 {
     char code *vu;
     if (GD.Control.Language)
@@ -568,19 +569,7 @@ void in_val(void) {
             SetValue(MaximVal);
         if (!ValSize)
             return;
-//		 CopyVal=*(unsigned int *)AdrVal;
-        SizeEEP = ValSize;
-
-        //char nameT[6]={'T',' ','h','e','a','t'};
-        //char nameTT[6];
-        //char count = 0;
-        //for (count = 0; count < 6; count++)
-        //	nameTT[count] = lcdbuf[160 + count];
-        //if (nameT == nameTT)
-        //	AdrRAM = 1;
-        //else
-        AdrRAM = AdrVal;
-        SetInSaveRam();
+        SetInSaveRam(AdrVal, ValSize);
     }
 }
 

@@ -45,7 +45,7 @@
 
 
 
-uint16_t InitSystems[cSTepl][10]={
+const uint16_t InitSystems[cSTepl][10]={
 //Зона1
     {5, //Отопление
         2, //Вентиляция
@@ -148,7 +148,7 @@ uint16_t InitSystems[cSTepl][10]={
 
 };
 
-uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
+const uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
     {   /* Теплица 1*/
         0,  //Клапан 1
         0,  //Клапан 2
@@ -488,7 +488,7 @@ uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 
 /*------------------------------------------*/
 #include "65_GD.c"
-#include "405_Memory.c"
+//#include "405_Memory.c"
 //#include "405_Clock.c"
 #include "65_Subr.c"
 #include "405_Display.c"

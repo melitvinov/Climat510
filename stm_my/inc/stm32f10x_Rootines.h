@@ -22,14 +22,6 @@ void InitIPCTimer(void);
 
 void InitRTC(void);
 
-void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
-
-void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
-
-void WriteToFRAM(void);
-
-void ReadFromFRAM(void);
-
 void CopyEEP(void);
 void CalcEEPSum(void);
 void w1Init(void);
@@ -40,6 +32,8 @@ void w1_rd(void);
 void CrcCalc(void);
 void Reg48ToI2C(void);
 void OutReg(void);
+
+void TestMem(uchar);
 
 void Measure(void);
 void CheckInputConfig(void);

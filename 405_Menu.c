@@ -6,6 +6,9 @@
 #include "405_Test.c"
 #endif
 
+// XXX: isolation
+#include "405_memory.h"
+
 #define	MaxY_menu		9
 
 #define SUM_NAME_TUNE sizeof(NameConst)
@@ -680,9 +683,7 @@ void pmCalibr(void) {
             eCS->V1=SaveInt2;
             eCS->U1=GD.uInTeplSens[0][IntY];
         }
-        SizeEEP=12;
-        AdrRAM=eCS;
-        SetInSaveRam();
+        SetInSaveRam(eCS, 12);
         EndInput=0;
     }
     Ad_Buf=Savebuf;

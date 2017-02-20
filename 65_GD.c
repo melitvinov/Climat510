@@ -1,3 +1,6 @@
+
+#include "405_memory.h"
+
 #pragma pack(1)
 
 
@@ -873,18 +876,10 @@ eMechConfig xdata *pGD_MechConfig;
 uint16_t    xdata *pGD_MechConfig_Kontur;
 eConstMixVal xdata  *pGD_ConstMechanic_Mech;
 eSensLevel xdata *pGD_Level_Tepl;
-typedef struct eeBlockEEP
+
+
+void InitBlockEEP(void)
 {
-    uchar*      AdrCopyRAM;
-    uint16_t    Size;
-    uint16_t    CSum;
-    int8_t      Erase;
-} eBlockEEP;
-
-eBlockEEP  BlockEEP[SUM_BLOCK_EEP];
-
-
-void InitBlockEEP(void){
 /*---!!!!ВНИМАНИЕ!!!! По глупости
 номер в массиве BlockEEP должен соответствовать
 на единицу меньше номеру в массиве AdrGD
@@ -915,7 +910,10 @@ void InitBlockEEP(void){
     BlockEEP[7].AdrCopyRAM=&GD.ConstMechanic[0];
     BlockEEP[7].Size=(sizeof(eConstMech)*cSTepl);
 }
-void ButtonReset(void) {
+
+
+void ButtonReset(void)
+{
 /* адреса передачи данных */
     AdrGD[0/*cblHot*/].Adr=&GD.Hot;
     AdrGD[0].MaxSize=sizeof(eHot);
