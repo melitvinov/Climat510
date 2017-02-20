@@ -949,19 +949,17 @@ void SetResRam(void)
     GD.Hot.News|=bResRam;
 }
 
-void InitGD(char fTipReset) {
+void InitGD(char fTipReset)
+{
     eCalSensor *eCS;
-    ClrDog;
     keyboardSetSIM(100);
     if (fTipReset>2) MemClr(&GD.Hot,(sizeof(eHot)));
     MemClr(&GD.Control,sizeof(eControl)
            +sizeof(eFullCal)
            +sizeof(eLevel)
            +sizeof(eTimer)*cSTimer);
-    ClrDog;
     MemClr(&GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
     MemClr(&GD.uInTeplSens[0][0],sizeof(uint16_t)*(cConfSMetSens+cSTepl*cConfSSens));
-    ClrDog;
     /* Установка данных по умолчанию */
     GD.Hot.Year=01;
     GD.Hot.Data=257;
@@ -972,8 +970,10 @@ void InitGD(char fTipReset) {
     //	TimeReset=3;
 
     /* Установка реле по умолчанию */
-    for (IntX=0;IntX<(sizeof(NameConst)/3);IntX++)
-        GD.TuneClimate.s_TStart[IntX]=NameConst[IntX].StartZn;
+
+    // XXX: this sizeof is fucked, TStart[i] is fucked too
+    for (int i  =0; i< sizeof(NameConst)/3; i++)
+        GD.TuneClimate.s_TStart[i] = NameConst[i].StartZn;
 
 #warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IP
     GD.Control.NFCtr=NumCtr;
@@ -1048,9 +1048,7 @@ void InitGD(char fTipReset) {
             //eCS->nInput=InPortsAndInputs[ByteX][ByteY][1];
         }
     }
-    ClrDog;
-/* Задание номеров входов*/
-    // GD.Cal.Port=1437;
+
     nReset=25;
     GD.SostRS=OUT_UNIT;
 }
@@ -1137,14 +1135,16 @@ void ClrRelay(uint16_t nRelay)
 char TestRelay(uint16_t nRelay)
 {
     char bRelay;
-    if (GetIPCComMod(nRelay)) return GetOutIPCDigit(nRelay,&bRelay);
+    if (GetIPCComMod(nRelay))
+        return GetOutIPCDigit(nRelay,&bRelay);
     // XXX: is it right to report 0 ?
     return 0;
 }
 
 
 void __SetBitOutReg(char fnTepl,char fnMech,char fnclr,char fnSm)
-{   uint16_t nBit,nByte,Mask;
+{
+    uint16_t nBit,nByte,Mask;
     if (fnTepl==-1)
         nBit=fnMech;
     else

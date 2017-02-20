@@ -86,13 +86,11 @@ void checkConfig()
             if (GD.Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
                 checkKontur = 1;
         }
-        ClrDog;
         for (sys=0;sys<6;sys++)
         {
             if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH+sys].RCS == 0)
                 checkMech = 1;
         }
-        ClrDog;
         if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS == 0)
             checkMech = 1;
 
@@ -106,7 +104,6 @@ void checkConfig()
         {
             saveMech(tCTepl);
         }
-        ClrDog;
         if (checkKontur == 1)
         {
             GD.Hot.Tepl[tCTepl].newsZone = 0x0F;
@@ -117,7 +114,6 @@ void checkConfig()
         {
             saveKontur(tCTepl);
         }
-        ClrDog;
         if (repeatNews[tCTepl])
             repeatNews[tCTepl]--;
         if (repeatNews[tCTepl] <= 0)
@@ -137,7 +133,6 @@ void main(void)
     ClrAllOutIPCDigit();
     Init_STM32();
 
-    ClrDog;
 #ifdef SumRelay48
     //Reg48ToI2C();
     //OutRelay88();
@@ -150,31 +145,24 @@ void main(void)
 #endif
     InitLCD();
 
-    ClrDog;
 #ifdef SumExtCG
     SendFirstScreen(1);
 #endif
     clear_d();
-    ClrDog;
-    ClimDefStuff.Menu=0;
+    WTF0.Menu=0;
     EndInput=0;
     nReset=3;
     w_txt("\252\245TO F405 (c)APL&DAL");
     Delay(1000000);
-    ClrDog;
     Video();
-    ClrDog;
     GD.Hot.News|=bKlTest;
     ByteX=1;
     GD.SostRS=OUT_UNIT;
     KeyboardProcess();
     if (keyboardGetBITKL())
         ByteX=6;
-    ClrDog;
     TestMem(ByteX);
-    ClimDefStuff.Second=38;
-    ClrDog;
-    ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
+    WTF0.Second=38;
     ClearAllAlarms();
     siodInit();
     airHeatInit();   // airHeat
@@ -195,7 +183,7 @@ void main(void)
 
     if (!timeDog--)
     {
-        timeDog=7;ClrDog;
+        timeDog=7;
     }
 
     if (GD.SostRS == (uchar)IN_UNIT)  /*Если приняли блок с ПК */
@@ -206,23 +194,22 @@ void main(void)
         // XXX: isolation
         stm32f10x_Rootines_reset_NMinPCOut();
 
-        if (!ClimDefStuff.NumBlock && (GD.Hot.News&0x80)) SetRTC();
-        ClrDog;
+        if (!WTF0.NumBlock && (GD.Hot.News&0x80)) SetRTC();
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
 #warning Изменение блока
         //убрать, тестовая вещь показывает прием пакета
 
         checkConfig();
 
-        if (ClimDefStuff.NumBlock)
-            ReWriteFRAM(ClimDefStuff.NumBlock);
+        if (WTF0.NumBlock)
+            ReWriteFRAM(WTF0.NumBlock);
 //				}
         GD.SostRS=OUT_UNIT;
         keyboardSetSIM(105);
     }
-    if (ClimDefStuff.bSec)
+    if (WTF0.bSec)
     {
-        if (ClimDefStuff.Second==58)
+        if (WTF0.Second==58)
         {
             CheckWithoutPC();
             CheckInputConfig();
@@ -232,30 +219,24 @@ void main(void)
 
         if (GD.SostRS==OUT_UNIT) TestMem(0);
 #endif
-        ClimDefStuff.bSec=0;
-        ClrDog;
+        WTF0.bSec=0;
         Control();
-        ClrDog;
         B_video=1;
-        if (!(ClimDefStuff.Second%9))
+        if (!(WTF0.Second%9))
             Measure();
     }
     if (keyboardGetBITKL())
     {
-        ClrDog;
         GD.Hot.News|=bOperator;
-        if (ClimDefStuff.Menu) GD.Hot.News|=bEdit;
+        if (WTF0.Menu) GD.Hot.News|=bEdit;
         KeyBoard();
         B_video=1;
     }
     //CheckReadyMeasure();
     if (B_video)
     {
-        ClrDog;
         GMenu();
-        ClrDog;
         Video();
-        ClrDog;
         B_video=0;
     }
     simple_servercycle(); //Перенесено в прерывание клавиатуры

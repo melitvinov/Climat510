@@ -3,4 +3,4 @@
 
 #include "climdefstuff.h"
 
-climdefstuff_t ClimDefStuff;
+climdefstuff_t WTF0;

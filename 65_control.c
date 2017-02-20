@@ -237,7 +237,6 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     {
         pGD_Timer = &GD.Timer[nTimer];
         typeStartCorrection = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
-        ClrDog;
         //if (typeStartCorrection == -1)
         //    typeStartCorrection = GD.Timer[nTimer].TimeStart;
 
@@ -256,7 +255,6 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
             MaxTimeStart=typeStartCorrection;
             sTimerMax=nTimer;
         }
-        ClrDog;
         if ((typeStartCorrection>=IntZ)&&(NextTimeStart>typeStartCorrection))
         {
             NextTimeStart=typeStartCorrection;
@@ -278,14 +276,12 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 
     pGD_CurrTimer=&GD.Timer[sTimerPrev];
     pGD_NextTimer=&GD.Timer[sTimerNext];
-    ClrDog;
     pGD_Timer = &GD.Timer[sTimerPrev];
     prevTimer = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
     pGD_Timer = &GD.Timer[sTimerNext];
     nextTimer = controlTypeStartCorrection((*pGD_Timer).TypeStart, (*pGD_Timer).TimeStart, settingsVosx, settingsZax);
     IntX= CtrTime - prevTimer;
     IntY= nextTimer - prevTimer;
-    ClrDog;
 //        if (!GD.Timer[nTimer].TimeStart)
 //            continue;
 //        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
@@ -349,7 +345,6 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
         return;
     }
 #warning temp !!!!!!!!!!!!!!!!!!!!!!!!!!
-    ClrDog;
 
     // T отопления, в зависимости что стоит в параметрах упраления, то и ставим в температуру
     (*pGD_Hot_Tepl).AllTask.TAir=JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
@@ -404,7 +399,6 @@ void AllTaskAndCorrection(void)
     IntX=CorrectionRule(GD.TuneClimate.s_TStart[0],GD.TuneClimate.s_TEnd,
                         GD.TuneClimate.s_TConst,cbCorrTOnSun);
     SetBit((*pGD_Hot_Tepl).RCS,IntX);
-    ClrDog;
     (*pGD_Hot_Tepl).AllTask.DoTHeat+=IntZ;
     /*Коррекция прогноза*/
     (*pGD_Hot_Tepl).AllTask.NextTAir+=IntZ;
@@ -533,7 +527,6 @@ void AllTaskAndCorrection(void)
                    GD.TuneClimate.f_CorrTVentUp,0);
     (*pGD_Hot_Tepl).AllTask.NextTVent+=IntZ;
     (*pGD_Hot_Tepl).AllTask.DoTVent+=IntZ;
-    ClrDog;
     /*--------------------------------------------------------------*/
 
 }
@@ -646,7 +639,6 @@ void __cNextTCalc(char fnTepl)
 //	}
 //		}
 
-    ClrDog;
 /*Вычисляем корректировки ветра фрамуг и разницы между температурой задания
 и внешней температуры соответственно*/
 /*Ветер и фрамуги увеличивают эту разницу*/
@@ -693,7 +685,6 @@ void __cNextTCalc(char fnTepl)
                    GD.TuneClimate.f_SRFactor,0);
     pGD_Hot_Tepl->NextTCalc.dSumCalcF+=IntZ;
 
-    ClrDog;
 /*Вычисляем корректировки ветра фрамуг и разницы между температурой задания
 и внешней температуры соответственно*/
 /*Ветер и фрамуги увеличивают эту разницу*/
@@ -832,7 +823,6 @@ void __cNextTCalc(char fnTepl)
 void    SetMixValvePosition(void)
 {
     int16_t *IntVal;
-    ClrDog;
     for (ByteX=0;ByteX<cSWaterKontur;ByteX++)
     {
         SetPointersOnKontur(ByteX);
@@ -1112,7 +1102,6 @@ void SetDiskr(char fnTepl)
         __SetBitOutReg(fnTepl,cHSmVent,0,0);
     if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).Position,0x01))
         __SetBitOutReg(fnTepl,cHSmHeat,0,0);*/
-    ClrDog;
     ByteX=1;
     if (pGD_Control_Tepl->co_model>=2) ByteX=2;
 
@@ -1147,7 +1136,6 @@ void SetDiskr(char fnTepl)
 void DoMechanics(char fnTepl)
 {
     char fErr;
-    ClrDog;
     for (ByteX=cHSmMixVal;ByteX<cHSmPump;ByteX++)
     {
         SetPointersOnKontur(ByteX);
@@ -1447,7 +1435,6 @@ void SetLighting(void)
     pGD_TControl_Tepl->LightPauseMode--;
     if ((pGD_TControl_Tepl->LightPauseMode<0)||(pGD_TControl_Tepl->LightPauseMode>GD.TuneClimate.l_PauseMode))
         pGD_TControl_Tepl->LightPauseMode=0;
-    ClrDog;
     bZad=0;     // if bZab = 0 calc sun sensor
     if (pGD_TControl_Tepl->LightPauseMode) bZad=1;  // if bZad = 1 don't calc sun senasor
 
@@ -1728,13 +1715,12 @@ void Control(void)
         SetPointersOnTepl(tCTepl);
         SetMixValvePosition();
     }
-    if (ClimDefStuff.Second==20)
+    if (WTF0.Second==20)
     {
         InitLCD();
-        ClrDog;
         SetMeteo();
     }
-    if ((ClimDefStuff.Second==40)||(GD.TControl.Delay))
+    if ((WTF0.Second==40)||(GD.TControl.Delay))
     {
         if (GD.SostRS==WORK_UNIT)
         {
@@ -1742,7 +1728,7 @@ void Control(void)
         }
         else
         {
-            ClimDefStuff.PORTNUM=0;
+            WTF0.PORTNUM=0;
             vNFCtr=0;
             CheckMidlSr();
             GD.TControl.Delay=0;
@@ -1760,14 +1746,12 @@ void Control(void)
                     TaskTimer(1,--ttTepl,tCTepl);
                 }
                 IntZ=GD.Hot.Time;
-                ClrDog;
                 loadSettings(tCTepl);
                 TaskTimer(0,ttTepl,tCTepl);
                 SetPointersOnTepl(tCTepl);
                 SetTepl(tCTepl);
 
                 airHeat(tCTepl);    // airHeat
-                ClrDog;
             }
             __sCalcKonturs();
             __sMechWindows();
@@ -1781,7 +1765,7 @@ void Control(void)
         }
     }
     vNFCtr=GD.Control.NFCtr;
-    ClimDefStuff.PORTNUM=DEF_PORTNUM;
+    WTF0.PORTNUM=DEF_PORTNUM;
     MaskRas=bRasxod;
     if (TecPerRas > 2305)
     {
@@ -1801,22 +1785,20 @@ void Control(void)
         GD.Hot.FullHeat=(int)((GD.TControl.FullVol*GD.TuneClimate.ScaleRasx/100)*(GD.TControl.MeteoSensing[cSmMainTSens]-GD.TControl.MeteoSensing[cSmMainTSens+1])/1000);
     }
     Volume=0;
-    if (ClimDefStuff.Second < 60) return;
+    if (WTF0.Second < 60) return;
 
     airHeatTimers();    // airHeat
-    ClrDog;
 
     WriteToFRAM();
     MidlWindAndSr();
     WindDirect();
 
 #ifndef NOTESTMEM
-    if ((!ClimDefStuff.Menu)&&(GD.SostRS==OUT_UNIT))
+    if ((!WTF0.Menu)&&(GD.SostRS==OUT_UNIT))
         TestMem(1);
 #endif
 
-    ClrDog;
-    ClimDefStuff.Second=0;
+    WTF0.Second=0;
     if (TimeReset)
         TimeReset--;
     if (TimeReset<0)

@@ -145,7 +145,7 @@ void KeyBoard(void) {
     keyboardSetBITKL(0);
     not += 180;
     ton = 2;
-    if (ClimDefStuff.Menu && (keyboardGetSIM() < 10))
+    if (WTF0.Menu && (keyboardGetSIM() < 10))
     {
         in_val();
         B_input = 1;
@@ -153,21 +153,20 @@ void KeyBoard(void) {
     else
     {
         MinimVal = MaximVal = 0;
-        ClrDog;
         EndInput = 0;
         B_input = 0;
         switch (keyboardGetSIM())
         {
         case KEY_10 : if (!Form) break;
-            if (!ClimDefStuff.Menu)
+            if (!WTF0.Menu)
             {
-                ClimDefStuff.Menu=1;
+                WTF0.Menu=1;
                 CopyVal=*(unsigned int *)AdrVal;
             }
             else
             {
                 (*(unsigned int *)AdrVal)=CopyVal;
-                ClimDefStuff.Menu=0;
+                WTF0.Menu=0;
                 Mark=0;
             }
             break;
@@ -242,13 +241,12 @@ void w_int(void *bu, char frmt) {
         Form = frmt;
         SizeForm = Form & 0xF;
     }
-    ClrDog;
+
     switch (frmt)
     {
     case SRelay:
         vre = (*(uint16_t *) bu);
         lcdbuf[Ad_Buf++] = '=';
-        ClrDog;
         if (!BlkW)
         {
             SaveInt = vre;
@@ -271,7 +269,6 @@ void w_int(void *bu, char frmt) {
             lcdbuf[Ad_Buf++] = '1';
         else
             lcdbuf[Ad_Buf++] = '0';
-        ClrDog;
         break;
     case SSpS0:
         if ((*(int16_t *) bu) < 0)
@@ -288,7 +285,6 @@ void w_int(void *bu, char frmt) {
         vre /= 10;
         lcdbuf[Ad_Buf + 1] = vre % 10 + '0';
         vre /= 10;
-        ClrDog;
         lcdbuf[Ad_Buf] = vre + '0';
         lcdbuf[Ad_Buf + 2] = '.';
         Ad_Buf += 4;
@@ -306,7 +302,6 @@ void w_int(void *bu, char frmt) {
         lcdbuf[Ad_Buf] = vre + '0';
         lcdbuf[Ad_Buf + 1] = '.';
         lcdbuf[Ad_Buf + 4] = '.';
-        ClrDog;
         Ad_Buf += 7;
         break;
 
@@ -320,7 +315,6 @@ void w_int(void *bu, char frmt) {
         vre /= 10;
         lcdbuf[Ad_Buf] = vre + '0';
         lcdbuf[Ad_Buf + 2] = '.';
-        ClrDog;
         if (vre > 9)
         {
             lcdbuf[Ad_Buf] = '!';
@@ -339,11 +333,10 @@ void w_int(void *bu, char frmt) {
             vre /= 10;
         }
         Ad_Buf += frmt & 0xF;
-        ClrDog;
         break;
     case SSdSS:
         vre = *(uint16_t *) bu;
-        if (ClimDefStuff.Second & 1)
+        if (WTF0.Second & 1)
             lcdbuf[Ad_Buf + 2] = ':';
         lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
         vre /= 10;
@@ -353,7 +346,6 @@ void w_int(void *bu, char frmt) {
         vre /= 10;
         lcdbuf[Ad_Buf] = vre + '0';
         Ad_Buf += 5;
-        ClrDog;
         break;
     case DsMsY:
     case SSsSS:
@@ -366,7 +358,6 @@ void w_int(void *bu, char frmt) {
         lcdbuf[Ad_Buf + 4] = i % 10 + '0';
         lcdbuf[Ad_Buf + 3] = i / 10 + '0';
         Ad_Buf += 5;
-        ClrDog;
         if (frmt == DsMsY)
         {
             lcdbuf[Ad_Buf] = '/';
@@ -386,7 +377,6 @@ void w_int(void *bu, char frmt) {
         vre /= 10;
         lcdbuf[Ad_Buf] = vre + '0';
         Ad_Buf += 5;
-        ClrDog;
         break;
     case SpSSS:
         vre = *(uint16_t *) bu;
@@ -399,7 +389,6 @@ void w_int(void *bu, char frmt) {
         vre /= 10;
         lcdbuf[Ad_Buf] = vre + '0';
         Ad_Buf += 5;
-        ClrDog;
         break;
     case StStStS:
         for (i = 0; i < 4; i++)
@@ -414,7 +403,6 @@ void w_int(void *bu, char frmt) {
         }
         Ad_Buf += 15;
         lcdbuf[Ad_Buf] = ' ';
-        ClrDog;
         break;
 
     default:
@@ -465,7 +453,6 @@ void in_val(void) {
         vre += (lcdbuf[AdinB + 3] - '0') * 10 + lcdbuf[AdinB + 4] - '0';
         (*(uint16_t *) AdrVal) = vre;
         ValSize = 2;
-        ClrDog;
         break;
     case DsMsY:
         CtrYear = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
@@ -487,7 +474,6 @@ void in_val(void) {
         vre += ValSize;
         (*(uint16_t *) AdrVal) = vre;
         ValSize = 2;
-        ClrDog;
         break;
     case SSpS0:
         vre = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0';
@@ -568,7 +554,7 @@ void in_val(void) {
     {
         EndInput = 1;
         Mark = 0;
-        ClimDefStuff.Menu = 0;
+        WTF0.Menu = 0;
         if (vre < MinimVal)
             SetValue(MinimVal);
         if (MaximVal && (vre > MaximVal))

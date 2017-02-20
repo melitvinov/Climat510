@@ -510,7 +510,6 @@ int16_t RS485_Out2_Transmit(uint16_t fNCtr, uint32_t fSend)
         {
             USART_OUT2_STOPSEND;return ERR_MASTER_TXHEAD;
         }
-        ClrDog;
         USART_SendData(USART_OUT2,Head2[i]);
 //		for (i=0;i<200;i++);
         i++;

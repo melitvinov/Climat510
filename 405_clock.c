@@ -262,7 +262,6 @@ void SetRTC(void) {
     DateTime.mday=CtrData&0xff;
     DateTime.month=CtrData>>8;
     DateTime.year=CtrYear+2000;
-    ClrDog;
     WriteDateTime();
 }
 void GetRTC(void) {

@@ -13,6 +13,12 @@
     #define container_of(ptr, type, member) ({ const typeof( ((type *)0)->member ) *__mptr = (ptr); (type *)( (char *)__mptr - offsetof(type,member) );})
 #endif
 
+// common macro stringifications
+#define _QUOTE(x) # x
+#define QUOTE(x) _QUOTE(x)
+#define CAT( a, b)  a##b
+#define UNIQUENAME( prefix, line )  CAT( prefix, line)
+
 // static assert
 #define PANIC_IF( arg)              extern char UNIQUENAME(AssertAtLine, __LINE__)  [ ( arg) ? -1 : 0 ] __attribute__((unused))
 

@@ -316,8 +316,8 @@ void TimeToBuf(void)
 //    buf[Ad_Buf++]=' ';
     w_int(&CtrTime,SSdSS);
     lcdbuf[Ad_Buf++]=':';
-    lcdbuf[Ad_Buf++]=ClimDefStuff.Second/10+'0';
-    lcdbuf[Ad_Buf++]=ClimDefStuff.Second%10+'0';
+    lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
+    lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     Ad_Buf++;
     w_int(&CtrData,DsMsY);
 }
@@ -365,7 +365,7 @@ void Video(void)
 
     SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
     SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
-    if (ClimDefStuff.Menu) SendCmd(cmd8LineCurs);
+    if (WTF0.Menu) SendCmd(cmd8LineCurs);
     else  SendCmd(cmd3LineCurs);
 //-- установить курсор --
     CurCol=(AdinB+Mark) % DisplCols;

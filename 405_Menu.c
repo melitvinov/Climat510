@@ -46,7 +46,6 @@ void GMenu(void) {
     Form=0;
     Ad_Buf=0;
     AdinB=0;
-    ClrDog;
     if (Y_menu > MaxY_menu) Y_menu=MaxY_menu;
 //***************************************************
 //---- Если в крайнем столбце -----
@@ -63,7 +62,7 @@ void GMenu(void) {
         NewCurRow=Y_menu - StartMenuY + 1;
         lcdbuf[NewCurRow*DisplCols-19]='\312';
 //			buf[NewCurRow*DisplCols-18]='\312';
-        if (ClimDefStuff.Second & 1) lcdbuf[NewCurRow*DisplCols-18]='\312';   //'\076';
+        if (WTF0.Second & 1) lcdbuf[NewCurRow*DisplCols-18]='\312';   //'\076';
         else lcdbuf[NewCurRow*DisplCols-20]='\312';
         SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
 //---- Вывести инверсный фон -----
@@ -85,7 +84,7 @@ void GMenu(void) {
     }
 //-----------------------
 //=========================================================
-    if (ClimDefStuff.Menu&&(GD.TControl.NowCod!=GD.Control.Cod))
+    if (WTF0.Menu&&(GD.TControl.NowCod!=GD.Control.Cod))
         if (SaveChar!=127)
         {
             w_txt(Mes65); //Access code~
@@ -149,8 +148,8 @@ void pmReset(void) {
 //char Proces,Proces2;
 void pmInfoProg405(void){
     BlkW=1;
-    ByteY=(ClimDefStuff.Second/6)%GD.Control.ConfSTepl;
-    ByteZ=(ClimDefStuff.Second/2)%3;
+    ByteY=(WTF0.Second/6)%GD.Control.ConfSTepl;
+    ByteZ=(WTF0.Second/2)%3;
     w_txt(Mes7); //Zone
     ByteX=ByteY+1;
     w_int(&ByteX,SS);
@@ -208,11 +207,10 @@ void pmDate(void) {
     w_txt(Mes70); //Time ~
     w_int(&CtrTime,SSdSS);
     lcdbuf[Ad_Buf++]=':';
-    lcdbuf[Ad_Buf++]=ClimDefStuff.Second/10+'0';
-    lcdbuf[Ad_Buf++]=ClimDefStuff.Second%10+'0';
+    lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
+    lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     if (!Y_menu2) BlkW=1;
     Ad_Buf=Str4;
-    ClrDog;
     w_txt(Mes71); //Date~
     w_int(&CtrData,DsMsY);
     Ad_Buf++;
@@ -401,7 +399,7 @@ void pmParam() {
         w_txt(Mes65); //Access code~
         w_int(&GD.Control.Cod,SSS);
         SaveChar=127;
-        if (!ClimDefStuff.Menu) SaveChar=0;
+        if (!WTF0.Menu) SaveChar=0;
         if (Y_menu2==2) BlkW=1;
         Ad_Buf=Str5;
         if (Y_menu2<=3)
@@ -694,7 +692,7 @@ void pmCalibr(void) {
     }
     Ad_Buf=Savebuf;
 
-    if (!ClimDefStuff.Menu)
+    if (!WTF0.Menu)
     {
         SaveInt=eCS->V0;
         SaveInt2=eCS->V1;
@@ -929,7 +927,6 @@ void pmVersion(void)
 
 void YMenu(char vPozY) {
     char pozY;
-    ClrDog;
     pozY=vPozY;
     if (!pozY)
     {

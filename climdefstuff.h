@@ -16,6 +16,6 @@ typedef struct
     uchar       NumBlock;
 } climdefstuff_t;
 
-extern climdefstuff_t ClimDefStuff;
+extern climdefstuff_t WTF0;
 
 #endif

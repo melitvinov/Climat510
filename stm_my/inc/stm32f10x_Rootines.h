@@ -22,8 +22,6 @@ void InitIPCTimer(void);
 
 void InitRTC(void);
 
-void CopyEEP(void);
-void CalcEEPSum(void);
 void w1Init(void);
 void w1_check(void);
 int16_t w1reset(void);

@@ -59,30 +59,30 @@ void InitBlockEEP(void)
 void ButtonReset(void)
 {
 /* адреса передачи данных */
-    ClimDefStuff.AdrGD[0/*cblHot*/].Adr=&GD.Hot;
-    ClimDefStuff.AdrGD[0].MaxSize=sizeof(eHot);
-    ClimDefStuff.AdrGD[1/*cblControl*/].Adr=&GD.Control;
-    ClimDefStuff.AdrGD[1].MaxSize=sizeof(eControl);
-    ClimDefStuff.AdrGD[2/*cblTimer*/].Adr=&GD.Timer[0];
-    ClimDefStuff.AdrGD[2].MaxSize=sizeof(eTimer)*cSTimer;
-    ClimDefStuff.AdrGD[3/*cblTuneClimate*/].Adr=&GD.TuneClimate;
-    ClimDefStuff.AdrGD[3].MaxSize=sizeof(eTuneClimate);
-    ClimDefStuff.AdrGD[4/*cblStrategy*/].Adr=&GD.Strategy[0];
-    ClimDefStuff.AdrGD[4].MaxSize=sizeof(eStrategy)*cSTepl*cSStrategy;
-    ClimDefStuff.AdrGD[5/*cblMechConfig*/].Adr=&GD.MechConfig[0];
-    ClimDefStuff.AdrGD[5].MaxSize=sizeof(eMechConfig)*cSTepl;
-    ClimDefStuff.AdrGD[6/*cblCal*/].Adr=&GD.Cal;
-    ClimDefStuff.AdrGD[6/*cblCal*/].MaxSize=sizeof(eFullCal);
-    ClimDefStuff.AdrGD[7/*cblCal*/].Adr=&GD.Cal.MeteoSens;
-    ClimDefStuff.AdrGD[7/*cblCal*/].MaxSize=sizeof(eFullCal);
-    ClimDefStuff.AdrGD[8/*cblMechanic*/].Adr=&GD.ConstMechanic[0];
-    ClimDefStuff.AdrGD[8/*cblCal*/].MaxSize=sizeof(eConstMech)*cSTepl;
-    ClimDefStuff.AdrGD[9/*cblLevel*/].Adr=&GD.Level;
-    ClimDefStuff.AdrGD[9/*cblCal*/].MaxSize=sizeof(eLevel);
-    ClimDefStuff.AdrGD[10/*cblHot*/].Adr=&GD.Hot;
-    ClimDefStuff.AdrGD[10/*cblCal*/].MaxSize=sizeof(eHot);
-    ClimDefStuff.AdrGD[11/*cblHot*/].Adr=&GD.TControl;
-    ClimDefStuff.AdrGD[11/*cblCal*/].MaxSize=sizeof(eTControl);
+    WTF0.AdrGD[0/*cblHot*/].Adr=&GD.Hot;
+    WTF0.AdrGD[0].MaxSize=sizeof(eHot);
+    WTF0.AdrGD[1/*cblControl*/].Adr=&GD.Control;
+    WTF0.AdrGD[1].MaxSize=sizeof(eControl);
+    WTF0.AdrGD[2/*cblTimer*/].Adr=&GD.Timer[0];
+    WTF0.AdrGD[2].MaxSize=sizeof(eTimer)*cSTimer;
+    WTF0.AdrGD[3/*cblTuneClimate*/].Adr=&GD.TuneClimate;
+    WTF0.AdrGD[3].MaxSize=sizeof(eTuneClimate);
+    WTF0.AdrGD[4/*cblStrategy*/].Adr=&GD.Strategy[0];
+    WTF0.AdrGD[4].MaxSize=sizeof(eStrategy)*cSTepl*cSStrategy;
+    WTF0.AdrGD[5/*cblMechConfig*/].Adr=&GD.MechConfig[0];
+    WTF0.AdrGD[5].MaxSize=sizeof(eMechConfig)*cSTepl;
+    WTF0.AdrGD[6/*cblCal*/].Adr=&GD.Cal;
+    WTF0.AdrGD[6/*cblCal*/].MaxSize=sizeof(eFullCal);
+    WTF0.AdrGD[7/*cblCal*/].Adr=&GD.Cal.MeteoSens;
+    WTF0.AdrGD[7/*cblCal*/].MaxSize=sizeof(eFullCal);
+    WTF0.AdrGD[8/*cblMechanic*/].Adr=&GD.ConstMechanic[0];
+    WTF0.AdrGD[8/*cblCal*/].MaxSize=sizeof(eConstMech)*cSTepl;
+    WTF0.AdrGD[9/*cblLevel*/].Adr=&GD.Level;
+    WTF0.AdrGD[9/*cblCal*/].MaxSize=sizeof(eLevel);
+    WTF0.AdrGD[10/*cblHot*/].Adr=&GD.Hot;
+    WTF0.AdrGD[10/*cblCal*/].MaxSize=sizeof(eHot);
+    WTF0.AdrGD[11/*cblHot*/].Adr=&GD.TControl;
+    WTF0.AdrGD[11/*cblCal*/].MaxSize=sizeof(eTControl);
 /* параметры контроллера */
 
     GD.Control.rModification=cModification;

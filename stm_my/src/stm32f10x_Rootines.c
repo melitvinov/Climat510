@@ -21,18 +21,11 @@
 #include "stm32f10x_RS485Master.h"
 
 // XXX: this stuff is from climdef.h
-int8_t ToHiTime;
-int8_t ToLowTime;
-uchar   nSensor;
-
-uint8_t* mymac = 0x1FFFF7EE;
-
+static uchar   nSensor;
+static uint8_t* mymac = 0x1FFFF7EE;
 static unsigned char myip[4] = {192,168,1,231};
-
-uint16_t* IWDG_Reset;
-uint8_t KeyDelay;
-
 static uint16_t    NMinPCOut;
+static uint16_t* IWDG_Reset;
 
 void stm32f10x_Rootines_reset_NMinPCOut()
 {
@@ -44,14 +37,15 @@ void CheckWithoutPC(void)
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        USART_PC_Configuration(&GD.Control.NFCtr, ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,9600);
-        simple_server(ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&ClimDefStuff.PORTNUM);
+        USART_PC_Configuration(&GD.Control.NFCtr, WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,9600);
+        simple_server(WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&WTF0.PORTNUM);
         GD.TControl.Tepl[0].WithoutPC++;
     }
     NMinPCOut++;
 }
 
-void Init_STM32(void) {
+void Init_STM32(void)
+{
 
     //I2CRel_MEM_Configuration();
 
@@ -76,14 +70,14 @@ void Init_STM32(void) {
 
     Keyboard_Init();
     InitRTC();
-    ClimDefStuff.PORTNUM=DEF_PORTNUM;
+    WTF0.PORTNUM=DEF_PORTNUM;
 
-    simple_server(ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&ClimDefStuff.PORTNUM);
+    simple_server(WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&WTF0.PORTNUM);
 
 
     w1Init();
     Init_MEAS_INPUT();
-    Init_IWDG(&GD.TControl.Tepl[0].nReset);
+//    Init_IWDG(&GD.TControl.Tepl[0].nReset);
     Check_IWDG();
     USART_OUT_Configuration(9600);
 
@@ -340,8 +334,8 @@ void RTC_IRQHandler(void)
         RTC_ClearITPendingBit(RTC_IT_SEC);
         RTC_WaitForLastTask();
         #warning "this baby should be volatile !"
-        ClimDefStuff.bSec=1;
-        ClimDefStuff.Second++;
+        WTF0.bSec=1;
+        WTF0.Second++;
         //SumAnswers=IntCount;
         //IntCount=0;
     }
@@ -378,15 +372,12 @@ void WriteToFRAM()
 {
     char i;
     uint16_t fsizeSend;
-    ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
 
     SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
 
-    ClrDog;
     SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(eTControl)+sizeof(eLevel));
 //	SendBlockFRAM(0,(uchar*)(&GD),sizeof(GD));
-    ClrDog;
 //	SendBlockFRAM(sizeof(GD),&BlockEEP,sizeof(BlockEEP));
 }
 
@@ -394,7 +385,6 @@ void ReadFromFRAM()
 {
     char i;
     uint16_t fsizeSend;
-    ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
     RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
 //	ClrDog;
@@ -407,19 +397,20 @@ void ReadFromFRAM()
 }
 
 
-void SetRTC(void) {
+void SetRTC(void)
+{
     eDateTime   fDateTime;
-    fDateTime.sec=ClimDefStuff.Second;
+    fDateTime.sec=WTF0.Second;
     fDateTime.min=CtrTime%60;
     fDateTime.hour=CtrTime/60;
     fDateTime.mday=CtrData&0xff;
     fDateTime.month=CtrData>>8;
     fDateTime.year=CtrYear+2000;
-    ClrDog;
     WriteDateTime(&fDateTime);
 }
 
-void GetRTC(void) {
+void GetRTC(void)
+{
     eDateTime   fDateTime;
     ReadDateTime(&fDateTime); //CtrTime=0;
 
@@ -432,52 +423,6 @@ void GetRTC(void) {
     CtrYear=fDateTime.year-2000;
     NowDayOfWeek=fDateTime.wday;
 }
-
-void CopyEEP()
-{
-/*	if (WriteEEP)
-    {
-        I2C_MainLoad(0xA0,AdrEEP+sizeof(GD)+sizeof(BlockEEP),AdrRAM,I2C_TP_MEM,SizeEEP,I2C_Direction_Transmitter);
-        while (I2CRel_Busy());
-    }
-    else
-    {
-        I2C_MainLoad(0xA0,AdrEEP+sizeof(GD)+sizeof(BlockEEP),AdrRAM,I2C_TP_MEM,SizeEEP,I2C_Direction_Receiver);
-        while (I2CRel_Busy());
-
-    }*/
-}
-
-void CalcEEPSum()
-{
-/*	uint16_t tSum,i;
-    tSum=0x0110;
-//	EEPROM_WaitForNVM();
-    for (i = 0; i < SizeEEP; i++)
-    {
-        tSum+=EEPROM(AdrEEP+i);
-        tSum%=65000;
-    }
-    if (WriteEEP)
-    {
-        FLASH_ProgramHalfWord(FLASH_ST_ADDR+AdrEEP+SizeEEP,tSum);
-//		EEPROM(AdrEEP+SizeEEP)=tSum/256;
-//		EEPROM(AdrEEP+SizeEEP+1)=tSum%256;
-/*		if ((SizeEEP+AdrEEP+1)%EEPROM_PAGESIZE)
-        {
-            EEPROM_AtomicWritePage((SizeEEP+AdrEEP)/32);
-            ClrDog;
-            EEPROM_WaitForNVM();
-        }
-        EEPROM_AtomicWritePage((SizeEEP+AdrEEP+1)/32);
-        EEPROM_WaitForNVM();
-
-    }
-    tSum-=FLASH_DATA(AdrEEP+SizeEEP);
-//	tSum-=FLASH_DATA(AdrEEP+SizeEEP+1);
-    ContSum=tSum;*/
-}
-
 
 void Init_MEAS_INPUT()
 {
@@ -519,7 +464,8 @@ void Init_MEAS_INPUT()
 
 }
 
-void EXTI9_5_IRQHandler(void) {
+void EXTI9_5_IRQHandler(void)
+{
     if (EXTI_GetITStatus(EXTI_Line9) != RESET)
     {
 
@@ -699,7 +645,8 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }*/
 }
 
-void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
+void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
+{
     eSensing    *fSens;
     eNameASens  *fNameSens;
     int16_t     *fuSens;
@@ -732,7 +679,6 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes){
     case cTypeRH:
     case cTypeMeteo:
         {
-            ClrDog;
             //Mes=(int)((long int)Mes*(long int)1000/(long int)GD.Cal.Port);
             fuSens[0]=Mes;
 //			if(Mes>5000)
@@ -762,53 +708,48 @@ TipRes
 --------------------------------------------------*/
 void TestMem(uchar TipReset)
 {
-    ClrDog;
     InitBlockEEP();  /*подпрограмма в GD */
     ButtonReset();
 //	   TipReset=2;
 /*------ проверка контр суммы блока CONTROL ---------------------------*/
     if (TipReset>5) InitGD(5);
-    if ((!ClimDefStuff.Menu) && TestRAM0())
+    if ((!WTF0.Menu) && TestRAM0())
         TipReset=2;
     if (!TipReset) return;
 /*------ проверка контр суммы ОЗУ  -------------------------------*/
 
-    ClrDog;
     if ((TipReset==1)&& TestRAM())
         TipReset++;
     if (TipReset<2) return;
-    ClimDefStuff.Menu=0;
-    ClrDog;
+    WTF0.Menu=0;
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
     TestFRAM(TipReset);
-    ClrDog;
     ButtonReset();
     GetRTC();
 }
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
-void	TestFRAM(char EraseBl)
+void    TestFRAM(char EraseBl)
 {
-	    uint16_t cSum;
-	    uint8_t nBlFRAM;
-        for(nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+    uint16_t cSum;
+    uint8_t nBlFRAM;
+    for (nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+    {
+        RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+        RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
+        cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+        if ((CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase == 1))
         {
-          RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-          RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
-          cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-          ClrDog;
-          if ( (CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase == 1) )
-          {
             InitGD(5);
             SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
             BlockEEP[nBlFRAM].CSum=cSum;
             BlockEEP[nBlFRAM].Erase=0; //++
-          }
-          	  /* формирование контр суммы ОЗУ после инициализации */
         }
+        /* формирование контр суммы ОЗУ после инициализации */
+    }
 }
 
 void Measure()

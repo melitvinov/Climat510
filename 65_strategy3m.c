@@ -1243,7 +1243,6 @@ void __sCalcKonturs(void) {
         for (ByteX = 0; ByteX < cSWaterKontur; ByteX++)
         {
             SetPointersOnKontur(ByteX);
-            ClrDog;
             __sInitKontur(ByteX);
         }
 //		__sMinMaxScreen();
@@ -1260,7 +1259,6 @@ void __sCalcKonturs(void) {
         MinMaxPowerReg[1] = 0;
         MinMaxPowerReg[0] = 0;
         (*pGD_TControl_Tepl).nMaxKontur = -1;
-        ClrDog;
         (*pGD_TControl_Tepl).NOwnKonturs = 0;
         if (!GD.Hot.Tepl[fnTepl].AllTask.DoTHeat)
             continue;
@@ -1269,7 +1267,6 @@ void __sCalcKonturs(void) {
             SetPointersOnKontur(ByteX);
             __sRegulKontur(ByteX);
             pGD_TControl_Tepl_Kontur->Manual = 0;
-            ClrDog;
             if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             if (pGD_Hot_Tepl_Kontur->Do)
@@ -1280,10 +1277,8 @@ void __sCalcKonturs(void) {
                 continue;
             }
             pGD_Hot_Tepl_Kontur->Do = (pGD_TControl_Tepl_Kontur->DoT / 10);
-            ClrDog;
             __sPotentialPosibilityKontur(0); //Приоритет в случае охлаждения
             __sPotentialPosibilityKontur(1); //Приоритет в случае нагрева
-            ClrDog;
 
             __WorkableKontur(ByteX, fnTepl);
             __sRealPosibilityKonturs(ByteX, MinMaxPowerReg);
@@ -1367,7 +1362,6 @@ void __sCalcKonturs(void) {
             {
                 for (tTepl = 0; tTepl < cSTepl; tTepl++)
                 {
-                    ClrDog;
                     if (!((*pGD_TControl_Tepl).Kontur[pGD_TControl_Tepl->nMaxKontur].Separate
                           & (1 << tTepl)))
                         continue;
@@ -1400,14 +1394,12 @@ void __sCalcKonturs(void) {
         }
 
     }
-    ClrDog;
 //	CheckReadyMeasure();
     for (ByteX = 0; ByteX < cSWaterKontur; ByteX++)
     {
 
         for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
         {
-            ClrDog;
             SetPointersOnTepl(fnTepl);
             SetPointersOnKontur(ByteX);
             pGD_TControl_Tepl->RealPower = 0;
@@ -1437,7 +1429,6 @@ void __sCalcKonturs(void) {
             ByteW =
             (GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].NAndKontur);
             LngY /= ByteW;
-            ClrDog;
 
             OldCrit = pGD_TControl_Tepl->Critery;
             if (pGD_TControl_Tepl->NOwnKonturs)
@@ -1447,7 +1438,6 @@ void __sCalcKonturs(void) {
                 pGD_TControl_Tepl->Critery = 0;
             pGD_TControl_Tepl_Kontur->CalcT = LngY;
             __sLastCheckKontur(ByteX, &IntY);
-            ClrDog;
 
             if ((pGD_Hot_Tepl->MaxReqWater < pGD_Hot_Tepl_Kontur->Do)
                 && (ByteX < cSWaterKontur))
@@ -1456,7 +1446,6 @@ void __sCalcKonturs(void) {
         }
 
     }
-    ClrDog;
 //	CheckReadyMeasure();
     for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
     {
@@ -1464,7 +1453,6 @@ void __sCalcKonturs(void) {
         for (ByteX = 0; ByteX < cSWaterKontur; ByteX++)
         {
             SetPointersOnKontur(ByteX);
-            ClrDog;
             if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             if (pGD_TControl_Tepl_Kontur->NAndKontur != 1)
