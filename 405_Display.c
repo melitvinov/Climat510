@@ -24,7 +24,10 @@ int CopyVal;
 int MinimVal, MaximVal;
 char ValSize;
 uchar SumYMenu;
-bit     B_input;
+bool     B_input;
+int8_t      SaveChar;
+int16_t     SaveInt;
+void    *AdrVal;
 
 void in_val(void);
 
@@ -203,9 +206,9 @@ void KeyBoard(void) {
 /*---------------------------------------------------
  Вывод текста в буфер
  ----------------------------------------------------*/
-void w_txt(const char code *bu)
+void w_txt(const char *bu)
 {
-    char code *vu;
+    char *vu;
     if (GD.Control.Language)
     {
         vu=bu;

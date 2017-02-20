@@ -17,6 +17,8 @@
 
 #define SUM_NAME_TUNE sizeof(NameConst)
 
+#define SumTeplZones	GD.Control.ConfSTepl
+
 // XXX: this stuff is from climdef.h
 int16_t     SaveInt2;
 uchar   nBlEEP;
@@ -26,10 +28,10 @@ uchar   NowCurRow,NewCurRow;
 int     SaveSample,Savebuf;
 //char	ToLowTime, ToHiTime;
 uchar   StartY_menu2;
-eCalSensor xdata *eCS;
+eCalSensor *eCS;
 void YMenu(char pozY);
 
-uchar code DayOfWeek[][10]=
+const uchar DayOfWeek[][10]=
 {"Mon#\276o\275e\343","Tue#\263\277o\310\275","Wed#c\310e\343a","Thu#\300e\277\263","Fri#\276\307\277\275","Sat#c\311\262\262","Sun#\263oc\272\310"};
 
 

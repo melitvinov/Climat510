@@ -26,21 +26,14 @@
 #define bEdit           0x02
 #define bKlTest         0x04
 #define bResRam         0x08
-#define bResEEP0        0x10
-#define bResEEP1        0x20
-#define bResEEP2        0x40
+#define bReset          0x20
 #define bWriEEP         0x80
+
 #define msNewDay		8
 #define msInitGD		16
 #define msReset			2
 #define msOverFlow		4
 #define msCountAlarm	32
-#define code
-#define xdata
-#define bit				char
-/*#define NORM_UNIT       0x66 младший бит обязательно равен 0*/
-/*------------ Определения регистров портов */
-//xdata char c_displ _at_ 0x8000;
 
 #define SetBit(Val,NBit)        (Val |= (NBit))
 #define ClrBit(Val,NBit)        (Val &=~(NBit))

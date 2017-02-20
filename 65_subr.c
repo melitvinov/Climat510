@@ -6,6 +6,11 @@
 // XXX: dirty, but ok for now
 #include "65_const.c"
 
+#warning air heat working time
+static int16_t  airHeatPause[8];
+static int16_t  airHeatTimeWork[8];
+static int16_t  airHeatOnOff[8];
+
 #define NameSens(ns)       w_txt(NameASens[ns].Name)
 #define EdSens(ns)         TxtEd(ns)
 
@@ -945,7 +950,7 @@ void SetResRam(void)
 }
 
 void InitGD(char fTipReset) {
-    eCalSensor xdata *eCS;
+    eCalSensor *eCS;
     ClrDog;
     keyboardSetSIM(100);
     if (fTipReset>2) MemClr(&GD.Hot,(sizeof(eHot)));

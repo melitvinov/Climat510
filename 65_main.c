@@ -6,33 +6,13 @@
 ----------------------------------------------*/
 #include "keyboard.h"
 
-//++++++FullCheck ++++
 int  DestSize;
 int  DestAdr;
-//char xdata	DestBuffer[7000];
-//char* DestAdrBuf;
-//char	BufCheckByte;
 
-/*char PlaceBuf(void) {
-int  i;
-char xdata *p1;
-char xdata *p2;
-if (BufCheckByte != 55) return 0; //;неудачный прием
-p1=(char xdata *)DestAdr;
-p2=(char xdata *)&DestBuffer[0];
-for (i=0;i < (DestSize-1);i++) {
-    *(p1++)=*(p2++);
-    }
-return 1;
-}
-
-
-*/
-//;------FullCheck------------------
 char volatile konturMax[6];
 char volatile mecPosArray[7];
 
-bit     B_video;
+bool     B_video;
 
 void saveMech(char tCTepl)
 {

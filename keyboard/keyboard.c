@@ -10,7 +10,7 @@
 #define KEYB_STARTUP RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE)
 
 static uint8_t KeyDelay;
-static bit BITKL;
+static u8 BITKL;
 static KEY_PRESSED SIM;
 
 #define NOP asm("nop")

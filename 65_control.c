@@ -151,7 +151,7 @@ int   PastPerRas;
 int   TecPerRas;
 uchar   DemoMode;
 
-eMechBusy xdata *MBusy;
+eMechBusy *MBusy;
 
 /*!
 \brief Коррекция времени старта по типу старта
@@ -218,8 +218,8 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 {
     int8_t nTimer,sTimerNext,sTimerPrev,sTimerMin,sTimerMax;
     int MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
-    eTimer xdata *pGD_CurrTimer;
-    eTimer xdata *pGD_NextTimer;
+    eTimer *pGD_CurrTimer;
+    eTimer *pGD_NextTimer;
     int16_t typeStartCorrection;
     int16_t nextTimer = 0;
     int16_t prevTimer = 0;
@@ -558,7 +558,7 @@ void SetIfReset(void)
 #warning Прогнозы температуры по внешним факторам !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void __cNextTCalc(char fnTepl)
 {
-    int xdata CalcAllKontur;
+    int CalcAllKontur;
 
     if (!(*pGD_Hot_Tepl).AllTask.NextTAir) return;
 

@@ -1,9 +1,3 @@
-/*!
-\brief Очистка памяти с кокого и по какой адрес
-@param unsigned int startAddr адрес начала
-@param unsigned int endAddr адрес конца
-@return int 0 - память очищена, 1 ошибка очистки
-*/
 #include "stm32f10x_Define.h"
 
 #ifndef __KEYBOARD_H__

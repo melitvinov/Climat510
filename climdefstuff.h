@@ -6,8 +6,8 @@
 
 typedef struct
 {
-    bit     bSec;
-    bit     Menu;
+    bool    bSec;
+    bool    Menu;
 
     unsigned char   Second;
 

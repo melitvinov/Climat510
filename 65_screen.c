@@ -243,7 +243,7 @@ void InitScreen(char typScr, char fnTepl)
 
 void SetPosScreen(char typScr)
 {
-    char xdata *pMech;
+    char *pMech;
     eScreen *pScr;
     char step;
 

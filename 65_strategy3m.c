@@ -961,26 +961,17 @@ long __VentToTemp(long sVent) {
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки фрамуг--*-*-*-*-*-*-*-*/
 /*************************************************************************/
 void __sLastCheckWindow(char fnTepl) {
-    int xdata
-    DoUn;
-    int xdata
-    DoOn;
-    int xdata
-    tDo;
+    int DoUn;
+    int DoOn;
+    int tDo;
 //	long xdata	tCalc;
 
-    int xdata
-    MinUn;
-    int xdata
-    MinOn;
-    int xdata
-    MaxUn;
-    int xdata
-    MaxOn;
-    int xdata
-    tMaximum;
-    int xdata
-    tSLevel;
+    int MinUn;
+    int MinOn;
+    int MaxUn;
+    int MaxOn;
+    int tMaximum;
+    int tSLevel;
 
     MinOn = pGD_Hot_Tepl->Kontur[cSmWindowOnW].MinCalc;
     MinUn = pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc;
@@ -1230,8 +1221,7 @@ int __sCalcTempKonturs(void) {
 /*************************************************************************/
 void __sCalcKonturs(void) {
     long MinMaxPowerReg[3];
-    long xdata
-    temp;
+    long temp;
     int OldCrit;
     char isFram;
     char fnTepl, tTepl;
@@ -1501,8 +1491,7 @@ void __sCalcKonturs(void) {
 /*-*-*-*-*-*-*-*-*--Процедура начальных установок для контура--*-*-*-*-*-*/
 /*************************************************************************/
 void __sMechScreen(void) {
-    char xdata
-    fnTepl;
+    char fnTepl;
     for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
     {
         SetPointersOnTepl(fnTepl);
@@ -1521,10 +1510,8 @@ void __sMechScreen(void) {
 }
 
 void __sMechWindows(void) {
-    char xdata
-    WindWin[2];
-    char xdata
-    fnTepl;
+    char WindWin[2];
+    char fnTepl;
 //Оптимизация
     WindWin[0] = cSWaterKontur + 1 - GD.Hot.PozFluger;
     WindWin[1] = cSWaterKontur + GD.Hot.PozFluger;

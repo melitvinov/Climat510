@@ -4,21 +4,6 @@
 
 
 
-/* Ќазначение битов регистра новостей - GD.SostPol.News */
-#define SumTeplZones	GD.Control.ConfSTepl
-
-#define bOperator       0x01
-#define bEdit           0x02
-#define bKlTest         0x04
-#define bReset          0x20
-#define bResRam         0x08
-//#define bResEEP0        0x10
-//#define bResEEP1        0x20
-//#define bResEEP2        0x40
-//#define bWriEEP         0x80
-// дл€ климата
-//#define bReseting       0x04
-#define bInClock		0x80
 
 //uchar   Y_menu,Y_menu2,x_menu;
 uint16_t Y_menu,Y_menu2,x_menu;
@@ -27,29 +12,15 @@ uchar   AdinB=0;
 uchar   Form=0;
 uchar   Mark=0;
 
-#warning !!!!!!!!!!!!!!!!!!!!!!!!!! ON
-//uchar   SIM;
 
-
-
-//uchar   buf[90];
-void    *AdrVal;
-//bit     BITKL;
-bit     EndInput;
-bit     BlkW;
-
-#warning air heat working time
-static int16_t  airHeatPause[8];
-static int16_t  airHeatTimeWork[8];
-static int16_t  airHeatOnOff[8];
+bool     EndInput;
+bool     BlkW;
 
 
 long        LngX,LngY;
 
 int16_t     IntX,IntY,IntZ;
-int16_t     SaveInt;
 
-int8_t      SaveChar;
 int8_t      bWaterReset[16];
 //uchar   	ByteW,ByteY,ByteX,ByteZ;
 int16_t     ByteW,ByteY,ByteX,ByteZ;
