@@ -6,12 +6,19 @@
 #include "405_Test.c"
 #endif
 
+#include "syntax.h"
+
 // XXX: isolation
 #include "405_memory.h"
 #include "405_ConfigEnRuSR.h"
+#include "405_EngRus.h"
+
+#include "65_gd.h"
 
 // for modul_sum constant
 #include "stm32f10x_RS485Master.h"
+#include "stm32f10x_LCD240x64.h"
+#include "climdefstuff.h"
 
 #define	MaxY_menu		9
 
@@ -29,7 +36,47 @@ int     SaveSample,Savebuf;
 //char	ToLowTime, ToHiTime;
 uchar   StartY_menu2;
 eCalSensor *eCS;
+
 void YMenu(char pozY);
+
+char GrafView;
+
+extern char lcdbuf[];
+extern uchar Form;
+extern uchar   Ad_Buf;
+extern uchar   AdinB;
+extern int8_t      SaveChar;
+extern uint16_t Y_menu2;
+extern uint16_t Y_menu;
+extern uint16_t x_menu;
+extern bool     BlkW;
+extern bool EndInput;
+
+extern int16_t ByteZ;
+extern int16_t ByteY;
+extern int16_t ByteX;
+extern int16_t ByteW;
+
+extern int16_t IntX;
+extern int16_t IntY;
+
+extern int MinimVal;
+extern int MaximVal;
+extern int16_t SaveInt;
+
+extern uchar SumYMenu;
+
+extern uint16_t fnSIOfaza[8];
+extern uint16_t fnSIOpumpOut[8];
+extern uint16_t fnSIOvelvOut[8];
+extern uint16_t fnSIOpause[8];
+
+extern eMechConfig *pGD_MechConfig;
+extern eMechanic *pGD_Hot_Hand_Kontur;
+extern eTControlTepl *pGD_TControl_Tepl;
+extern uint16_t *pGD_MechConfig_Kontur;
+//,ByteY,ByteX,ByteZ;
+//ByteW,ByteY,ByteX,
 
 const uchar DayOfWeek[][10]=
 {"Mon#\276o\275e\343","Tue#\263\277o\310\275","Wed#c\310e\343a","Thu#\300e\277\263","Fri#\276\307\277\275","Sat#c\311\262\262","Sun#\263oc\272\310"};
@@ -357,6 +404,8 @@ void pmParam() {
     ByteZ-=SumTeplZones;
     if (!ByteZ)                                                     // Уставки
     {
+        #warning "sizeof !? wtf ? should be countof. disabled"
+        #if 0
         if (Y_menu2 > sizeof(NameConst))//SUM_NAME_TUNE)
             Y_menu2=0;
         if (Y_menu2 >= sizeof(NameConst))//SUM_NAME_TUNE)
@@ -380,6 +429,7 @@ void pmParam() {
 
         }
         return;
+        #endif
     }
     ByteZ--;  //if (!GD.Config[cfReturn1Val] && !GD.Config[cfRegulRetEC])
     if (!ByteZ)
@@ -429,9 +479,10 @@ void pmParam() {
     if (ByteZ > 1)   x_menu=0;
     pmReset();
 }
+
 void AutoMan(char RCS,int fint)
 {
-    if (YesBit(RCS,fint))
+    if (RCS & fint)
         w_txt(Mes139);
     else
         w_txt(Mes138);

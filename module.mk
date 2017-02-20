@@ -30,6 +30,10 @@ SRC += stm_my/src/enc28j60.c
 SRC += stm_my/src/ip_arp_udp_tcp.c
 SRC += stm_my/src/simple_server.c
 SRC += stm_my/src/stm32f10x_Rootines.c
+SRC += stm_my/src/stm32f10x_LCD240x64.c
+
+SRC += 405_Display.c
+SRC += 405_Menu.c
 
 # temporary hacks
 SRC += climdefstuff.c

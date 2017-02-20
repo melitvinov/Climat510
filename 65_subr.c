@@ -550,7 +550,7 @@ char CheckMain(char fnTepl)
     tTepl=0;
     while (tTepl<cSTepl)
     {
-        if (((*pGD_TControl_Tepl_Kontur).Separate>>tTepl)&1)
+        if ((pGD_TControl_Tepl_Kontur->Separate>>tTepl)&1)
             return tTepl;
         tTepl++;
     }
@@ -654,7 +654,7 @@ void CheckSensLevs(char full,char met)
             if (Mes) IntZ++;
             if (IntZ) (*llS)=(Mes+IntY)/IntZ;
             else {(*llS)=0;(*lS)=0;}
-            if ((abs((*lS)-(*pGD_Hot_Tepl).AllTask.DoTHeat))>(abs((Mes)-(*pGD_Hot_Tepl).AllTask.DoTHeat)))
+            if ((abs((*lS)-pGD_Hot_Tepl->AllTask.DoTHeat))>(abs((Mes)-pGD_Hot_Tepl->AllTask.DoTHeat)))
                 (*lS)=Mes;
             Mes=(int)((((long int)(*lS))*(1000-cKExpMidl)+((long int)Mes)*cKExpMidl)/1000);
             (*lS)=Mes;
@@ -965,8 +965,10 @@ void InitGD(char fTipReset)
     GD.Hot.Data=257;
     GD.Hot.Time=8*60;
     GD.Hot.News|=bReset;
-    Y_menu=0;
-    x_menu=0;
+
+    #warning "reset of menu is disabled"
+//  Y_menu=0;
+//  x_menu=0;
     //	TimeReset=3;
 
     /* Установка реле по умолчанию */

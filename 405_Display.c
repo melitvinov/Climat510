@@ -1,21 +1,13 @@
-//--------------------------------------------------
-//================= ПРОЕКТ 403 =====================
-/*====================================================
- Подпрограммы индикатора
- ------------------------------------------------------
- -Задержка на посылку
- -Вывод байта данных в индикатор
- -Вывод байта команды в индикатор
- -Начальная инициализация
- (загрузка знакогенератора на asm)
- -Вывод буфера в видеопамять - Video
- ------------------------------------------------------
- Коррекция от 08.01.97
- ======================================================*/
+#include "syntax.h"
+
 #include "keyboard.h"
 
 #include "stm32f10x_LCD240x64.h"
 #include "climdefstuff.h"
+
+#include "65_gd.h"
+
+extern eGData GD;
 
 // XXX: from climdef
 uchar   SizeForm=0;
@@ -29,7 +21,24 @@ int8_t      SaveChar;
 int16_t     SaveInt;
 void    *AdrVal;
 
+bool EndInput;
+uchar Form;
+uchar Mark;
+uint16_t Y_menu;
+uint16_t Y_menu2;
+uint16_t x_menu;
+
+uchar   Ad_Buf=0;
+uchar   AdinB=0;
+
+bool     BlkW;
+
 void in_val(void);
+
+extern s16 ByteX;
+extern char GrafView;
+extern const uchar Mon[];
+extern char lcdbuf[];
 
 void SetValue(int vVal) {
     if (ValSize == 1)
@@ -143,8 +152,9 @@ void KeyBoard(void) {
         GrafView = 1;
     GD.TControl.tCodTime = 3;
     keyboardSetBITKL(0);
-    not += 180;
-    ton = 2;
+    #warning "disabled this beepy"
+//  not += 180;
+//  ton = 2;
     if (WTF0.Menu && (keyboardGetSIM() < 10))
     {
         in_val();

@@ -470,7 +470,7 @@ void RegWorkDiskr(char fHSmReg)
 
     if (pGD_Control_Tepl->co_model==3)
     {
-        COset = (*pGD_Hot_Tepl).AllTask.DoCO2;
+        COset = pGD_Hot_Tepl->AllTask.DoCO2;
 
         sum =  (*(pGD_Hot_Hand+cHSmWinN)).Position + (*(pGD_Hot_Hand+cHSmWinS)).Position;
         if ((sum >= GD.TuneClimate.co2Fram1) && (sum <= GD.TuneClimate.co2Fram2))
@@ -488,11 +488,11 @@ void RegWorkDiskr(char fHSmReg)
         {
             COset = COset - GD.TuneClimate.co2Off;
         }
-        (*pGD_Hot_Tepl).CO2valveTask = 0;
-        if (COset > (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value)
+        pGD_Hot_Tepl->CO2valveTask = 0;
+        if (COset > pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value)
         {
-            delta = COset - (*pGD_Hot_Tepl).InTeplSens[cSmCOSens].Value;
-            (*pGD_Hot_Tepl).CO2valveTask = delta;
+            delta = COset - pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value;
+            pGD_Hot_Tepl->CO2valveTask = delta;
             if (delta < GD.TuneClimate.co2On)
                 tMech = 0;
         }

@@ -493,12 +493,13 @@ const const uint16_t MechC[cSTepl][SUM_NAME_CONF]={
 //#include "405_Memory.c"
 //#include "405_Clock.c"
 #include "65_Subr.c"
-#include "405_Display.c"
+//
+
 #include "65_screen.c"
 #include "65_strategy3m.c"
 #include "65_siod.c"
 #include "65_control.c"
-#include "405_menu.c"
 #include "65_main.c"
 
-#include "stm32f10x_LCD240x64.c"
+//#include "405_Display.c"
+//#include "405_menu.c"

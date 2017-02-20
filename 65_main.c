@@ -150,7 +150,6 @@ void main(void)
 #endif
     clear_d();
     WTF0.Menu=0;
-    EndInput=0;
     nReset=3;
     w_txt("\252\245TO F405 (c)APL&DAL");
     Delay(1000000);

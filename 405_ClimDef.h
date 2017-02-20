@@ -5,17 +5,6 @@
 
 
 
-//uchar   Y_menu,Y_menu2,x_menu;
-uint16_t Y_menu,Y_menu2,x_menu;
-uchar   Ad_Buf=0;
-uchar   AdinB=0;
-uchar   Form=0;
-uchar   Mark=0;
-
-
-bool     EndInput;
-bool     BlkW;
-
 
 long        LngX,LngY;
 
