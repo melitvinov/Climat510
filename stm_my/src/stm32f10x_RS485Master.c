@@ -1,4 +1,8 @@
+
+// XXX: WTF ?
 #pragma pack(1)
+
+#include "syntax.h"
 
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
@@ -6,6 +10,8 @@
 #include "stm32f10x_Define.h"
 #include "stm32f10x_RS485Master.h"
 #include "misc.h"
+
+#include "65_gd.h"
 
 #define USART_MASTER_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
 #define USART_MASTER_TX     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TC))&&(fTimeout)) fTimeout--;

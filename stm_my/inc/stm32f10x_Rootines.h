@@ -37,3 +37,7 @@ void TestMem(uchar);
 
 void Measure(void);
 void CheckInputConfig(void);
+
+
+// XXX: isolation
+void stm32f10x_Rootines_reset_NMinPCOut(void);

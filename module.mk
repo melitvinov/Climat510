@@ -29,6 +29,11 @@ SRC += stm_my/src/spi.c
 SRC += stm_my/src/enc28j60.c
 SRC += stm_my/src/ip_arp_udp_tcp.c
 SRC += stm_my/src/simple_server.c
+SRC += stm_my/src/stm32f10x_Rootines.c
+
+# temporary hacks
+SRC += climdefstuff.c
+SRC += 405_cfg.c
 
 CINCS += . stm_my/inc stm_lib/inc cmsis_boot cmsis keyboard
 

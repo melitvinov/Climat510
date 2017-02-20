@@ -80,8 +80,6 @@
 
 #define OUT_MODUL_SUM 	30
 
-#define MAX_FAN_COUNT	64
-
 
 
 typedef struct sIModulConf
@@ -96,16 +94,6 @@ typedef struct sIModulConf
     uint16_t        V2;
 
 }TIModulConf;
-
-typedef struct eeFanData
-{
-    uint8_t         Actual;
-    uint16_t        Cond;
-    uint16_t        ActualSpeed;
-    uint16_t        ActualPower;
-    uint16_t        ActualPWM;
-
-} eFanData;
 
 
 /*------------ Признаки обмена данных --------*/

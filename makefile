@@ -44,10 +44,14 @@ COMMON_CFLAGS += -Wa,-adlmns=$(@:.o=.lst)
 #COMMON_CFLAGS += -Wpointer-arith -Wswitch -Wredundant-decls -Wreturn-type -Wunused
 
 #COMMON_CFLAGS += -Wshadow -Winline
+
 COMMON_CFLAGS += -Wstrict-aliasing
 COMMON_CFLAGS += -Wbad-function-cast -Wsign-compare
 COMMON_CFLAGS += -Wunsafe-loop-optimizations
 COMMON_CFLAGS += -Wwrite-strings
+
+COMMON_CFLAGS += -w
+
 # Various
 COMMON_CFLAGS += -ffunction-sections -fdata-sections -fverbose-asm -fstrict-aliasing
 # Auto-generation of dependencies

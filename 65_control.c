@@ -124,6 +124,8 @@
         return tempHeat;
 }*/
 
+#include "climdefstuff.h"
+
 /*!
 \brief Таблица типов старта
 */
@@ -1726,13 +1728,13 @@ void Control(void)
         SetPointersOnTepl(tCTepl);
         SetMixValvePosition();
     }
-    if (Second==20)
+    if (ClimDefStuff.Second==20)
     {
         InitLCD();
         ClrDog;
         SetMeteo();
     }
-    if ((Second==40)||(GD.TControl.Delay))
+    if ((ClimDefStuff.Second==40)||(GD.TControl.Delay))
     {
         if (GD.SostRS==WORK_UNIT)
         {
@@ -1740,7 +1742,7 @@ void Control(void)
         }
         else
         {
-            PORTNUM=0;
+            ClimDefStuff.PORTNUM=0;
             vNFCtr=0;
             CheckMidlSr();
             GD.TControl.Delay=0;
@@ -1779,7 +1781,7 @@ void Control(void)
         }
     }
     vNFCtr=GD.Control.NFCtr;
-    PORTNUM=DEF_PORTNUM;
+    ClimDefStuff.PORTNUM=DEF_PORTNUM;
     MaskRas=bRasxod;
     if (TecPerRas > 2305)
     {
@@ -1799,7 +1801,7 @@ void Control(void)
         GD.Hot.FullHeat=(int)((GD.TControl.FullVol*GD.TuneClimate.ScaleRasx/100)*(GD.TControl.MeteoSensing[cSmMainTSens]-GD.TControl.MeteoSensing[cSmMainTSens+1])/1000);
     }
     Volume=0;
-    if (Second < 60) return;
+    if (ClimDefStuff.Second < 60) return;
 
     airHeatTimers();    // airHeat
     ClrDog;
@@ -1809,12 +1811,12 @@ void Control(void)
     WindDirect();
 
 #ifndef NOTESTMEM
-    if ((!Menu)&&(GD.SostRS==OUT_UNIT))
+    if ((!ClimDefStuff.Menu)&&(GD.SostRS==OUT_UNIT))
         TestMem(1);
 #endif
 
     ClrDog;
-    Second=0;
+    ClimDefStuff.Second=0;
     if (TimeReset)
         TimeReset--;
     if (TimeReset<0)

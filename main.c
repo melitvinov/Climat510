@@ -4,19 +4,23 @@
 #define AGAPOVSKIY_DOUBLE_VALVE
 //#define SIO_PAUSE	1
 
-#include "stm32f10x_Define.h"
-#include "stm32f10x_usart.h"
-#include "stm32f10x_RS485.h"
-#include "stm32f10x_RS485Master.h"
-#include "stm32f10x_LCD240x64.h"
+#include "syntax.h"
+
+//#include "stm32f10x_Define.h"
+//#include "stm32f10x_usart.h"
+//#include "stm32f10x_RS485.h"
+//#include "stm32f10x_RS485Master.h"
+//#include "stm32f10x_LCD240x64.h"
 #include "stm32f10x_Rootines.h"
-#include "stm32f10x_i2cRel.h"
-#include "stm32f10x_dma.h"
+//#include "stm32f10x_i2cRel.h"
+//#include "stm32f10x_dma.h"
 
 #include "405_EngRus.h"
 #include "65_const.h"
 #include "405_ClimDef.h"
 #include "405_ConfigEnRuSR.h"
+
+//#include "65_defs.h"
 
 #define cConfSTepl		6
 //#define BIGLCD
@@ -32,7 +36,6 @@
 
 #define cDefLanguage	1
 
-#define DEF_PORTNUM         2012
 
 #ifndef cLightDelay
     #define cLightDelay		40
@@ -41,7 +44,6 @@
 
 //#define cSMech			12
 
-#define cSTepl			8
 
 
 
@@ -148,7 +150,7 @@ const uint16_t InitSystems[cSTepl][10]={
 
 };
 
-const uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
+const const uint16_t MechC[cSTepl][SUM_NAME_CONF]={
     {   /* Теплица 1*/
         0,  //Клапан 1
         0,  //Клапан 2
@@ -500,4 +502,3 @@ const uint16_t code MechC[cSTepl][SUM_NAME_CONF]={
 #include "65_main.c"
 
 #include "stm32f10x_LCD240x64.c"
-#include "stm32f10x_Rootines.c"

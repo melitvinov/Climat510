@@ -1,3 +1,7 @@
+
+#include "syntax.h"
+
+#include "stm32f10x_Define.h"
 #include "stm32f10x_Rootines.h"
 #include "misc.h"
 #include "stm32f10x_tim.h"
@@ -12,6 +16,9 @@
 
 // XXX: isolation
 #include "405_memory.h"
+#include "65_gd.h"
+#include "climdefstuff.h"
+#include "stm32f10x_RS485Master.h"
 
 // XXX: this stuff is from climdef.h
 int8_t ToHiTime;
@@ -25,14 +32,20 @@ static unsigned char myip[4] = {192,168,1,231};
 uint16_t* IWDG_Reset;
 uint8_t KeyDelay;
 
+static uint16_t    NMinPCOut;
+
+void stm32f10x_Rootines_reset_NMinPCOut()
+{
+    NMinPCOut = 0;
+}
 
 void CheckWithoutPC(void)
 {
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
-        simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&PORTNUM);
+        USART_PC_Configuration(&GD.Control.NFCtr, ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,9600);
+        simple_server(ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&ClimDefStuff.PORTNUM);
         GD.TControl.Tepl[0].WithoutPC++;
     }
     NMinPCOut++;
@@ -49,12 +62,9 @@ void Init_STM32(void) {
     GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
     i2_fm_Init();
 
-    ClrDog;
     ReadFromFRAM();
-    ClrDog;
 
     InitLCD();
-    ClrDog;
 
 
 //		USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
@@ -66,9 +76,9 @@ void Init_STM32(void) {
 
     Keyboard_Init();
     InitRTC();
-    PORTNUM=DEF_PORTNUM;
+    ClimDefStuff.PORTNUM=DEF_PORTNUM;
 
-    simple_server(AdrGD,&GD.SostRS,&NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&PORTNUM);
+    simple_server(ClimDefStuff.AdrGD,&GD.SostRS,&ClimDefStuff.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&ClimDefStuff.PORTNUM);
 
 
     w1Init();
@@ -329,8 +339,9 @@ void RTC_IRQHandler(void)
     {
         RTC_ClearITPendingBit(RTC_IT_SEC);
         RTC_WaitForLastTask();
-        bSec=1;
-        Second++;
+        #warning "this baby should be volatile !"
+        ClimDefStuff.bSec=1;
+        ClimDefStuff.Second++;
         //SumAnswers=IntCount;
         //IntCount=0;
     }
@@ -398,7 +409,7 @@ void ReadFromFRAM()
 
 void SetRTC(void) {
     eDateTime   fDateTime;
-    fDateTime.sec=Second;
+    fDateTime.sec=ClimDefStuff.Second;
     fDateTime.min=CtrTime%60;
     fDateTime.hour=CtrTime/60;
     fDateTime.mday=CtrData&0xff;
@@ -563,6 +574,21 @@ void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPau
     }*/
 }
 
+#warning "this crap is for isolation"
+extern eTepl *pGD_Hot_Tepl;
+extern eTControlTepl *pGD_TControl_Tepl;
+extern eSensLevel *pGD_Level_Tepl;
+#warning "pizdets"
+extern int16_t IntX;
+extern int16_t IntY;
+extern int16_t IntZ;
+extern long LngX;
+extern long LngY;
+// XXX: looks like there are a lurking overflows and dragons )
+extern int16_t ByteW;
+extern int16_t ByteY;
+extern int16_t ByteX;
+extern int16_t ByteZ;
 
 void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 {
@@ -742,7 +768,7 @@ void TestMem(uchar TipReset)
 //	   TipReset=2;
 /*------ проверка контр суммы блока CONTROL ---------------------------*/
     if (TipReset>5) InitGD(5);
-    if ((!Menu) && TestRAM0())
+    if ((!ClimDefStuff.Menu) && TestRAM0())
         TipReset=2;
     if (!TipReset) return;
 /*------ проверка контр суммы ОЗУ  -------------------------------*/
@@ -751,7 +777,7 @@ void TestMem(uchar TipReset)
     if ((TipReset==1)&& TestRAM())
         TipReset++;
     if (TipReset<2) return;
-    Menu=0;
+    ClimDefStuff.Menu=0;
     ClrDog;
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/

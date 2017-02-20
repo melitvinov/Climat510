@@ -14,6 +14,9 @@
  ======================================================*/
 #include "keyboard.h"
 
+#include "stm32f10x_LCD240x64.h"
+#include "climdefstuff.h"
+
 // XXX: from climdef
 uchar   SizeForm=0;
 
@@ -139,7 +142,7 @@ void KeyBoard(void) {
     keyboardSetBITKL(0);
     not += 180;
     ton = 2;
-    if (Menu && (keyboardGetSIM() < 10))
+    if (ClimDefStuff.Menu && (keyboardGetSIM() < 10))
     {
         in_val();
         B_input = 1;
@@ -153,15 +156,15 @@ void KeyBoard(void) {
         switch (keyboardGetSIM())
         {
         case KEY_10 : if (!Form) break;
-            if (!Menu)
+            if (!ClimDefStuff.Menu)
             {
-                Menu=1;
+                ClimDefStuff.Menu=1;
                 CopyVal=*(unsigned int *)AdrVal;
             }
             else
             {
                 (*(unsigned int *)AdrVal)=CopyVal;
-                Menu=0;
+                ClimDefStuff.Menu=0;
                 Mark=0;
             }
             break;
@@ -337,7 +340,7 @@ void w_int(void *bu, char frmt) {
         break;
     case SSdSS:
         vre = *(uint16_t *) bu;
-        if (Second & 1)
+        if (ClimDefStuff.Second & 1)
             lcdbuf[Ad_Buf + 2] = ':';
         lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
         vre /= 10;
@@ -562,7 +565,7 @@ void in_val(void) {
     {
         EndInput = 1;
         Mark = 0;
-        Menu = 0;
+        ClimDefStuff.Menu = 0;
         if (vre < MinimVal)
             SetValue(MinimVal);
         if (MaximVal && (vre > MaximVal))

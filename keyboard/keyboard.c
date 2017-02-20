@@ -1,3 +1,5 @@
+#include "syntax.h"
+
 #include "stm32f10x_Define.h"
 #include "keyboard.h"
 

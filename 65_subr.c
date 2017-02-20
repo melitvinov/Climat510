@@ -1,5 +1,11 @@
 #include "keyboard.h"
 
+// XXX: for func prototypes
+#include "stm32f10x_RS485Master.h"
+
+// XXX: dirty, but ok for now
+#include "65_const.c"
+
 #define NameSens(ns)       w_txt(NameASens[ns].Name)
 #define EdSens(ns)         TxtEd(ns)
 

@@ -7,11 +7,11 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_iwdg.h"
 
-#define code
+//#define code
 
-typedef uint16_t uint;
-typedef uint8_t uchar;
-typedef uint8_t bit;
+//typedef uint16_t uint;
+//typedef uint8_t uchar;
+//typedef uint8_t bit;
 
 
 #define ClrDog  IWDG_ReloadCounter();

@@ -38,4 +38,7 @@ typedef int16_t s16;
 typedef uint8_t u8;
 typedef int8_t s8;
 
+// XXX: just for now
+typedef u8 bit;
+
 #endif

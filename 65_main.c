@@ -176,7 +176,7 @@ void main(void)
 #endif
     clear_d();
     ClrDog;
-    Menu=0;
+    ClimDefStuff.Menu=0;
     EndInput=0;
     nReset=3;
     w_txt("\252\245TO F405 (c)APL&DAL");
@@ -192,7 +192,7 @@ void main(void)
         ByteX=6;
     ClrDog;
     TestMem(ByteX);
-    Second=38;
+    ClimDefStuff.Second=38;
     ClrDog;
     ClrDog;  /* разрешение прерываний RS и T0 из init8051()*/
     ClearAllAlarms();
@@ -223,9 +223,10 @@ void main(void)
         /*--Если запись 0бл и признак времени то установить время */
 //            if(PlaceBuf()) {
 
-        NMinPCOut=0;
+        // XXX: isolation
+        stm32f10x_Rootines_reset_NMinPCOut();
 
-        if (!NumBlock && (GD.Hot.News&0x80)) SetRTC();
+        if (!ClimDefStuff.NumBlock && (GD.Hot.News&0x80)) SetRTC();
         ClrDog;
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
 #warning Изменение блока
@@ -233,15 +234,15 @@ void main(void)
 
         checkConfig();
 
-        if (NumBlock)
-            ReWriteFRAM(NumBlock);
+        if (ClimDefStuff.NumBlock)
+            ReWriteFRAM(ClimDefStuff.NumBlock);
 //				}
         GD.SostRS=OUT_UNIT;
         keyboardSetSIM(105);
     }
-    if (bSec)
+    if (ClimDefStuff.bSec)
     {
-        if (Second==58)
+        if (ClimDefStuff.Second==58)
         {
             CheckWithoutPC();
             CheckInputConfig();
@@ -251,19 +252,19 @@ void main(void)
 
         if (GD.SostRS==OUT_UNIT) TestMem(0);
 #endif
-        bSec=0;
+        ClimDefStuff.bSec=0;
         ClrDog;
         Control();
         ClrDog;
         B_video=1;
-        if (!(Second%9))
+        if (!(ClimDefStuff.Second%9))
             Measure();
     }
     if (keyboardGetBITKL())
     {
         ClrDog;
         GD.Hot.News|=bOperator;
-        if (Menu) GD.Hot.News|=bEdit;
+        if (ClimDefStuff.Menu) GD.Hot.News|=bEdit;
         KeyBoard();
         B_video=1;
     }
