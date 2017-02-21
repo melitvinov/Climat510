@@ -21,9 +21,6 @@
 #define bReset          0x20
 #define bWriEEP         0x80
 
-#define SetBit(Val,NBit)        (Val |= (NBit))
-#define ClrBit(Val,NBit)        (Val &=~(NBit))
-#define YesBit(Val,NBit)        (Val & (NBit))
 
 void GetRTC(void);
 void SetRTC(void);

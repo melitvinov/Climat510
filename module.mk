@@ -1,7 +1,6 @@
 # root module makefile
 
 # C source files
-SRC += main.c
 SRC += cmsis_boot/startup/startup_stm32f10x_cl.c
 SRC += cmsis_boot/system_stm32f10x.c
 
@@ -25,6 +24,13 @@ SRC += keyboard/keyboard.c
 # these are 'coarse fixed'
 SRC += 405_Memory.c
 
+SRC += 65_subr.c
+SRC += 65_gd.c
+SRC += 65_screen.c
+SRC += 65_control.c
+SRC += 65_strategy3m.c
+SRC += 65_siod.c
+
 SRC += stm_my/src/spi.c
 SRC += stm_my/src/enc28j60.c
 SRC += stm_my/src/ip_arp_udp_tcp.c
@@ -39,6 +45,8 @@ SRC += 405_Menu.c
 SRC += climdefstuff.c
 SRC += 405_cfg.c
 SRC += main_consts.c
+
+SRC += main.c
 
 CINCS += . stm_my/inc stm_lib/inc cmsis_boot cmsis keyboard
 

@@ -1,9 +1,16 @@
+#include "syntax.h"
+#include "65_gd.h"
+
 #define cSIOFazaPump	1
 #define cSIOFazaVal		2
 #define cSIOFazaPause	3
 #define cSIOFazaEnd		4
 
 #define cNumValSiodMax	4
+
+extern int16_t IntX;
+extern int16_t IntY;
+extern int16_t IntZ;
 
 uint16_t fnSIOfaza[8];
 uint16_t fnSIOpumpOut[8];

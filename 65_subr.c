@@ -1,4 +1,8 @@
+#include "syntax.h"
+
 #include "keyboard.h"
+
+#include "defs.h"
 
 // XXX: for func prototypes
 #include "stm32f10x_RS485Master.h"
@@ -6,6 +10,9 @@
 
 // XXX: dirty, but ok for now
 #include "65_const.c"
+
+#include "65_gd.h"
+#include "65_subr.h"
 
 #warning air heat working time
 static int16_t  airHeatPause[8];
@@ -61,6 +68,7 @@ int16_t getTempVent(char fnTepl)
     error = 0;
     for (i=0;i<6;i++)
     {
+        // XXX: shift has a less priority !
         if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
         {
             temp = getTempSensor(fnTepl, i);
@@ -304,7 +312,7 @@ void airHeatTimers(void)
 
 void airHeat(char fnTepl)
 {
-    if ((YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(cbManMech)))) return;
+    if ((YesBit((pGD_Hot_Hand+cHSmHeat)->RCS,(cbManMech)))) return;
     int16_t tempT, tempTon, tempToff = 0;
 //	if ( fnTepl != 0) return;
     tempT = getTempHeat(fnTepl);

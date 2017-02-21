@@ -1,130 +1,9 @@
-/*------------------------------------------------*/
-/**************************************************/
-/*Подпрограммы математических алгоритмов "Ромашки"*/
-
-/*					ЗАМЕЧАНИЯ:
-В подпрограмме AllTaskAndCorrection строчка:
-    ВНИМАНИЕ! Усреднение в показаниях датчика
-В подпрограмме SetMinMaxOfWater стоит ограничение
-на минимум 5 контура cMin5Cont	*/
-/**************************************************/
-/*------------------------------------------------*/
-
-/*!
-\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
-@return int16_t Температура
-*/
-/*int16_t controlGetTempVent()
-{
-    int16_t	tempVent;
-    int16_t temp = 0;
-    int16_t i;
-        switch (pGD_Control_Tepl->sensT_vent)
-        {
-            case 0: // sensor temp 1
-                tempVent = CURRENT_TEMP1_VALUE;
-            break;
-            case 1: // sensor temp 2
-                tempVent = CURRENT_TEMP2_VALUE;
-            break;
-            case 2: // sensor temp 3
-                tempVent = CURRENT_TEMP3_VALUE;
-            break;
-            case 3: // sensor temp 4
-                tempVent = CURRENT_TEMP4_VALUE;
-            break;
-            case 4: // min
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempVent = temp;
-            }
-            break;
-            case 5: // max
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempVent = temp;
-            }
-            break;
-            case 6: // average
-            {
-                for (i=0;i<4;i++)
-                    temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
-                temp = temp / 4;
-                tempVent = temp;
-            }
-            break;
-        }
-        return tempVent;
-}*/
-
-/*!
-\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
-@return int16_t Температура
-*/
-/*int16_t controlGetTempHeat()
-{
-    int16_t	tempHeat;
-    int16_t temp = 0;
-    int16_t i=0;
-        switch (pGD_Control_Tepl->sensT_heat)
-        {
-            case 0: // sensor temp 1
-                tempHeat = CURRENT_TEMP1_VALUE;
-            break;
-            case 1: // sensor temp 2
-                tempHeat = CURRENT_TEMP2_VALUE;
-            break;
-            case 2: // sensor temp 3
-                tempHeat = CURRENT_TEMP3_VALUE;
-            break;
-            case 3: // sensor temp 4
-                tempHeat = CURRENT_TEMP4_VALUE;
-            break;
-            case 4: // min
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempHeat = temp;
-            }
-            break;
-            case 5: // max
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempHeat = temp;
-            }
-            break;
-            case 6: // average
-            {
-                for (i=0;i<4;i++)
-                    temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
-                temp = temp / 4;
-                tempHeat = temp;
-            }
-            break;
-        }
-        return tempHeat;
-}*/
+#include "syntax.h"
 
 #include "climdefstuff.h"
+#include "65_gd.h"
+#include "defs.h"
+#include "65_control.h"
 
 /*!
 \brief Таблица типов старта
@@ -137,6 +16,8 @@ typedef enum
     TYPE_START_BEFORE_SUNRISE   = 3,
     TYPE_START_AFTER_SUNRISE    = 4,
 } TYPE_START;
+
+extern eTimer *pGD_Timer;
 
 // this stuff is from climdef.h
 uchar Volume;
@@ -152,6 +33,7 @@ int   TecPerRas;
 uchar   DemoMode;
 
 int8_t  bWaterReset[16];
+
 
 eMechBusy *MBusy;
 

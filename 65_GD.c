@@ -1,3 +1,5 @@
+#include "syntax.h"
+
 
 #include "405_memory.h"
 #include "65_gd.h"

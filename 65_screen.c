@@ -1,4 +1,13 @@
+#include "syntax.h"
+
+#include "65_screen.h"
+#include "65_gd.h"
+
 extern uchar       bNight;
+extern eTControlTepl *pGD_TControl_Tepl;
+extern int16_t IntX;
+extern int16_t IntY;
+extern int16_t IntZ;
 
 void CheckModeScreen(char typScr,char chType, char fnTepl)
 {
@@ -151,7 +160,7 @@ void SetPosScreen(char typScr)
     {
         IntZ-=pGD_Hot_Tepl->Kontur[cSmScreen].Do;//pGD_Hot_Tepl->OtherCalc.CorrScreen;
 
-        if YesBit(pGD_TControl_Tepl->RCS1,cbSCCorrection)
+        if (YesBit(pGD_TControl_Tepl->RCS1,cbSCCorrection))
         {
             IntX=((int)(byte_x))-IntZ;
             if ((!IntZ)||(IntZ==100)||(abs(IntX)>GD.TuneClimate.sc_MinDelta))

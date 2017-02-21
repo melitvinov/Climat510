@@ -1,8 +1,15 @@
 #ifndef _65_GD_H_
 #define _65_GD_H_
 
+#define SetBit(Val,NBit)        (Val |= (NBit))
+#define ClrBit(Val,NBit)        (Val &=~(NBit))
+#define YesBit(Val,NBit)        (Val & (NBit))
+
 // XXX: isolation
 #include "405_ConfigEnRuSR.h"
+
+#include "65_screen.h"
+#include "65_control.h"
 
 #pragma pack(1)
 
@@ -632,31 +639,7 @@ typedef struct eeRegsSettings
 
 } eRegsSettings;
 
-typedef struct eeScreen
-{
-    int16_t             Value;
-    int8_t              Mode;
-    int8_t              OldMode;
-    int16_t             Pause;
-    int16_t             PauseMode;
-//		int16_t				TimeChangeMode;
-//		int16_t				TempStart;
-} eScreen;
 
-/*typedef struct eeSensorD
-    {
-        int16_t				SumD;
-        int16_t				ChangeD;
-        int16_t				LastChangeD;
-        int16_t				LastTAir;
-        int16_t				Past3D;
-        int16_t				Past2D;
-        int16_t				Past1D;
-        int16_t				Past3DTDo;
-        int16_t				Past2DTDo;
-        int16_t				Past1DTDo;
-
-    } eSensorD;	*/
 typedef struct eeMechBusy
 {
     int             TimeSetMech;
@@ -672,6 +655,22 @@ typedef struct eeMechBusy
 
 
 } eMechBusy;
+
+/*typedef struct eeSensorD
+    {
+        int16_t				SumD;
+        int16_t				ChangeD;
+        int16_t				LastChangeD;
+        int16_t				LastTAir;
+        int16_t				Past3D;
+        int16_t				Past2D;
+        int16_t				Past1D;
+        int16_t				Past3DTDo;
+        int16_t				Past2DTDo;
+        int16_t				Past1DTDo;
+
+    } eSensorD;	*/
+
 
 typedef struct eeTControlKontur
 {
@@ -875,5 +874,20 @@ typedef struct  eGData
 #define CtrYear	GD.Hot.Year
 
 extern eGData GD;
+
+extern eTepl *pGD_Hot_Tepl;
+extern eMechanic *pGD_Hot_Hand;
+extern eTControlTepl *pGD_TControl_Tepl;
+extern eTeplControl*pGD_Control_Tepl;
+extern eConstMech *pGD_ConstMechanic;
+extern eMechConfig *pGD_MechConfig;
+extern eSensLevel *pGD_Level_Tepl;
+extern eStrategy *pGD_Strategy_Tepl;
+extern eKontur *pGD_Hot_Tepl_Kontur;
+extern eTControlKontur *pGD_TControl_Tepl_Kontur;
+extern eMechanic *pGD_Hot_Hand_Kontur;
+extern eStrategy *pGD_Strategy_Kontur;
+extern uint16_t *pGD_MechConfig_Kontur;
+extern eConstMixVal *pGD_ConstMechanic_Mech;
 
 #endif
