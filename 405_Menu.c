@@ -1,11 +1,3 @@
-//================= ПРОЕКТ 403 =====================
-/*-----------------------------------------------
-        Вывод даты и времени
-------------------------------------------------*/
-#ifdef SetTest
-#include "405_Test.c"
-#endif
-
 #include "syntax.h"
 
 // XXX: isolation
@@ -51,14 +43,6 @@ extern uint16_t Y_menu;
 extern uint16_t x_menu;
 extern bool     BlkW;
 extern bool EndInput;
-
-extern int16_t ByteZ;
-extern int16_t ByteY;
-extern int16_t ByteX;
-extern int16_t ByteW;
-
-extern int16_t IntX;
-extern int16_t IntY;
 
 extern int MinimVal;
 extern int MaximVal;
@@ -136,7 +120,7 @@ void GMenu(void) {
         {
             w_txt(Mes65); //Access code~
 //				w_txt(Mes1);
-            w_int(&GD.TControl.NowCod,SSS);
+            w_int(&GD.TControl.NowCod,SSS, 0);
             SaveChar=126;
             return;
         }
@@ -148,7 +132,7 @@ void pmReset(void) {
     Y_menu2%=5;
     Ad_Buf=Str2;
     w_txt(Mes66);   // Задания //Init Tasks~
-    w_int(&BlockEEP[1].Erase,oS);
+    w_int(&BlockEEP[1].Erase,oS, 0);
     if (Y_menu2==0)
     {
         BlkW=1; nBlEEP=1;
@@ -157,14 +141,14 @@ void pmReset(void) {
     w_txt(Mes221);   // <Input 1 for init>
     Ad_Buf=Str3;
     w_txt(Mes67); // Калибровки  //Init Calibrations~
-    w_int(&BlockEEP[5].Erase,oS);
+    w_int(&BlockEEP[5].Erase,oS, 0);
     if (Y_menu2==1)
     {
         BlkW=1; nBlEEP=5;
     }
     Ad_Buf=Str4;
     w_txt(Mes68);   // Параметры  //Init Parameters~
-    w_int(&BlockEEP[0].Erase,oS);
+    w_int(&BlockEEP[0].Erase,oS, 0);
     if (Y_menu2==2)
     {
         BlkW=1; nBlEEP=0;
@@ -174,13 +158,13 @@ void pmReset(void) {
     {
         if (Y_menu2==3) nBlEEP=4;
         w_txt(Mes69);   // Конфигурация  //Init Configuration~
-        w_int(&BlockEEP[4].Erase,oS);
+        w_int(&BlockEEP[4].Erase,oS, 0);
     }
     else
     {
         if (Y_menu2==4) nBlEEP=3;
         w_txt(Mes222);   // Init Strategy~
-        w_int(&BlockEEP[3].Erase,oS);
+        w_int(&BlockEEP[3].Erase,oS, 0);
     }
     if (EndInput && (BlockEEP[nBlEEP].Erase == 1))
     {
@@ -195,46 +179,46 @@ void pmReset(void) {
 //char Proces,Proces2;
 void pmInfoProg405(void){
     BlkW=1;
-    ByteY=(WTF0.Second/6)%GD.Control.ConfSTepl;
-    ByteZ=(WTF0.Second/2)%3;
+    int16_t gh_idx=(WTF0.Second/6)%GD.Control.ConfSTepl;
+    int16_t idx=(WTF0.Second/2)%3;
     w_txt(Mes7); //Zone
-    ByteX=ByteY+1;
-    w_int(&ByteX,SS);
+    int gh_num = gh_idx+1;
+    w_int(&gh_num,SS, 0);
     Ad_Buf++;
 //	IntX=GD.Hot.MidlSR;
 //	if (IntX<0) IntX=-IntX;
-//	w_int(&IntX,SSSS);
-    w_int(&GD.FanBlock[0][0].FanData[0].ActualSpeed,SSSS);
+//	w_int(&IntX,SSSS, 0);
+    w_int(&GD.FanBlock[0][0].FanData[0].ActualSpeed,SSSS, 0);
 
-    if (!ByteZ)
+    if (!idx)
     {
         w_txt(Mes40);
-        w_int(&GD.Hot.Tepl[ByteY].AllTask.DoTHeat,SSpS0);
+        w_int(&GD.Hot.Tepl[gh_idx].AllTask.DoTHeat,SSpS0, 0);
         Ad_Buf++;
         w_txt(Mes41);
-        w_int(&GD.Hot.Tepl[ByteY].AllTask.DoTVent,SSpS0);
+        w_int(&GD.Hot.Tepl[gh_idx].AllTask.DoTVent,SSpS0, 0);
         Ad_Buf++;
         w_txt(Mes42);
-        w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens1].Value,SSpS0);
-        w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens2].Value,SSpS0);
-        w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens3].Value,SSpS0);
-        w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens4].Value,SSpS0);
+        w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmTSens1].Value,SSpS0, 0);
+        w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmTSens2].Value,SSpS0, 0);
+        w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmTSens3].Value,SSpS0, 0);
+        w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmTSens4].Value,SSpS0, 0);
         return;
     }
-    if (ByteZ==1)
+    if (idx==1)
     {
         w_txt(Mes43);
-        w_int(&GD.Hot.Tepl[ByteY].AllTask.DoRHAir,SSpS0);
+        w_int(&GD.Hot.Tepl[gh_idx].AllTask.DoRHAir,SSpS0, 0);
         Ad_Buf++;
         w_txt(Mes44);
-        w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmRHSens].Value,SSpS0);
+        w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmRHSens].Value,SSpS0, 0);
         return;
     }
     w_txt(Mes45);
-    w_int(&GD.Hot.Tepl[ByteY].AllTask.DoCO2,SSSS);
+    w_int(&GD.Hot.Tepl[gh_idx].AllTask.DoCO2,SSSS, 0);
     Ad_Buf++;
     w_txt(Mes46);
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmCOSens].Value,SSSS);
+    w_int(&GD.Hot.Tepl[gh_idx].InTeplSens[cSmCOSens].Value,SSSS, 0);
 
 
 }
@@ -243,31 +227,32 @@ void pmInfoProg405(void){
 void pmDate(void) {
     Ad_Buf=Str2;
     w_txt(Proect);
-    w_int(&GD.Control.rModification,SS);
+    w_int(&GD.Control.rModification,SS, 0);
     lcdbuf[Ad_Buf++]='-';
-    w_int(&GD.Control.rSInTeplSens,SS);
+    w_int(&GD.Control.rSInTeplSens,SS, 0);
 //	w_txt("-M");
-//    w_int(&GD.Config[cfSumTap],oS);
+//    w_int(&GD.Config[cfSumTap],oS, 0);
 //	w_txt("-V");
-//    w_int(&GD.Config[cfSumIrrigVal],SS);
+//    w_int(&GD.Config[cfSumIrrigVal],SS, 0);
     Ad_Buf=Str3;
     w_txt(Mes70); //Time ~
-    w_int(&CtrTime,SSdSS);
+    w_int(&CtrTime,SSdSS, 0);
     lcdbuf[Ad_Buf++]=':';
     lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
     lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     if (!Y_menu2) BlkW=1;
     Ad_Buf=Str4;
     w_txt(Mes71); //Date~
-    w_int(&CtrData,DsMsY);
+    w_int(&CtrData,DsMsY, 0);
     Ad_Buf++;
-    ByteY=NowDayOfWeek;
-    for (ByteX=0;ByteX < 7; ByteX++)
+    int day=NowDayOfWeek;
+    int day_of_week;
+    for (day_of_week=0;day_of_week < 7; day_of_week++)
     {
-        if (ByteY&64) break;
-        ByteY<<=1;
+        if (day&64) break;
+        day<<=1;
     }
-    if (ByteX <7) w_txt(&DayOfWeek[ByteX][0]);    //&
+    if (day_of_week <7) w_txt(&DayOfWeek[day_of_week][0]);    //&
     if (EndInput)
     {
         EndInput=0;
@@ -285,18 +270,18 @@ void pmStrategy(void) {
     Y_menu2%=3;
     Ad_Buf=Str2;
     w_txt(Mes76);
-    w_int(&x_menu,SS);
+    w_int(&x_menu,SS, 0);
     Ad_Buf=Str3;
     w_txt(Mes73);
-    w_int(&GD.Strategy[0][x_menu-1].TempPower,SS);
+    w_int(&GD.Strategy[0][x_menu-1].TempPower,SS, 0);
     if (!Y_menu2) BlkW=1;
     Ad_Buf=Str4;
     w_txt(Mes74);
-    w_int(&GD.Strategy[0][x_menu-1].RHPower,SS);
+    w_int(&GD.Strategy[0][x_menu-1].RHPower,SS, 0);
     if (Y_menu2==1) BlkW=1;
     Ad_Buf=Str5;
     w_txt(Mes75);
-    w_int(&GD.Strategy[0][x_menu-1].OptimalPower,SS);
+    w_int(&GD.Strategy[0][x_menu-1].OptimalPower,SS, 0);
     return;
 }
 
@@ -304,14 +289,19 @@ void pmParam() {
     char* OutStr;
     w_txt(Mes85); //Parameters
     if (!x_menu) return;
-    ByteZ=x_menu-1;
+
+    int byte_z = x_menu-1;
+    int byte_x = 0;
+    int byte_y = 0;
+    int byte_w = 0;
+
     Ad_Buf=Str2;
-    if (!ByteZ)
+    if (!byte_z)
     {
         pmDate(); return;
     }
-    ByteZ--;
-    if (ByteZ<SumTeplZones)
+    byte_z--;
+    if (byte_z<SumTeplZones)
     {
         if (Y_menu2 > SUM_NAME_CONF) Y_menu2=0;
         if (Y_menu2 >= SUM_NAME_CONF) Y_menu2=SUM_NAME_CONF-1;
@@ -319,33 +309,33 @@ void pmParam() {
         Ad_Buf++;
         w_txt(Mes7);
         Ad_Buf++;
-        ByteX=ByteZ+1;
-        w_int(&ByteX,SS);
+        byte_x=byte_z+1;
+        w_int(&byte_x,SS, 0);
         Ad_Buf=Str3;
         if (Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
         if (Y_menu2 > (StartY_menu2+2)) StartY_menu2 = Y_menu2-2;
-        for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++)
+        for (byte_y=StartY_menu2;byte_y < (StartY_menu2+3);byte_y++)
         {
-            ByteX=ByteY % SUM_NAME_CONF;
-            OutStr=NameOutputConfig[ByteX].Name;
-            ByteW=ByteX;
-            if (ByteX>=SUM_NAME_INPUTS)
-                OutStr=NameInputConfig[ByteX-SUM_NAME_INPUTS].Name;
-            if (ByteX>=SUM_NAME_INSENS)
-                OutStr=NameSensConfig[ByteX-SUM_NAME_INSENS].Name;
+            byte_x=byte_y % SUM_NAME_CONF;
+            OutStr=NameOutputConfig[byte_x].Name;
+            byte_w=byte_x;
+            if (byte_x>=SUM_NAME_INPUTS)
+                OutStr=NameInputConfig[byte_x-SUM_NAME_INPUTS].Name;
+            if (byte_x>=SUM_NAME_INSENS)
+                OutStr=NameSensConfig[byte_x-SUM_NAME_INSENS].Name;
             w_txt(OutStr);
             Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
             lcdbuf[Ad_Buf++]=':';
-            w_int(&GD.MechConfig[ByteZ].RNum[ByteW],SpSSpSS);
-            if (Y_menu2 == ByteY) BlkW=1;
+            w_int(&GD.MechConfig[byte_z].RNum[byte_w],SpSSpSS, 0);
+            if (Y_menu2 == byte_y) BlkW=1;
             //w_txt(Mes87); //-rela\321
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
         }
         if (!GD.TControl.NowCod) Form=0;
         return;
     }
-    ByteZ-=SumTeplZones;
-    if (ByteZ<SumTeplZones)
+    byte_z-=SumTeplZones;
+    if (byte_z<SumTeplZones)
     {
         if (Y_menu2 > cConfSSystem) Y_menu2=0;
         if (Y_menu2 >= cConfSSystem) Y_menu2=cConfSSystem-1;
@@ -353,29 +343,29 @@ void pmParam() {
         Ad_Buf++;
         w_txt(Mes7);
         Ad_Buf++;
-        ByteX=ByteZ+1;
-        w_int(&ByteX,SS);
+        byte_x=byte_z+1;
+        w_int(&byte_x,SS, 0);
         Ad_Buf=Str3;
         if (Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
         if (Y_menu2 > (StartY_menu2+2)) StartY_menu2 = Y_menu2-2;
-        for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++)
+        for (byte_y=StartY_menu2;byte_y < (StartY_menu2+3);byte_y++)
         {
-            ByteX=ByteY % SUM_NAME_CONF;
-            OutStr=NameSystemConfig[ByteX].Name;
-            ByteW=ByteX;
+            byte_x=byte_y % SUM_NAME_CONF;
+            OutStr=NameSystemConfig[byte_x].Name;
+            byte_w=byte_x;
             w_txt(OutStr);
             Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
             lcdbuf[Ad_Buf++]=':';
-            w_int(&GD.MechConfig[ByteZ].Systems[ByteW],SSSi);
-            if (Y_menu2 == ByteY) BlkW=1;
+            w_int(&GD.MechConfig[byte_z].Systems[byte_w],SSSi, 0);
+            if (Y_menu2 == byte_y) BlkW=1;
             //w_txt(Mes87); //-rela\321
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
         }
         if (!GD.TControl.NowCod) Form=0;
         return;
     }
-    ByteZ-=SumTeplZones;
-    if (ByteZ<SumTeplZones)
+    byte_z-=SumTeplZones;
+    if (byte_z<SumTeplZones)
     {
         if (Y_menu2 > SUM_NAME_PARS) Y_menu2=0;
         if (Y_menu2 >=SUM_NAME_PARS) Y_menu2=SUM_NAME_PARS-1;
@@ -383,26 +373,26 @@ void pmParam() {
         Ad_Buf++;
         w_txt(Mes7);
         Ad_Buf++;
-        ByteX=ByteZ+1;
-        w_int(&ByteX,SS);
+        byte_x=byte_z+1;
+        w_int(&byte_x,SS, 0);
         Ad_Buf=Str3;
         if (Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
         if (Y_menu2 > (StartY_menu2+2)) StartY_menu2 = Y_menu2-2;
-        for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++)
+        for (byte_y=StartY_menu2;byte_y < (StartY_menu2+3);byte_y++)
         {
-            ByteX=ByteY % SUM_NAME_PARS;
-            w_txt(NameParUpr[ByteX].Name);
+            byte_x=byte_y % SUM_NAME_PARS;
+            w_txt(NameParUpr[byte_x].Name);
             Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
             lcdbuf[Ad_Buf++]='=';
-            w_int(&GD.Control.Tepl[ByteZ].c_MaxTPipe[ByteY],NameParUpr[ByteX].Ed);
-            if (Y_menu2 == ByteY) BlkW=1;
+            w_int(&GD.Control.Tepl[byte_z].c_MaxTPipe[byte_y],NameParUpr[byte_x].Ed, 0);
+            if (Y_menu2 == byte_y) BlkW=1;
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
 
         }
         return;
     }
-    ByteZ-=SumTeplZones;
-    if (!ByteZ)                                                     // Уставки
+    byte_z-=SumTeplZones;
+    if (!byte_z)                                                     // Уставки
     {
         #warning "sizeof !? wtf ? should be countof. disabled"
         #if 0
@@ -419,10 +409,10 @@ void pmParam() {
             ByteX=ByteY % SUM_NAME_TUNE;
             ByteW=ByteX+1;
             w_txt(Mes92);
-            w_int(&ByteW,SS);
+            w_int(&ByteW,SS, 0);
             Ad_Buf=((Ad_Buf / DisplCols))*DisplCols+20;
             lcdbuf[Ad_Buf++]='=';
-            w_int(&GD.TuneClimate.s_TStart[ByteY],NameConst[ByteX].Frm);
+            w_int(&GD.TuneClimate.s_TStart[ByteY],NameConst[ByteX].Frm, 0);
             if (Y_menu2 == ByteY)
                 BlkW=1;
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
@@ -431,23 +421,23 @@ void pmParam() {
         return;
         #endif
     }
-    ByteZ--;  //if (!GD.Config[cfReturn1Val] && !GD.Config[cfRegulRetEC])
-    if (!ByteZ)
+    byte_z--;  //if (!GD.Config[cfReturn1Val] && !GD.Config[cfRegulRetEC])
+    if (!byte_z)
     {
         Y_menu2%=8;
         w_txt(Mes126); //Controller num~
-        w_int(&GD.Control.NFCtr,SS);
+        w_int(&GD.Control.NFCtr,SS, 0);
         if (!Y_menu2) BlkW=1;
         if (!GD.Hot.News) w_txt(" on line");
         Ad_Buf=Str3;
         w_txt(Mes127); //Language~
-        w_int(&GD.Control.Language,oS);
-        // w_int(&PowerOfLineRS,SSSS);
+        w_int(&GD.Control.Language,oS, 0);
+        // w_int(&PowerOfLineRS,SSSS, 0);
         if (Y_menu2==1) BlkW=1;
 
         Ad_Buf=Str4;
         w_txt(Mes65); //Access code~
-        w_int(&GD.Control.Cod,SSS);
+        w_int(&GD.Control.Cod,SSS, 0);
         SaveChar=127;
         if (!WTF0.Menu) SaveChar=0;
         if (Y_menu2==2) BlkW=1;
@@ -455,28 +445,28 @@ void pmParam() {
         if (Y_menu2<=3)
         {
             w_txt(Mes5);
-            w_int(&GD.Control.ConfSTepl,oS);
+            w_int(&GD.Control.ConfSTepl,oS, 0);
         }
         else
         {
             w_txt("IP:");
-            w_int(&GD.Control.IPAddr[0],SSS);
+            w_int(&GD.Control.IPAddr[0],SSS, 0);
             if (Y_menu2==4) BlkW=1;
             w_txt(".");
-            w_int(&GD.Control.IPAddr[1],SSS);
+            w_int(&GD.Control.IPAddr[1],SSS, 0);
             if (Y_menu2==5) BlkW=1;
             w_txt(".");
-            w_int(&GD.Control.IPAddr[2],SSS);
+            w_int(&GD.Control.IPAddr[2],SSS, 0);
             if (Y_menu2==6) BlkW=1;
             w_txt(".");
-            w_int(&GD.Control.IPAddr[3],SSS);
+            w_int(&GD.Control.IPAddr[3],SSS, 0);
 
             //w_txt(Mes206);
-            //w_int(&GD.Control.Screener,SSS);
+            //w_int(&GD.Control.Screener,SSS, 0);
         }
         return;
     }
-    if (ByteZ > 1)   x_menu=0;
+    if (byte_z > 1)   x_menu=0;
     pmReset();
 }
 
@@ -492,14 +482,18 @@ void pmHand(void) {
     w_txt(Mes128); //Ручное управление //Manual control~
     if (!x_menu)  return;
     Ad_Buf=Str2;
-    ByteZ=x_menu-1;
-    if (ByteZ<SumTeplZones)                     /* Клапан полива N */
+    int byte_z = x_menu - 1;
+    int byte_x = 0;
+    int byte_w = 0;
+    int int_x;
+
+    if (byte_z<SumTeplZones)                     /* Клапан полива N */
     {
-        SetPointersOnTepl(ByteZ);
+        SetPointersOnTepl(byte_z);
         while (Y_menu2< cSRegCtrl*2)
         {
-            ByteW=Y_menu2/2;
-            if (pGD_MechConfig->RNum[ByteW]) break;
+            byte_w=Y_menu2/2;
+            if (pGD_MechConfig->RNum[byte_w]) break;
             Y_menu2++;
         }
         if (Y_menu2 >= cSRegCtrl*2)
@@ -507,94 +501,94 @@ void pmHand(void) {
             Y_menu2=0;w_txt(Mes89); return;
         }
 
-        SetPointersOnKontur(ByteW);
+        SetPointersOnKontur(byte_w);
         Ad_Buf=Str2;
         w_txt(Mes7);
         Ad_Buf++;
-        ByteX=ByteZ+1;
-        w_int(&ByteX,SS);
+        byte_x=byte_z+1;
+        w_int(&byte_x,SS, 0);
         Ad_Buf++;
-        w_txt(NameOutputConfig[ByteW].Name); /* Клап бойлера*/ //Boiler val \310ost~
+        w_txt(NameOutputConfig[byte_w].Name); /* Клап бойлера*/ //Boiler val \310ost~
         Ad_Buf=Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
-        ByteX=0x01;
-        w_int(&pGD_Hot_Hand_Kontur->RCS,bS);
-        AutoMan(pGD_Hot_Hand_Kontur->RCS,ByteX);
+
+        w_int(&pGD_Hot_Hand_Kontur->RCS,bS, 0x01);
+        AutoMan(pGD_Hot_Hand_Kontur->RCS, 0x01);
         if (!(Y_menu2%2)) BlkW=1;
         Ad_Buf=Str4;
         w_txt(Mes133); /* Ход клап */ //Boiler val time~~
-        w_int(&pGD_Hot_Hand_Kontur->Position,SSS);
+        w_int(&pGD_Hot_Hand_Kontur->Position,SSS, 0);
         lcdbuf[Ad_Buf++]='%';
         BlkW=1;
         lcdbuf[Ad_Buf++]='(';
-        w_int(&pGD_TControl_Tepl->MechBusy[ByteW].TimeRealMech,SSSi);
+        w_int(&pGD_TControl_Tepl->MechBusy[byte_w].TimeRealMech,SSSi, 0);
         w_txt("s) #c) ");
-        if (pGD_TControl_Tepl->MechBusy[ByteW].Sens)
+        if (pGD_TControl_Tepl->MechBusy[byte_w].Sens)
         {
             lcdbuf[Ad_Buf++]='(';
-            w_int(&pGD_TControl_Tepl->MechBusy[ByteW].Sens->Value,SSSpS);
+            w_int(&pGD_TControl_Tepl->MechBusy[byte_w].Sens->Value,SSSpS, 0);
             lcdbuf[Ad_Buf++]=')';
         }
         Ad_Buf=Str5;
         w_txt(Mes136); Ad_Buf++;
-        IntX=(*pGD_MechConfig_Kontur);
-        w_int(&IntX,SpSSpSS);
+        int_x=(*pGD_MechConfig_Kontur);
+        w_int(&int_x,SpSSpSS, 0);
 
 
         return;
     }
-    ByteZ-=SumTeplZones;
-    if (ByteZ<SumTeplZones)
+    byte_z-=SumTeplZones;
+    if (byte_z<SumTeplZones)
     {
-        SetPointersOnTepl(ByteZ);
+        SetPointersOnTepl(byte_z);
         while (Y_menu2< cSDiskrCtrl*2)
         {
-            ByteW=cSRegCtrl+Y_menu2/2;
-            if (pGD_MechConfig->RNum[ByteW]) break;
+            byte_w=cSRegCtrl+Y_menu2/2;
+            if (pGD_MechConfig->RNum[byte_w]) break;
             Y_menu2++;
         }
         if (Y_menu2 >= cSDiskrCtrl*2)
         {
             Y_menu2=0;w_txt(Mes89); return;
         }
-        SetPointersOnTepl(ByteZ);
+        SetPointersOnTepl(byte_z);
 
-        SetPointersOnKontur(ByteW);
+        SetPointersOnKontur(byte_w);
         Ad_Buf=Str2;
         w_txt(Mes7);
         Ad_Buf++;
-        ByteX=ByteZ+1;
-        w_int(&ByteX,SS);
+        byte_x=byte_z+1;
+        w_int(&byte_x,SS, 0);
         Ad_Buf++;
-        w_txt(NameOutputConfig[ByteW].Name); /* Клап бойлера*/ //Boiler val \310ost~
+        w_txt(NameOutputConfig[byte_w].Name); /* Клап бойлера*/ //Boiler val \310ost~
         Ad_Buf=Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
-        ByteX=0x01;
-        w_int(&pGD_Hot_Hand_Kontur->RCS,bS);
-        AutoMan(pGD_Hot_Hand_Kontur->RCS,ByteX);
+
+        w_int(&pGD_Hot_Hand_Kontur->RCS,bS, 0x01);
+        AutoMan(pGD_Hot_Hand_Kontur->RCS,0x01);
         if (!(Y_menu2%2)) BlkW=1;
 
-        if (ByteW == cHSmSIOPump)
+        if (byte_w == cHSmSIOPump)
         {
             lcdbuf[Ad_Buf++]='(';
-            w_int(&fnSIOfaza[ByteZ],SS);
+            w_int(&fnSIOfaza[byte_z],SS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOvelvOut[ByteZ],SSSS);
+            w_int(&fnSIOvelvOut[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOpumpOut[ByteZ],SSSS);
+            w_int(&fnSIOpumpOut[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOpause[ByteZ],SSSS);
+            w_int(&fnSIOpause[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=')';
         }
 
         Ad_Buf=Str4;
         w_txt(Mes133); /* Ход клап */ //Boiler val time~~
-        w_int(&pGD_Hot_Hand_Kontur->Position,bS);
+        w_int(&pGD_Hot_Hand_Kontur->Position, bS, 0x01);
         BlkW=1;
         Ad_Buf=Str5;
         w_txt(Mes140);// Ad_Buf++;
-        IntX=(*pGD_MechConfig_Kontur);
-        w_int(&IntX,SpSSpSS);
+        int_x=(*pGD_MechConfig_Kontur);
+        w_int(&int_x,SpSSpSS, 0);
 
 
         return;
@@ -626,11 +620,11 @@ void pmCalibr(void) {
         w_txt(Mes147);
         Ad_Buf=Str3;
         w_txt(Mes149);
-        w_int(&nPortSave,SS);
+        w_int(&nPortSave,SS, 0);
         if ((nPortSave<1)||(nPortSave>4))  nPortSave=1;
         if (!Y_menu2) BlkW=1;
         w_txt(Mes157);
-        w_int(&SaveChar,oS);
+        w_int(&SaveChar,oS, 0);
         if ((!SaveChar)||(SaveChar>8))  SaveChar=1;
         if (Y_menu2<2) BlkW=1;
         else
@@ -646,14 +640,14 @@ void pmCalibr(void) {
         w_txt(Mes158);
         if(!Menu)
             SaveInt=(uint16_t)((long)Mes*(long)1000/(long)(GD.Cal.Port));
-        w_int(&SaveInt,SSSS);
+        w_int(&SaveInt,SSSS, 0);
         w_txt(Mes150);
         BlkW=1;
         w_txt(Mes152);
-        w_int(&GD.Cal.Port,SpSSS);
+        w_int(&GD.Cal.Port,SpSSS, 0);
         Ad_Buf=Str5;
         w_txt(Mes151);
-        w_int(&Mes,SSSS);
+        w_int(&Mes,SSSS, 0);
 
 
 
@@ -661,82 +655,91 @@ void pmCalibr(void) {
         return;
     }
     */
+
+    int byte_x = 0;
+    int byte_y = 0;
+    int byte_z = 0;
+
+    int int_x = 0;
+    int int_y = 0;
+    int byte_w = 0;
+
     Ad_Buf=Str2;
     if (x_menu>=(SumTeplZones+1))
     {
         x_menu=SumTeplZones+1;
         w_txt(Mes159);
         Y_menu2%=(cConfSMetSens*5);
-        ByteX=Y_menu2/5;        //номер датчика в общих с 0
-        IntY=ByteX+cSTepl*cConfSSens;           //номер в массиве калибровок
-        IntX=GD.Hot.MeteoSensing[ByteX].Value;
-        GD.TControl.TimeMeteoSensing[ByteX]=120;
+        byte_x=Y_menu2/5;        //номер датчика в общих с 0
+        int_y=byte_x+cSTepl*cConfSSens;           //номер в массиве калибровок
+        int_x=GD.Hot.MeteoSensing[byte_x].Value;
+        GD.TControl.TimeMeteoSensing[byte_x]=120;
 
-        ByteZ=ByteX+1;          //номер датчика  с 1
-        ByteX+=cConfSSens;  //номер датчика после тепличных в общих именах с 0
+        byte_z=byte_x+1;          //номер датчика  с 1
+        byte_x+=cConfSSens;  //номер датчика после тепличных в общих именах с 0
     }
     else
     {
         w_txt(Mes7);
-        ByteW=x_menu-1;     //номер теплицы с 0
-        w_int(&x_menu,oS);
+        byte_w=x_menu-1;     //номер теплицы с 0
+        w_int(&x_menu,oS, 0);
         Y_menu2%=(cConfSSens*5);
-        ByteX=Y_menu2/5;        //номер датчика в тепличных именах с 0
-        ByteZ=ByteX+1;          //номер датчика в тепличных с 1
-        IntX=GD.Hot.Tepl[ByteW].InTeplSens[ByteX].Value;
-        GD.TControl.Tepl[ByteW].TimeInTepl[ByteX]=120;
+        byte_x=Y_menu2/5;        //номер датчика в тепличных именах с 0
+        byte_z=byte_x+1;          //номер датчика в тепличных с 1
+        int_x=GD.Hot.Tepl[byte_w].InTeplSens[byte_x].Value;
+        GD.TControl.Tepl[byte_w].TimeInTepl[byte_x]=120;
 //		if (!ByteX)
-        IntY=ByteX+ByteW*cConfSSens;    //номер в массиве калибровок
+        int_y=byte_x+byte_w*cConfSSens;    //номер в массиве калибровок
     }
 //    if (eCS->nPort>10) {DigitSens();return;}
     Ad_Buf++;
-    eCS=&GD.Cal.InTeplSens[0][IntY];
-    w_txt(NameSensConfig[ByteX].Name);
+    eCS=&GD.Cal.InTeplSens[0][int_y];
+    w_txt(NameSensConfig[byte_x].Name);
     lcdbuf[Ad_Buf++]='=';
-    w_int(&IntX,NameSensConfig[ByteX].Frm);
+    w_int(&int_x,NameSensConfig[byte_x].Frm, 0);
 //    PrintEd(NamesOfSens[ByteX].Ed);
-    ByteY=Y_menu2%5;        //номер меню в датчике
+    byte_y=Y_menu2%5;        //номер меню в датчике
     Ad_Buf=Str3;
     w_txt(Mes149);
-    w_int(&eCS->Type,SS);
+    w_int(&eCS->Type,SS, 0);
     //if(!eCS->Input) {Ad_Buf++; w_txt("<off>");return;}
-    if (!(ByteY))
+    if (!(byte_y))
     {
         BlkW=1;MaximVal=32;
     }
     //if((eCS->Input > 10)) {DigitSens();return;}
 
     w_txt(Mes157);
-    w_int(&eCS->Output,SS);
-    if ((ByteY)==1)
+    w_int(&eCS->Output,SS, 0);
+    if ((byte_y)==1)
     {
         BlkW=1;MinimVal=1;MaximVal=32;
     }
     w_txt(Mes156);
-    w_int(&eCS->Corr,SSS);
-    if ((ByteY)==2)
+    w_int(&eCS->Corr,SSS, 0);
+    if ((byte_y)==2)
     {
         BlkW=1;MinimVal=0;MaximVal=255;
     }
     Ad_Buf++;
     w_txt(Mes158);
-    w_int(&GD.uInTeplSens[0][IntY],SSSS);
+    w_int(&GD.uInTeplSens[0][int_y],SSSS, 0);
     w_txt(Mes150);
 
-    if ((EndInput)&&(ByteY>=3))
+    if ((EndInput)&&(byte_y>=3))
     {   //конец ввода и ввели эталон
-        ByteZ=(ByteY-3);            //номер эталона
-        if (!ByteZ)
+        byte_z=(byte_y-3);            //номер эталона
+        if (!byte_z)
         {
             eCS->V1+=(SaveInt-eCS->V0);
-            eCS->U1+=(GD.uInTeplSens[0][IntY]-eCS->U0);
+            eCS->U1+=(GD.uInTeplSens[0][int_y]-eCS->U0);
             eCS->V0=SaveInt;
-            eCS->U0=GD.uInTeplSens[0][IntY];
+            eCS->U0=GD.uInTeplSens[0][int_y];
         }
         else
         {
             eCS->V1=SaveInt2;
-            eCS->U1=GD.uInTeplSens[0][IntY];
+            eCS->U1=GD.uInTeplSens[0][int_y];
         }
         SetInSaveRam(eCS, 12);
         EndInput=0;
@@ -751,18 +754,18 @@ void pmCalibr(void) {
     Ad_Buf=Str4;
     w_txt(Mes154);
     lcdbuf[Ad_Buf++]='(';
-    w_int(&eCS->U0,SSSS);
+    w_int(&eCS->U0,SSSS, 0);
     w_txt(Mes150);
     lcdbuf[Ad_Buf++]=')';
-    w_int(&SaveInt,NameSensConfig[ByteX].Frm);
-    if (ByteY==3) BlkW=1;
+    w_int(&SaveInt,NameSensConfig[byte_x].Frm, 0);
+    if (byte_y==3) BlkW=1;
     Ad_Buf=Str5;
     w_txt(Mes155);
     lcdbuf[Ad_Buf++]='(';
-    w_int(&eCS->U1,SSSS);
+    w_int(&eCS->U1,SSSS, 0);
     w_txt(Mes150);
     lcdbuf[Ad_Buf++]=')';
-    w_int(&SaveInt2,NameSensConfig[ByteX].Frm);
+    w_int(&SaveInt2,NameSensConfig[byte_x].Frm, 0);
     return;
 }
 
@@ -772,28 +775,29 @@ void pmParMechanic(void) {
     x_menu%=(SumTeplZones+1);
     if (!x_menu) return;
     Y_menu2%=cSRegCtrl*4;//cSMech;
-    ByteX=x_menu-1;
+
+    int byte_x =  x_menu-1;
     Ad_Buf=Str2;
     w_txt(Mes7);
-    w_int(&x_menu,oS);
-    ByteY=Y_menu2/4;
+    w_int(&x_menu,oS, 0);
+    int byte_y = Y_menu2/4;
     Ad_Buf++;
-    w_txt(NameOutputConfig[ByteY].Name);
+    w_txt(NameOutputConfig[byte_y].Name);
     Ad_Buf=Str3;
     w_txt(Mes135);
-    w_int(&GD.ConstMechanic[ByteX].ConstMixVal[ByteY].v_TimeMixVal,SSSi);
+    w_int(&GD.ConstMechanic[byte_x].ConstMixVal[byte_y].v_TimeMixVal,SSSi, 0);
     w_txt(Mes96);
     if (!(Y_menu2%4)) BlkW=1;
     Ad_Buf=Str4;
     w_txt(Mes97);
-    w_int(&GD.ConstMechanic[ByteX].ConstMixVal[ByteY].v_PFactor,SpSSS);
+    w_int(&GD.ConstMechanic[byte_x].ConstMixVal[byte_y].v_PFactor,SpSSS, 0);
     if ((Y_menu2%4)==1) BlkW=1;
     w_txt(Mes98);
-    w_int(&GD.ConstMechanic[ByteX].ConstMixVal[ByteY].v_IFactor,SpSSS);
+    w_int(&GD.ConstMechanic[byte_x].ConstMixVal[byte_y].v_IFactor,SpSSS, 0);
     if ((Y_menu2%4)==2) BlkW=1;
     Ad_Buf=Str5;
     w_txt(Mes99);
-    w_int(&GD.ConstMechanic[ByteX].ConstMixVal[ByteY].v_Type,SSS);
+    w_int(&GD.ConstMechanic[byte_x].ConstMixVal[byte_y].v_Type,SSS, 0);
     BlkW=1;
     return;
 }
@@ -822,41 +826,41 @@ void pmNow(void) {
         }
         Ad_Buf=Str2;
         w_txt("Modul ");
-        w_int(&Y_menu2,SS);
+        w_int(&Y_menu2,SS, 0);
         w_txt(" num:");
-        w_int(&CpM,SSSi);
+        w_int(&CpM,SSSi, 0);
         Ad_Buf=Str3;
         w_txt("Cond:");
-        w_int(&Cond,SSS);
+        w_int(&Cond,SSS, 0);
         w_txt(" Err:");
-        w_int(&Err,SSS);
+        w_int(&Err,SSS, 0);
         Ad_Buf=Str4;
         w_txt("Max Input:");
-        w_int(&MaxIn,SSS);
+        w_int(&MaxIn,SSS, 0);
         Ad_Buf++;
         w_txt("Fails:");
-        w_int(&Failure,SSS);
+        w_int(&Failure,SSS, 0);
 
 
         return;
     }
     if (x_menu>SumTeplZones)
     {
-        ByteY=(x_menu-SumTeplZones-1)/2+1;
-        ByteZ=(x_menu-SumTeplZones-1)%2+1;
+        int byte_y=(x_menu-SumTeplZones-1)/2+1;
+        int byte_z=(x_menu-SumTeplZones-1)%2+1;
         Y_menu2%=OUT_MODUL_SUM;//cSMech;
         Form=0;
         Ad_Buf=Str2;
         w_txt("Fans zone ");
-        w_int(ByteY,oS);
+        w_int(byte_y,oS, 0);
         lcdbuf[Ad_Buf++]='-';
-        w_int(ByteZ,oS);
+        w_int(byte_z,oS, 0);
         Ad_Buf=Str3;
-        for (ByteX=0;ByteX<MAX_FAN_COUNT;ByteX++)
+        for (int byte_x = 0;byte_x<MAX_FAN_COUNT;byte_x++)
         {
-            if (ByteX==32)
+            if (byte_x==32)
                 Ad_Buf=Str4;
-            if (GD.FanBlock[x_menu-SumTeplZones-1][0].FanData[ByteX].Actual)
+            if (GD.FanBlock[x_menu-SumTeplZones-1][0].FanData[byte_x].Actual)
             {
 
                 lcdbuf[Ad_Buf++]='0';
@@ -882,43 +886,43 @@ void pmNow(void) {
 //    	w_txt("05/02");*/
         return;
     }
-    ByteY=x_menu-1;
+    int byte_y=x_menu-1;
     Y_menu2=1;//cSMech;
 
     Ad_Buf=Str2;
     w_txt(Mes7);
-    w_int(&x_menu,oS);
+    w_int(&x_menu,oS, 0);
     Ad_Buf++;
     w_txt(Mes39);
     Ad_Buf=Str3;
     w_txt(" T  | RH |CO2 |Tp1 |Tp2 |Tp3 |Tp4 |Tp5");
     Ad_Buf=Str4;
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens1].Value,SSpS0);
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens2].Value,SSpS0);
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens3].Value,SSpS0);
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmTSens4].Value,SSpS0);
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmTSens1].Value,SSpS0, 0);
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmTSens2].Value,SSpS0, 0);
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmTSens3].Value,SSpS0, 0);
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmTSens4].Value,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmRHSens].Value,SSpS0);
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmRHSens].Value,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&GD.Hot.Tepl[ByteY].InTeplSens[cSmCOSens].Value,SSSS);
-    for (ByteX=0;ByteX<cSWaterKontur-1;ByteX++)
+    w_int(&GD.Hot.Tepl[byte_y].InTeplSens[cSmCOSens].Value,SSSS, 0);
+    for (int byte_x=0;byte_x<cSWaterKontur-1;byte_x++)
     {
         lcdbuf[Ad_Buf++]='|';
-        IntX=GD.Hot.Tepl[ByteY].InTeplSens[cSmWaterSens+ByteX].Value/10;
-        w_int(&IntX,SSS);
+        int int_x=GD.Hot.Tepl[byte_y].InTeplSens[cSmWaterSens+byte_x].Value/10;
+        w_int(&int_x,SSS, 0);
         Ad_Buf++;
     }
     Ad_Buf=Str5;
-    w_int(&GD.Hot.Tepl[ByteY].AllTask.DoTHeat,SSpS0);
+    w_int(&GD.Hot.Tepl[byte_y].AllTask.DoTHeat,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&GD.Hot.Tepl[ByteY].AllTask.DoRHAir,SSpS0);
+    w_int(&GD.Hot.Tepl[byte_y].AllTask.DoRHAir,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&GD.Hot.Tepl[ByteY].AllTask.DoCO2,SSSS);
-    for (ByteX=0;ByteX<cSWaterKontur-1;ByteX++)
+    w_int(&GD.Hot.Tepl[byte_y].AllTask.DoCO2,SSSS, 0);
+    for (int byte_x=0;byte_x<cSWaterKontur-1;byte_x++)
     {
         lcdbuf[Ad_Buf++]='|';
-        IntX=GD.Hot.Tepl[ByteY].Kontur[ByteX].Do/10;
-        w_int(&IntX,SSS);
+        int int_x=GD.Hot.Tepl[byte_y].Kontur[byte_x].Do/10;
+        w_int(&int_x,SSS, 0);
         Ad_Buf++;
     }
     Form=0;
@@ -928,7 +932,7 @@ void pmNow(void) {
 void    pmProgClimate(void)
 {
     w_txt(Mes34);
-    //w_int(airHeatTimeWork[0],SSS);
+    //w_int(airHeatTimeWork[0],SSS, 0);
 
     if (x_menu > cSTimer) x_menu=0;
     if (!x_menu)
@@ -936,22 +940,22 @@ void    pmProgClimate(void)
         return;
     }
     Ad_Buf=Str2;
-    ByteZ=x_menu-1;
+    int byte_z=x_menu-1;
     if (Y_menu2 > SUM_NAME_TIMER) Y_menu2=0;
     if (Y_menu2 >=SUM_NAME_TIMER) Y_menu2=SUM_NAME_TIMER-1;
     w_txt(Mes35); //-Correction-
-    w_int(&x_menu,SS);
+    w_int(&x_menu,SS, 0);
     Ad_Buf=Str3;
     if (Y_menu2 < StartY_menu2) StartY_menu2 = Y_menu2;
     if (Y_menu2 > (StartY_menu2+2)) StartY_menu2 = Y_menu2-2;
-    for (ByteY=StartY_menu2;ByteY < (StartY_menu2+3);ByteY++)
+    for (int byte_y=StartY_menu2;byte_y < (StartY_menu2+3);byte_y++)
     {
-        ByteX=ByteY % SUM_NAME_TIMER;
-        w_txt(&NameTimer[ByteX].Name);
+        int byte_x=byte_y % SUM_NAME_TIMER;
+        w_txt(&NameTimer[byte_x].Name);
         Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
         lcdbuf[Ad_Buf++]='=';
-        w_int(&GD.Timer[ByteZ].Zone[NameTimer[ByteX].Index],NameTimer[ByteX].Frm);
-        if (Y_menu2 == ByteY) BlkW=1;
+        w_int(&GD.Timer[byte_z].Zone[NameTimer[byte_x].Index],NameTimer[byte_x].Frm, 0);
+        if (Y_menu2 == byte_y) BlkW=1;
         Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
     }
     return;
@@ -967,7 +971,7 @@ void pmVersion(void)
         return;
     }
     Ad_Buf=Str2;
-    ByteZ=x_menu-1;
+
     if (Y_menu2 > SUM_NAME_TIMER) Y_menu2=0;
     if (Y_menu2 >=SUM_NAME_TIMER) Y_menu2=SUM_NAME_TIMER-1;
 

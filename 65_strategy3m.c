@@ -590,7 +590,6 @@ void __sRegulKontur(char fnKontur) {
     if (((IntX < 0) && (IntX > (-cErrKontur)))
         || ((IntX < cErrKontur) && (IntX > 0)))
         IntX = 0;
-    LngX = IntX;
 
     if ((!IntX) || (!SameSign(IntX, pGD_TControl_Tepl_Kontur->SErr))) //(LngX*((long)(pGD_TControl_Tepl_Kontur->SErr)))<0)))
         pGD_TControl_Tepl_Kontur->SErr = 0;
@@ -838,7 +837,6 @@ void __WorkableKontur(char fnKontur, char fnTepl) {
 /*-Процедура определения приоритетов с возможностями и подсчета их суммы-*/
 /*************************************************************************/
 void __sRealPosibilityKonturs(char fnKontur, long* fMinMax) {
-    ByteZ = 0;
 
 //------------------------------------------------------------------------
 //Если контур не участвует в управлении то пропускаем
@@ -920,41 +918,41 @@ long __sRaspKontur(void) {
 
     pGD_TControl_Tepl->StopI = 0;
 
-    LngY = pGD_TControl_Tepl->Critery;
-    LngY = LngY / pGD_TControl_Tepl->qMaxKonturs;
+    long long_y = pGD_TControl_Tepl->Critery;
+    long_y = long_y / pGD_TControl_Tepl->qMaxKonturs;
 
-    LngY = LngY * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    LngY = LngY / ((long) pGD_Strategy_Kontur->Powers);
+    long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
+    long_y = long_y / ((long) pGD_Strategy_Kontur->Powers);
 
-    return LngY;
+    return long_y;
 }
 long __sRaspOwnKontur(void) {
     if ((!pGD_TControl_Tepl->qMaxOwnKonturs)
         || (!YesBit(pGD_Hot_Tepl_Kontur->RCS, cbGoMaxOwn)))
         return 0;
-    LngY = pGD_TControl_Tepl->Critery;
-    LngY = LngY / pGD_TControl_Tepl->qMaxOwnKonturs;
+    long long_y = pGD_TControl_Tepl->Critery;
+    long_y = long_y / pGD_TControl_Tepl->qMaxOwnKonturs;
 
-    LngY = LngY * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    LngY = LngY / ((long) pGD_Strategy_Kontur->Powers);
+    long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
+    long_y = long_y / ((long) pGD_Strategy_Kontur->Powers);
 
-    return LngY;
+    return long_y;
 }
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 long __TempToVent(void) {
-    LngY = 100 * ((long) pGD_TControl_Tepl->TVentCritery);
-    LngY = LngY / 50;
-    LngY = LngY * 30;
-    LngY /= ((long) pGD_TControl_Tepl->f_Power);
+    long long_y = 100 * ((long) pGD_TControl_Tepl->TVentCritery);
+    long_y = long_y / 50;
+    long_y = long_y * 30;
+    long_y /= ((long) pGD_TControl_Tepl->f_Power);
 
-    return LngY;
+    return long_y;
 }
 long __VentToTemp(long sVent) {
-    LngY = sVent * ((long) pGD_TControl_Tepl->f_Power);
-    LngY /= 30;
-    LngY *= 50; //((long)pGD_ConstMechanic->ConstMixVal[cHSmWinN].Power);
-    return LngY / 100;
+    long long_y = sVent * ((long) pGD_TControl_Tepl->f_Power);
+    long_y /= 30;
+    long_y *= 50; //((long)pGD_ConstMechanic->ConstMixVal[cHSmWinN].Power);
+    return long_y / 100;
 }
 
 /*************************************************************************/
@@ -1424,19 +1422,17 @@ void __sCalcKonturs(void) {
                 continue;
             if (pGD_TControl_Tepl_Kontur->NAndKontur == 1)
                 continue;
-            LngY =
-            (GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].RealPower);
-            ByteW =
-            (GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].NAndKontur);
-            LngY /= ByteW;
+            long long_y = GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].RealPower;
+            int8_t byte_w = GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].NAndKontur;
+            long_y /= byte_w;
 
             OldCrit = pGD_TControl_Tepl->Critery;
             if (pGD_TControl_Tepl->NOwnKonturs)
                 pGD_TControl_Tepl->Critery = pGD_TControl_Tepl->Critery
-                                             - __sThisToFirst((int) ((LngY)));
+                                             - __sThisToFirst((int) ((long_y)));
             if (!SameSign(OldCrit, pGD_TControl_Tepl->Critery))
                 pGD_TControl_Tepl->Critery = 0;
-            pGD_TControl_Tepl_Kontur->CalcT = LngY;
+            pGD_TControl_Tepl_Kontur->CalcT = long_y;
             __sLastCheckKontur(ByteX, &IntY);
 
             if ((pGD_Hot_Tepl->MaxReqWater < pGD_Hot_Tepl_Kontur->Do)
@@ -1509,12 +1505,12 @@ void __sMechWindows(void) {
         SetPointersOnTepl(fnTepl);
         for (ByteX = cSWaterKontur; ByteX < cSWaterKontur + 2; ByteX++)
         {
-            ByteZ = ByteX - cSWaterKontur;
+            int byte_z = ByteX - cSWaterKontur;
             pGD_Hot_Tepl_Kontur = &(pGD_Hot_Tepl->Kontur[ByteX]);
             pGD_TControl_Tepl_Kontur =
-            &(pGD_TControl_Tepl->Kontur[WindWin[ByteZ]]);
+            &(pGD_TControl_Tepl->Kontur[WindWin[byte_z]]);
             pGD_Hot_Hand_Kontur = &GD.Hot.Tepl[fnTepl].HandCtrl[cHSmMixVal
-                                                                + WindWin[ByteZ]];
+                                                                + WindWin[byte_z]];
 
             if (pGD_TControl_Tepl_Kontur->TPause)
             {

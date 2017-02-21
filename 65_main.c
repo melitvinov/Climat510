@@ -1,9 +1,3 @@
-/*============================================
-        ---Проект 324 с 17.11.2003
-        --- Проект F319 ---
-        Файл "k_main.c"
-        Главный цикл программы
-----------------------------------------------*/
 #include "keyboard.h"
 
 int  DestSize;
@@ -128,21 +122,10 @@ void main(void)
 {
     char    timeDog;
     keyboardSetBITKL(0);
-    //BITKL=0;
 
     ClrAllOutIPCDigit();
     Init_STM32();
 
-#ifdef SumRelay48
-    //Reg48ToI2C();
-    //OutRelay88();
-#else
-#ifdef SumRelay40
-    OutRelay40();
-#else
-    OutRelay24();
-#endif
-#endif
     InitLCD();
 
 #ifdef SumExtCG

@@ -35,12 +35,12 @@ bool     BlkW;
 
 void in_val(void);
 
-extern s16 ByteX;
 extern char GrafView;
 extern const uchar Mon[];
 extern char lcdbuf[];
 
-void SetValue(int vVal) {
+void SetValue(int vVal)
+{
     if (ValSize == 1)
         (*(unsigned char *) AdrVal) = (unsigned char) vVal;
     if (ValSize == 2)
@@ -146,7 +146,8 @@ void KeyBoard(void) {
 }
 */
 
-void KeyBoard(void) {
+void KeyBoard(void)
+{
 //        GD.TControl.tAutoInf=GD.Control.AutoInf;
     if (GrafView)
         GrafView = 1;
@@ -237,10 +238,8 @@ void w_txt(const char *bu)
  }
  */
 
-/*---------------------------------------------------
- Вывод чисел в буфер
- ----------------------------------------------------*/
-void w_int(void *bu, char frmt) {
+void w_int(void *bu, char frmt, int16_t param)
+{
     uint16_t vre;
     unsigned char vrel;
     uchar i;
@@ -274,8 +273,8 @@ void w_int(void *bu, char frmt) {
         break;
     case bS:
         if (!BlkW)
-            SaveChar = ByteX;
-        if (ByteX & (*(char *) bu))
+            SaveChar = param;
+        if (param & (*(char *) bu))
             lcdbuf[Ad_Buf++] = '1';
         else
             lcdbuf[Ad_Buf++] = '0';
@@ -428,7 +427,8 @@ void w_int(void *bu, char frmt) {
 /*---------------------------------------------------
  Ввод числа в буфер и переменную
  ----------------------------------------------------*/
-void in_val(void) {
+void in_val(void)
+{
     uint16_t vre;
     unsigned char vrel;
     uchar i;

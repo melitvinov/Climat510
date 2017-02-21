@@ -38,6 +38,7 @@ SRC += 405_Menu.c
 # temporary hacks
 SRC += climdefstuff.c
 SRC += 405_cfg.c
+SRC += main_consts.c
 
 CINCS += . stm_my/inc stm_lib/inc cmsis_boot cmsis keyboard
 

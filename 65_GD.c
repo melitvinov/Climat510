@@ -1,6 +1,7 @@
 
 #include "405_memory.h"
 #include "65_gd.h"
+#include "defs.h"
 #include "climdefstuff.h"
 
 /* ======== Глобальный блок данных=============*/

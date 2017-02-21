@@ -3,6 +3,8 @@
 #define cSIOFazaPause	3
 #define cSIOFazaEnd		4
 
+#define cNumValSiodMax	4
+
 uint16_t fnSIOfaza[8];
 uint16_t fnSIOpumpOut[8];
 uint16_t fnSIOvelvOut[8];

@@ -213,7 +213,6 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
         if (!bZad)
         {
             ByteX=0;
-            ByteZ=0;
             if (IntZ<GD.TuneClimate.sc_TVOutClose)
                 pScr->Mode=1;
             if ((IntZ>GD.TuneClimate.sc_TVOutClose+200)||(!GD.TuneClimate.sc_TVOutClose))
@@ -319,7 +318,6 @@ void LaunchVent(char fnTepl)
     else
         pGD_TControl_Tepl->OutFan=0;
 
-    ByteZ=0;
     if ((!pGD_Hot_Tepl->AllTask.Vent)||((*(pGD_Hot_Hand+cHSmWinN)).Position+(*(pGD_Hot_Hand+cHSmWinS)).Position>GD.TuneClimate.f_BlockFan))
     {
         pGD_TControl_Tepl->Vent=0;
@@ -465,7 +463,6 @@ void RegWorkDiskr(char fHSmReg)
         tMech-=100;
     if (tMech<0) tMech=0;
     IntY=0;
-    ByteZ=0;
 
 
     if (pGD_Control_Tepl->co_model==3)

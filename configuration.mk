@@ -44,7 +44,7 @@ TARG_DIR := $(CFG)/out
 TOOLS_DIR := ../tools
 
 # Defines to pass to compiler
-CDEFS := -D__$(CFG) -D__FLOAT_PRINTF -D_FW_VER='$(FW_VER)'
+CDEFS := -DAGAPOVSKIY_DOUBLE_VALVE -DDEBUG
 
 # Additional libraries
 LIBS := -lm

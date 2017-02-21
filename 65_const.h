@@ -31,10 +31,6 @@
 #define NameProg        "\310\252\245TO-K\247\245MAT\311"
 #define Proect          "FC325-K-II-"
 
-#ifdef ExtRegistry
-    #define SumRelay40
-#endif
-
 #define	cMaxStopI		20
 
 #define cResetCritery	150

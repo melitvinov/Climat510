@@ -4,15 +4,13 @@
 
 
 
-
-
-long        LngX,LngY;
-
-int16_t     IntX,IntY,IntZ;
+int16_t IntX;
+int16_t IntY;
+int16_t IntZ;
 
 int8_t      bWaterReset[16];
-//uchar   	ByteW,ByteY,ByteX,ByteZ;
-int16_t     ByteW,ByteY,ByteX,ByteZ;
+int16_t     ByteY;
+int16_t     ByteX;
 uchar       nReset;
 
 uchar       not=230,ton=3,ton_t=15;

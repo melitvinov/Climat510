@@ -7,13 +7,6 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_iwdg.h"
 
-//#define code
-
-//typedef uint16_t uint;
-//typedef uint8_t uchar;
-//typedef uint8_t bit;
-
-
 #define SETEA	__enable_irq()
 #define CLREA	__disable_irq()
 
@@ -35,7 +28,7 @@
 void GetRTC(void);
 void SetRTC(void);
 
-void w_int (void *bu,char frmt);
+void w_int(void *bu, char frmt, int16_t param);
 void in_val (void);
 // Прототипы функций
 void InitBlockEEP(void);

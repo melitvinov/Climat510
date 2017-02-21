@@ -502,12 +502,12 @@ void TimeToBuf(void)
     BlkW=1;
     Ad_Buf=PozTime;
 //    buf[Ad_Buf++]=' ';
-    w_int(&CtrTime,SSdSS);
+    w_int(&CtrTime,SSdSS, 0);
     lcdbuf[Ad_Buf++]=':';
     lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
     lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     Ad_Buf++;
-    w_int(&CtrData,DsMsY);
+    w_int(&CtrData,DsMsY, 0);
 }
 
 void VideoSost(void)
@@ -520,10 +520,10 @@ void VideoSost(void)
     // Ad_Buf=Str4;
 /*    if (ds18b20_ReadROM())
         Ad_Buf+=2;
-    w_int(&Buf1W[0],StStStS);
+    w_int(&Buf1W[0],StStStS, 0);
         buf[Ad_Buf++]='-';
-    w_int(&Buf1W[4],StStStS);
-    w_int(&SumAnswers,SSSS);*/
+    w_int(&Buf1W[4],StStStS, 0);
+    w_int(&SumAnswers,SSSS, 0);*/
     pmInfoProg405();
     SendBlock(&lcdbuf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
 //    pmInfoProg405();
@@ -531,7 +531,7 @@ void VideoSost(void)
 //	w_txt(I2C1_Buffer_Tx);
 //    w_txt(I2C1_Buffer_Rx);
 
-//    w_int(&GlobData,SSSS);
+//    w_int(&GlobData,SSSS, 0);
     //w_txt()
     //SendBlock(&buf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
 }

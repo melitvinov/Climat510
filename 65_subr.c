@@ -2,6 +2,9 @@
 
 // XXX: for func prototypes
 #include "stm32f10x_RS485Master.h"
+#include "main_consts.h"
+
+#include "405_ClimDef.h"
 
 // XXX: dirty, but ok for now
 #include "65_const.c"

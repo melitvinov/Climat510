@@ -27,6 +27,11 @@ static unsigned char myip[4] = {192,168,1,231};
 static uint16_t    NMinPCOut;
 static uint16_t* IWDG_Reset;
 
+#warning "this crap is for isolation"
+extern eTepl *pGD_Hot_Tepl;
+extern eTControlTepl *pGD_TControl_Tepl;
+extern eSensLevel *pGD_Level_Tepl;
+
 void stm32f10x_Rootines_reset_NMinPCOut()
 {
     NMinPCOut = 0;
@@ -258,10 +263,7 @@ void InitRTC(void)
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
 
-    for (i=0;i<15000;i++)
-    {
-        ;
-    }
+    // XXX: here was an unworking delay
 
 //	RCC_LSEConfig(RCC_LSE_ON);
 //	while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) { ; }
@@ -370,29 +372,16 @@ void OutReg()
 
 void WriteToFRAM()
 {
-    char i;
-    uint16_t fsizeSend;
-    InitBlockEEP();  /*подпрограмма в GD */
-
+    InitBlockEEP();
     SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
-
     SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(eTControl)+sizeof(eLevel));
-//	SendBlockFRAM(0,(uchar*)(&GD),sizeof(GD));
-//	SendBlockFRAM(sizeof(GD),&BlockEEP,sizeof(BlockEEP));
 }
 
 void ReadFromFRAM()
 {
-    char i;
-    uint16_t fsizeSend;
-    InitBlockEEP();  /*подпрограмма в GD */
+    InitBlockEEP();
     RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
-//	ClrDog;
     RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(GD.TControl)+sizeof(eLevel));
-    //RecvBlockFRAM(0,(uchar*)(&GD),sizeof(GD));
-//	RecvBlockFRAM(0,(uchar*)(&GD),sizeof(GD));
-
-//	RecvBlockFRAM(sizeof(GD),&BlockEEP,sizeof(BlockEEP));
 
 }
 
@@ -514,27 +503,11 @@ void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPau
     {
         if ((*Mes>*ValueS+50)||(*Mes<*ValueS-50))
         {
-            SetBit(ftemp->RCS,cbNotGoodSens);
+            ftemp->RCS |= cbNotGoodSens;
             *Mes=*ValueS;
         }
     }*/
 }
-
-#warning "this crap is for isolation"
-extern eTepl *pGD_Hot_Tepl;
-extern eTControlTepl *pGD_TControl_Tepl;
-extern eSensLevel *pGD_Level_Tepl;
-#warning "pizdets"
-extern int16_t IntX;
-extern int16_t IntY;
-extern int16_t IntZ;
-extern long LngX;
-extern long LngY;
-// XXX: looks like there are a lurking overflows and dragons )
-extern int16_t ByteW;
-extern int16_t ByteY;
-extern int16_t ByteX;
-extern int16_t ByteZ;
 
 void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 {
@@ -566,7 +539,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     if (full)
     {
         if (((*uS)<nameS->uMin)||((*uS)>nameS->uMax))
-            SetBit(valueS->RCS,cbMinMaxUSens);
+            valueS->RCS |= cbMinMaxUSens;
     }
     if (Mes < nameS->Min)
     {
@@ -574,7 +547,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
             Mes=nameS->Min;
         else
         {
-            SetBit(valueS->RCS,cbMinMaxVSens);
+            valueS->RCS |= cbMinMaxVSens;
             Mes=0;
         }
     }
@@ -584,10 +557,11 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
             Mes=nameS->Max;
         else
         {
-            SetBit(valueS->RCS,cbMinMaxVSens);
+            valueS->RCS |= cbMinMaxVSens;
             Mes=0;
         }
     }
+
     switch (nameS->TypeMidl)
     {
     case cNoMidlSens:
@@ -595,17 +569,20 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     case c2MidlSens:
         (*llS)=0;
     case c3MidlSens:
-        if (met) break;
-        IntX=(*llS);
-        IntY=(*lS);
-        (*llS)=IntY;
-        (*lS)=Mes;
-        IntZ=0;
-        if (Mes) IntZ++;
-        if (IntX) IntZ++;
-        if (IntY) IntZ++;
-        if (IntZ) Mes=(Mes+IntX+IntY)/IntZ;
+        {
+            if (met) break;
 
+            int16_t int_x = (*llS);
+            int16_t int_y = (*lS);
+            (*llS)=int_y;
+            (*lS)=Mes;
+            int16_t int_z = 0;
+            if (Mes) int_z++;
+            if (int_x) int_z++;
+            if (int_y) int_z++;
+            if (int_z) Mes=(Mes+int_x+int_y)/int_z;
+
+        }
         break;
     case cExpMidlSens:
         if (!(*lS)) (*lS)=Mes;
@@ -617,30 +594,30 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
     if (nameS->TypeSens==cTypeFram)
     {
-        if (!YesBit(pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS,cMSBusyMech))
-            SetBit(pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS,cMSFreshSens);
+        if (! (pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
+            pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
     if (nameS->TypeSens==cTypeScreen)
     {
         if (!YesBit(pGD_TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSBusyMech))
-            SetBit(pGD_TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSFreshSens);
+            pGD_TControl_Tepl->MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
 
     }
     valueS->Value=Mes;
     /*ClrBit(valueS->RCS,(cbDownAlarmSens+cbUpAlarmSens));
     if ((levelS[cSmDownCtrlLev])&&(Mes <= levelS[cSmDownCtrlLev]))
-        SetBit(valueS->RCS,cbDownCtrlSens);
+        valueS->RCS |= cbDownCtrlSens;
     if ((levelS[cSmUpCtrlLev])&&(Mes >= levelS[cSmUpCtrlLev]))
-        SetBit(valueS->RCS,cbUpCtrlSens);
+        valueS->RCS |= cbUpCtrlSens;
     if ((levelS[cSmDownAlarmLev])&&(Mes <= levelS[cSmDownAlarmLev]))
     {
-        SetBit(valueS->RCS,cbDownAlarmSens);
+        valueS->RCS |= cbDownAlarmSens;
         return;
     }
     if ((levelS[cSmUpAlarmLev])&&(Mes >= levelS[cSmUpAlarmLev]))
     {
-        SetBit(valueS->RCS,cbUpAlarmSens);
+        valueS->RCS |= cbUpAlarmSens;
         return;
     }*/
 }
@@ -683,11 +660,10 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
             fuSens[0]=Mes;
 //			if(Mes>5000)
 //				Mes=0;
-            LngX=((long)fCalSens->V1-(long)fCalSens->V0)
+            long long_x = ((long)fCalSens->V1-(long)fCalSens->V0)
                  *((long)Mes-(long)fCalSens->U0);
-            Mes=(int16_t)(LngX/((long)fCalSens->U1-(long)fCalSens->U0));
+            Mes=(int16_t)(long_x/((long)fCalSens->U1-(long)fCalSens->U0));
             Mes=Mes+fCalSens->V0;
-            ByteX=nSensor;
             CheckSensLevsNew(nTepl,nSens,1,met,Mes);
             return;
         }
@@ -824,7 +800,7 @@ void SetDiskrSens(void)
             if (GetDiskrIPC(GetInputConfig(fnTepl,nSens),&nErr))
                 pGD_Hot_Tepl->DiskrSens[0]|=1<<nSens;
 /*		if (YesBit(RegLEV,(cSmLightLev1<<fnTepl)))
-            SetBit(pGD_Hot_Tepl->DiskrSens[0],cSmLightDiskr);
+            pGD_Hot_Tepl->DiskrSens[0] |= cSmLightDiskr;
 */
     }
 

@@ -844,9 +844,9 @@ void    SetMixValvePosition(void)
 
         IntX=pGD_Hot_Tepl_Kontur->Do-pGD_TControl_Tepl_Kontur->SensValue;
         //(*IntVal)=(*IntVal)+IntX;
-        LngY=pGD_ConstMechanic->ConstMixVal[ByteX].v_PFactor;
-        LngY=LngY*IntX;//(*IntVal);
-        IntY=(int16_t)(LngY/10000);
+        long long_y=pGD_ConstMechanic->ConstMixVal[ByteX].v_PFactor;
+        long_y=long_y*IntX;//(*IntVal);
+        IntY=(int16_t)(long_y/10000);
         //if (!IntY) continue;
         IntZ=(*IntVal)/100;
         //IntZ=(*(pGD_Hot_Hand_Kontur+cHSmMixVal)).Position;
@@ -1205,9 +1205,9 @@ void DoMechanics(char fnTepl)
                     }
 
 
-                    LngX=MBusy->Sens->Value;
-                    LngX*=pGD_ConstMechanic_Mech->v_TimeMixVal;//MBusy->CalcTime;
-                    LngX/=1000;
+                    long long_x = MBusy->Sens->Value;
+                    long_x *= pGD_ConstMechanic_Mech->v_TimeMixVal;//MBusy->CalcTime;
+                    long_x /= 1000;
 
                     if (abs(MBusy->Sens->Value-MBusy->PrevTask)<=IntY)
                     {
@@ -1223,7 +1223,7 @@ void DoMechanics(char fnTepl)
                     }
                     else
                     {
-                        MBusy->TimeRealMech=(int)LngX;
+                        MBusy->TimeRealMech=(int)long_x;
                     }
                 }
                 MBusy->PrevTask=pGD_Hot_Hand_Kontur->Position*10;
@@ -1243,10 +1243,10 @@ void DoMechanics(char fnTepl)
 
         if ((!MBusy->PauseMech)||(YesBit(pGD_Hot_Hand_Kontur->RCS,cbManMech)))
         {
-            LngX=pGD_Hot_Hand_Kontur->Position;
-            LngX*=pGD_ConstMechanic_Mech->v_TimeMixVal;
-            LngX/=100;
-            MBusy->TimeSetMech=(int)(LngX);
+            long long_x =pGD_Hot_Hand_Kontur->Position;
+            long_x *= pGD_ConstMechanic_Mech->v_TimeMixVal;
+            long_x /= 100;
+            MBusy->TimeSetMech=(int)(long_x);
 /*			if (YesBit(pGD_Hot_Hand_Kontur->RCS,cbResetMech))
             {
                 MBusy->TimeRealMech=MBusy->TimeSetMech;
@@ -1697,16 +1697,6 @@ void Control(void)
         ResumeOutIPCDigit();
 
     }
-    #ifdef SumRelay48
-    //Reg48ToI2C();
-    //OutRelay88();
-    #else
-        #ifdef SumRelay40
-    OutRelay40();
-        #else
-    OutRelay24();
-        #endif
-    #endif
 /*--------------------------------------------------------
 если минута */
 
