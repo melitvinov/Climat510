@@ -4,8 +4,6 @@
 #include "stm32f10x_RS485Master.h"
 #include "main_consts.h"
 
-#include "405_ClimDef.h"
-
 // XXX: dirty, but ok for now
 #include "65_const.c"
 
@@ -14,128 +12,16 @@ static int16_t  airHeatPause[8];
 static int16_t  airHeatTimeWork[8];
 static int16_t  airHeatOnOff[8];
 
-#define NameSens(ns)       w_txt(NameASens[ns].Name)
-#define EdSens(ns)         TxtEd(ns)
+extern int8_t  bWaterReset[16];
 
-#warning íå èñïîëüçóåòñÿ òåïåğü
-#define CURRENT_TEMP1_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value)
-#define CURRENT_TEMP2_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value)
-#define CURRENT_TEMP3_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens3].Value)
-#define CURRENT_TEMP4_VALUE (pGD_Hot_Tepl->InTeplSens[cSmTSens4].Value)
-
-/*-------------------------------------------
-        Âûâîä åäèíèö èçìåğåíèÿ
--------------------------------------------- */
-/*void PrintEd(char uEd) {
-   switch(uEd){
-   case cumV: w_txt("\274B");
-        break;
-   case cuPa: w_txt("\250a");
-        break;
-   case cuMSec: w_txt("\274/c");
-        break;
-   case cuGr: w_txt("\337");
-        break;
-   case cuT: w_txt("\337C");
-        break;
-   case cuPr: w_txt("%");
-        break;
-   case cuBt: w_txt("B\277");
-        break;
-   case cuDj: w_txt("\340\266");
-        break;
-   case cuMM: w_txt("\274\274");
-        break;
-   case cuPpm: w_txt("ppm");
-        break;
-
-   }
-} */
-
-#define	DS18B20_READ_ADDR	0x33
-#define	DS18B20_SEND_ADDR	0x55
-#define	DS18B20_CONVERTT	0x44
-#define	DS18B20_READ_TEMP	0xBE
-#define	DS18B20_SEND_EEPROM	0x4E
-#define	DS18B20_FILL_EEPROM	0x48
-#define	DS18B20_SKIP_ROM	0xCC
-
-
-/*
-int16_t getÑSmRHSens()
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmRHSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmInLightSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmInLightSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmInLightSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmCOSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmCOSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmCOSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmRoofSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmRoofSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmRoofSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmGlassSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmWinNSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmWinSSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmScreenSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmWinNSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmWinNSens].Value;
-    else
-        return 0;
-}
-
-int16_t getÑSmWaterSens(void)
-{
-    if (pGD_Hot_Tepl->InTeplSens[cSmWaterSens].RCS == 0)
-        return pGD_Hot_Tepl->InTeplSens[cSmWaterSens].Value;
-    else
-        return 0;
-}
-*/
+extern uchar nReset;
 
 int16_t teplTmes[8][6];
+
+
+extern int16_t IntX;
+extern int16_t IntY;
+extern int16_t IntZ;
 
 int16_t getTempSensor(char fnTepl, char sensor)
 {
@@ -996,33 +882,33 @@ void InitGD(char fTipReset)
 
     GD.Control.NFCtr=NumCtr;
 
-    for (ByteX=0;ByteX<cConfSMetSens;ByteX++)
+    for (int i=0;i<cConfSMetSens;i++)
     {
-        eCS=&GD.Cal.MeteoSens[ByteX];
-        eCS->V0=NameSensConfig[ByteX+cConfSSens].vCal[0];
-        eCS->V1=NameSensConfig[ByteX+cConfSSens].vCal[1];
-        eCS->U0=NameSensConfig[ByteX+cConfSSens].uCal[0];
-        eCS->U1=NameSensConfig[ByteX+cConfSSens].uCal[1];
-        eCS->Type=NameSensConfig[ByteX+cConfSSens].TypeInBoard;
-        eCS->Output=NameSensConfig[ByteX+cConfSSens].Output;
+        eCS=&GD.Cal.MeteoSens[i];
+        eCS->V0=NameSensConfig[i+cConfSSens].vCal[0];
+        eCS->V1=NameSensConfig[i+cConfSSens].vCal[1];
+        eCS->U0=NameSensConfig[i+cConfSSens].uCal[0];
+        eCS->U1=NameSensConfig[i+cConfSSens].uCal[1];
+        eCS->Type=NameSensConfig[i+cConfSSens].TypeInBoard;
+        eCS->Output=NameSensConfig[i+cConfSSens].Output;
         //eCS->Input=OutPortsAndInputs[ByteX][0];
         //eCS->nInput=OutPortsAndInputs[ByteX][1];
     }
-    for (ByteX=0;ByteX<cSTepl;ByteX++)
+    for (int i=0;i<cSTepl;i++)
     {
-        SetPointersOnTepl(ByteX);
+        SetPointersOnTepl(i);
         for (IntX=0;IntX<cSStrategy;IntX++)
         {
-            for (ByteY=0;ByteY<sizeof(eStrategy);ByteY++)
-                (*((&(pGD_Strategy_Tepl[IntX].TempPower))+ByteY))=(*((&DefStrategy[IntX].TempPower)+ByteY));
+            for (int byte_y=0;byte_y<sizeof(eStrategy);byte_y++)
+                (*((&(pGD_Strategy_Tepl[IntX].TempPower))+byte_y))=(*((&DefStrategy[IntX].TempPower)+byte_y));
         }
 
-        bWaterReset[ByteX]=1;
+        bWaterReset[i]=1;
         for (IntX=0;IntX<SUM_NAME_CONF;IntX++)
-            pGD_MechConfig->RNum[IntX]=MechC[ByteX][IntX];
+            pGD_MechConfig->RNum[IntX]=MechC[i][IntX];
 
         for (IntX=0;IntX<cConfSSystem;IntX++)
-            pGD_MechConfig->Systems[IntX]=InitSystems[ByteX][IntX];
+            pGD_MechConfig->Systems[IntX]=InitSystems[i][IntX];
 
         for (IntX=0;IntX<cSRegCtrl;IntX++)
         {
@@ -1041,15 +927,15 @@ void InitGD(char fTipReset)
             //pGD_ConstMechanic->ConstMixVal[IntX].Power=(char)DefMechanic[3];
         }
 /* Ïåğâîíà÷àëüíà íàñòğîéêà êàëèáğîâîê */
-        for (ByteY=0;ByteY<cConfSSens;ByteY++)
+        for (int byte_y=0;byte_y<cConfSSens;byte_y++)
         {
-            eCS=&GD.Cal.InTeplSens[ByteX][ByteY];
-            eCS->V0=NameSensConfig[ByteY].vCal[0];
-            eCS->V1=NameSensConfig[ByteY].vCal[1];
-            eCS->U0=NameSensConfig[ByteY].uCal[0];
-            eCS->U1=NameSensConfig[ByteY].uCal[1];
-            eCS->Output=NameSensConfig[ByteY].Output;
-            eCS->Type=NameSensConfig[ByteY].TypeInBoard;
+            eCS=&GD.Cal.InTeplSens[i][byte_y];
+            eCS->V0=NameSensConfig[byte_y].vCal[0];
+            eCS->V1=NameSensConfig[byte_y].vCal[1];
+            eCS->U0=NameSensConfig[byte_y].uCal[0];
+            eCS->U1=NameSensConfig[byte_y].uCal[1];
+            eCS->Output=NameSensConfig[byte_y].Output;
+            eCS->Type=NameSensConfig[byte_y].TypeInBoard;
             //eCS->nInput=InPortsAndInputs[ByteX][ByteY][1];
         }
     }

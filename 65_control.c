@@ -151,7 +151,20 @@ int   PastPerRas;
 int   TecPerRas;
 uchar   DemoMode;
 
+int8_t  bWaterReset[16];
+
 eMechBusy *MBusy;
+
+uchar       bNight;
+
+
+const uchar   Mon[]={31,28,31,30,31,30,31,31,30,31,30,31};
+
+// XXX: these 3 'registers' are used in control
+int16_t IntX;
+int16_t IntY;
+int16_t IntZ;
+
 
 /*!
 \brief Коррекция времени старта по типу старта
@@ -533,9 +546,9 @@ void AllTaskAndCorrection(void)
 void SetIfReset(void)
 {
 
-    for (ByteX=0;ByteX<cSWaterKontur;ByteX++)
+    for (int i = 0; i < cSWaterKontur; i++)
     {
-        SetPointersOnKontur(ByteX);
+        SetPointersOnKontur(i);
         pGD_TControl_Tepl_Kontur->DoT=pGD_TControl_Tepl_Kontur->SensValue*10;//((long int)pGD_Hot_Tepl->InTeplSens[ByteX+cSmWaterSens].Value)*100;
         pGD_TControl_Tepl_Kontur->PumpPause=cPausePump;
         pGD_TControl_Tepl_Kontur->PumpStatus=1;
@@ -823,18 +836,18 @@ void __cNextTCalc(char fnTepl)
 void    SetMixValvePosition(void)
 {
     int16_t *IntVal;
-    for (ByteX=0;ByteX<cSWaterKontur;ByteX++)
+    for (int i=0;i<cSWaterKontur;i++)
     {
-        SetPointersOnKontur(ByteX);
+        SetPointersOnKontur(i);
         if (YesBit((*(pGD_Hot_Hand_Kontur+cHSmMixVal)).RCS,(/*cbNoMech+*/cbManMech))) continue;
-        IntVal=&(pGD_TControl_Tepl->IntVal[ByteX]);
+        IntVal=&(pGD_TControl_Tepl->IntVal[i]);
         if (!pGD_TControl_Tepl_Kontur->PumpStatus)
         {
             (*(pGD_Hot_Hand_Kontur+cHSmMixVal)).Position=0;
             continue;
         }
         ogrMin(&(pGD_TControl_Tepl_Kontur->TPause),0);// pGD_TControl_Tepl->Kontur[ByteX].TPause=0;
-        if (YesBit(pGD_TControl_Tepl->MechBusy[ByteX].RCS,cMSBusyMech)) continue;
+        if (YesBit(pGD_TControl_Tepl->MechBusy[i].RCS,cMSBusyMech)) continue;
         if (pGD_TControl_Tepl_Kontur->TPause)
         {
             pGD_TControl_Tepl_Kontur->TPause--;
@@ -844,7 +857,7 @@ void    SetMixValvePosition(void)
 
         IntX=pGD_Hot_Tepl_Kontur->Do-pGD_TControl_Tepl_Kontur->SensValue;
         //(*IntVal)=(*IntVal)+IntX;
-        long long_y=pGD_ConstMechanic->ConstMixVal[ByteX].v_PFactor;
+        long long_y=pGD_ConstMechanic->ConstMixVal[i].v_PFactor;
         long_y=long_y*IntX;//(*IntVal);
         IntY=(int16_t)(long_y/10000);
         //if (!IntY) continue;
@@ -863,19 +876,20 @@ void    SetMixValvePosition(void)
             IntZ=0;
         }
         else
-            (*IntVal)+=(int16_t)((((long)IntX)*pGD_ConstMechanic->ConstMixVal[ByteX].v_IFactor)/100);
+            (*IntVal)+=(int16_t)((((long)IntX)*pGD_ConstMechanic->ConstMixVal[i].v_IFactor)/100);
 
         //ogrMax(&IntZ,100);//if (IntZ>100) IntZ=100;
         //ogrMin(&IntZ,0);//if (IntZ<0)	IntZ=0;
         (*(pGD_Hot_Hand_Kontur+cHSmMixVal)).Position=(char)(IntZ);
     }
 }
+
 void    DoPumps(void)
 {
-    for (ByteX=0;ByteX<cSWaterKontur;ByteX++)
+    for (int i=0; i < cSWaterKontur; i++)
     {
-        if (!(YesBit((*(pGD_Hot_Hand+cHSmPump+ByteX)).RCS,(/*cbNoMech+*/cbManMech))))
-            (*(pGD_Hot_Hand+cHSmPump+ByteX)).Position=pGD_TControl_Tepl->Kontur[ByteX].PumpStatus;
+        if (!(YesBit((*(pGD_Hot_Hand+cHSmPump+i)).RCS,(/*cbNoMech+*/cbManMech))))
+            (*(pGD_Hot_Hand+cHSmPump+i)).Position=pGD_TControl_Tepl->Kontur[i].PumpStatus;
     }
 
 }
@@ -919,8 +933,8 @@ void    DoLights(void)
 
 void    SetSensOnMech(void)
 {
-    for (ByteX=0;ByteX<cSRegCtrl;ByteX++)
-        pGD_TControl_Tepl->MechBusy[ByteX].Sens=0;
+    for (int i=0;i<cSRegCtrl;i++)
+        pGD_TControl_Tepl->MechBusy[i].Sens=0;
     pGD_TControl_Tepl->MechBusy[cHSmWinN].Sens=&pGD_Hot_Tepl->InTeplSens[cSmWinNSens];
     pGD_TControl_Tepl->MechBusy[cHSmWinS].Sens=&pGD_Hot_Tepl->InTeplSens[cSmWinSSens];
     pGD_TControl_Tepl->MechBusy[cHSmScrTH].Sens=&pGD_Hot_Tepl->InTeplSens[cSmScreenSens];
@@ -990,17 +1004,17 @@ void SetAlarm(void)
             pGD_TControl_Tepl->bAlarm=100;
         }
 
-        for (ByteX=0;ByteX<cConfSSens;ByteX++)
+        for (int i=0;i<cConfSSens;i++)
         {
-            if (YesBit(pGD_Hot_Tepl->InTeplSens[ByteX].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+            if (YesBit(pGD_Hot_Tepl->InTeplSens[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
             {
                 __SetBitOutReg(fnTepl,cHSmAlarm,0,0);
                 pGD_TControl_Tepl->bAlarm=100;
             }
         }
     }
-    for (ByteX=0;ByteX<cConfSMetSens;ByteX++)
-        if (YesBit(GD.Hot.MeteoSensing[ByteX].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+    for (int i=0;i<cConfSMetSens;i++)
+        if (YesBit(GD.Hot.MeteoSensing[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
         {
             __SetBitOutReg(cSmZone1,cHSmAlarm,0,0);
             GD.TControl.Tepl[cSmZone1].bAlarm=100;
@@ -1018,17 +1032,17 @@ void SetDiskr(char fnTepl)
     if (!(YesBit((*(pGD_Hot_Hand+cHSmAHUSpeed2)).RCS,cbManMech)))
         (*(pGD_Hot_Hand+cHSmAHUSpeed2)).Position=pGD_Hot_Tepl->Kontur[cSmKontur4].Do/10;
 
-    for (ByteX=cHSmPump;ByteX<cHSmRegs;ByteX++)
+    for (int i=cHSmPump;i<cHSmRegs;i++)
     {
         //if ((ByteX==cHSmSIOVals)||(ByteX==cHSmLight)) continue;
-        if ((ByteX==cHSmSIOPump)||(ByteX==cHSmSIOVals)||(ByteX==cHSmLight)) continue;
+        if ((i==cHSmSIOPump)||(i==cHSmSIOVals)||(i==cHSmLight)) continue;
 
-        __SetBitOutReg(fnTepl,ByteX,1,0);
+        __SetBitOutReg(fnTepl,i,1,0);
 
-        if (YesBit((*(pGD_Hot_Hand+ByteX)).Position,0x01))
-            __SetBitOutReg(fnTepl,ByteX,0,0);
-        if (((ByteX==cHSmHeat)||(ByteX==cHSmVent))&&(YesBit((*(pGD_Hot_Hand+ByteX)).Position,0x02)))
-            __SetBitOutReg(fnTepl,ByteX,0,1);
+        if (YesBit((*(pGD_Hot_Hand+i)).Position,0x01))
+            __SetBitOutReg(fnTepl,i,0,0);
+        if (((i==cHSmHeat)||(i==cHSmVent))&&(YesBit((*(pGD_Hot_Hand+i)).Position,0x02)))
+            __SetBitOutReg(fnTepl,i,0,1);
     }
     nLight=0;
     if (((uchar)((*(pGD_Hot_Hand+cHSmLight)).Position))>100) (*(pGD_Hot_Hand+cHSmLight)).Position=100;
@@ -1091,10 +1105,10 @@ void SetDiskr(char fnTepl)
 
     }
 
-    for (ByteX=0;ByteX<tMaxLight;ByteX++)
+    for (int i=0;i<tMaxLight;i++)
     {
-        if (YesBit(nLight,(0x01<<ByteX)))
-            __SetBitOutReg(fnTepl,cHSmLight,0,ByteX+1);
+        if (YesBit(nLight,(0x01<<i)))
+            __SetBitOutReg(fnTepl,cHSmLight,0,i+1);
 
     }
 
@@ -1102,55 +1116,55 @@ void SetDiskr(char fnTepl)
         __SetBitOutReg(fnTepl,cHSmVent,0,0);
     if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).Position,0x01))
         __SetBitOutReg(fnTepl,cHSmHeat,0,0);*/
-    ByteX=1;
-    if (pGD_Control_Tepl->co_model>=2) ByteX=2;
+    int i=1;
+    if (pGD_Control_Tepl->co_model>=2) i=2;
 
     if ((pGD_TControl_Tepl->SetupRegs[0].On)
         &&(pGD_Control_Tepl->co_model))
-        __SetBitOutReg(fnTepl,cHSmCO2,0,ByteX);
+        __SetBitOutReg(fnTepl,cHSmCO2,0,i);
 
     // насос
     //__SetBitOutReg(fnTepl,cHSmSIOPump,1,0);
     if (YesBit((*(pGD_Hot_Hand+cHSmSIOPump)).Position,0x01))
         __SetBitOutReg(fnTepl,cHSmSIOPump,0,0);
 
-    for (ByteX=0;ByteX<4;ByteX++)
+    for (int i=0;i<4;i++)
     {
         IntX=1;
-        IntX<<=ByteX;
+        IntX<<=i;
         if (YesBit((*(pGD_Hot_Hand+cHSmSIOVals)).Position,IntX))
-            __SetBitOutReg(fnTepl,cHSmSIOVals,0,ByteX);
+            __SetBitOutReg(fnTepl,cHSmSIOVals,0,i);
     }
 
 #ifdef AGAPOVSKIY_DOUBLE_VALVE
     if (YesBit((*(pGD_Hot_Hand+cHSmSIOVals)).Position,0x02))
         __SetBitOutReg(fnTepl,cHSmAHUVals,0,0);
 #endif AGAPOVSKIY_DOUBLE_VALVE
-    for (ByteX=0;ByteX<5;ByteX++)
+    for (int i=0;i<5;i++)
     {
-        if (GD.Hot.Regs[ByteX])
-            __SetBitOutReg(fnTepl,ByteX+cHSmRegs,0,0);
+        if (GD.Hot.Regs[i])
+            __SetBitOutReg(fnTepl,i+cHSmRegs,0,0);
     }
 }
 
 void DoMechanics(char fnTepl)
 {
     char fErr;
-    for (ByteX=cHSmMixVal;ByteX<cHSmPump;ByteX++)
+    for (int i=cHSmMixVal;i<cHSmPump;i++)
     {
-        SetPointersOnKontur(ByteX);
+        SetPointersOnKontur(i);
 //		pGD_Hot_Hand_Kontur=pGD_Hot_Hand+ByteX;
-        MBusy=&(pGD_TControl_Tepl->MechBusy[ByteX]);
+        MBusy=&(pGD_TControl_Tepl->MechBusy[i]);
 
         if (pGD_Hot_Hand_Kontur->Position>100)
             pGD_Hot_Hand_Kontur->Position=100;
         if (pGD_Hot_Hand_Kontur->Position<0)
             pGD_Hot_Hand_Kontur->Position=0;
 
-        if ((ByteX==cHSmAHUSpeed1))
+        if ((i==cHSmAHUSpeed1))
         {
 //			Sound;
-            SetOutIPCReg(pGD_Hot_Hand_Kontur->Position,mtRS485,GD.MechConfig[fnTepl].RNum[ByteX],&fErr,&GD.FanBlock[fnTepl][0].FanData[0]);
+            SetOutIPCReg(pGD_Hot_Hand_Kontur->Position,mtRS485,GD.MechConfig[fnTepl].RNum[i],&fErr,&GD.FanBlock[fnTepl][0].FanData[0]);
             continue;
         }
 /*		GD.FanBlock[fnTepl][0].FanData[0].ActualSpeed=fnTepl*5;
@@ -1158,21 +1172,21 @@ void DoMechanics(char fnTepl)
         GD.FanBlock[fnTepl][1].FanData[1].ActualSpeed=fnTepl*5+2;
         GD.FanBlock[fnTepl][1].FanData[2].ActualSpeed=fnTepl*5+3;
 */
-        if ((ByteX==cHSmAHUSpeed2))
+        if ((i==cHSmAHUSpeed2))
         {
 //			Sound;
-            SetOutIPCReg(pGD_Hot_Hand_Kontur->Position,mtRS485,GD.MechConfig[fnTepl].RNum[ByteX],&fErr,&GD.FanBlock[fnTepl][1].FanData[0]);
+            SetOutIPCReg(pGD_Hot_Hand_Kontur->Position,mtRS485,GD.MechConfig[fnTepl].RNum[i],&fErr,&GD.FanBlock[fnTepl][1].FanData[0]);
             continue;
         }
 
 
-        if ((ByteX==cHSmCO2)&&(pGD_Control_Tepl->co_model==1)) continue;
+        if ((i==cHSmCO2)&&(pGD_Control_Tepl->co_model==1)) continue;
 
-        __SetBitOutReg(fnTepl,ByteX,1,0);
-        __SetBitOutReg(fnTepl,ByteX,1,1);
+        __SetBitOutReg(fnTepl,i,1,0);
+        __SetBitOutReg(fnTepl,i,1,1);
 
         ClrBit(MBusy->RCS,cMSBusyMech);
-        ByteY=0;
+        int byte_y = 0;
         if ((!YesBit(MBusy->RCS,cMSAlarm))&&(MBusy->Sens)&&(!YesBit(MBusy->Sens->RCS,cbNoWorkSens))&&(GD.TuneClimate.f_MaxAngle))
         {
             MBusy->PauseMech=10;
@@ -1237,7 +1251,7 @@ void DoMechanics(char fnTepl)
         {
             ClrBit(MBusy->RCS,cMSBlockRegs);
             MBusy->TimeRealMech=MBusy->TimeSetMech;
-            ByteY++;
+            byte_y++;
         }
 //Расчет
 
@@ -1270,20 +1284,20 @@ void DoMechanics(char fnTepl)
         if (MBusy->TimeSetMech>MBusy->TimeRealMech)
         {
             MBusy->TimeRealMech++;
-            __SetBitOutReg(fnTepl,ByteX,0,1);
+            __SetBitOutReg(fnTepl,i,0,1);
             SetBit(MBusy->RCS,cMSBusyMech);
             //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
-            ByteY++;
+            byte_y++;
         }
         if (MBusy->TimeSetMech<MBusy->TimeRealMech)
         {
             MBusy->TimeRealMech--;
-            __SetBitOutReg(fnTepl,ByteX,0,0);
+            __SetBitOutReg(fnTepl,i,0,0);
             SetBit(MBusy->RCS,cMSBusyMech);
             //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
-            ByteY++;
+            byte_y++;
         }
-        if (ByteY)
+        if (byte_y)
         {
             IntY=(int)pGD_ConstMechanic_Mech->v_MinTim;
 /*			if ((ByteX==cHSmWinN)||(ByteX==cHSmWinS))
@@ -1566,28 +1580,28 @@ void SetTepl(char fnTepl)
 void SubConfig(char fnTepl)
 {
     SetPointersOnTepl(fnTepl);
-    for (ByteX=0;ByteX<cHSmPump;ByteX++)
+    for (int i=0;i<cHSmPump;i++)
     {
-        SetPointersOnKontur(ByteX);
-        if (ByteX<cSKontur)
+        SetPointersOnKontur(i);
+        if (i<cSKontur)
         {
-            pGD_TControl_Tepl_Kontur->Separate=CheckSeparate(ByteX);
+            pGD_TControl_Tepl_Kontur->Separate=CheckSeparate(i);
             pGD_TControl_Tepl_Kontur->MainTepl=CheckMain(fnTepl);
 
             pGD_Hot_Hand_Kontur->RCS=
-            GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[ByteX].RCS;
+            GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[i].RCS;
             pGD_Hot_Hand_Kontur->Position=
-            GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[ByteX].Position;
-            if (ByteX<cSWaterKontur)
+            GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[i].Position;
+            if (i<cSWaterKontur)
             {
-                ByteY=ByteX+cHSmPump;
-                pGD_TControl_Tepl_Kontur->SensValue=pGD_Hot_Tepl->InTeplSens[ByteX+cSmWaterSens].Value;
-                pGD_Hot_Hand[ByteY].RCS=
-                GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[ByteY].RCS;
-                pGD_Hot_Hand[ByteY].Position=
-                GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[ByteY].Position;
+                int byte_y=i+cHSmPump;
+                pGD_TControl_Tepl_Kontur->SensValue=pGD_Hot_Tepl->InTeplSens[i+cSmWaterSens].Value;
+                pGD_Hot_Hand[byte_y].RCS=
+                GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[byte_y].RCS;
+                pGD_Hot_Hand[byte_y].Position=
+                GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[byte_y].Position;
                 pGD_TControl_Tepl_Kontur->SensValue=
-                GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[ByteX].SensValue;
+                GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[i].SensValue;
             }
         }
 
@@ -1811,19 +1825,19 @@ void Control(void)
     {
         GD.Hot.Time=0;
         GD.Hot.Data++;
-        ByteX=GD.Hot.Data/256;  /* это месц */
-        if (ByteX<=0)
+        int byte_x=GD.Hot.Data/256;  /* это месц */
+        if (byte_x<=0)
         {
-            ByteX=1;GD.Hot.Data=1;
+            byte_x=1;GD.Hot.Data=1;
         }
-        if ((GD.Hot.Data%256)>Mon[ByteX-1])
+        if ((GD.Hot.Data%256)>Mon[byte_x-1])
         {
-            if ((++ByteX)>12)
+            if ((++byte_x)>12)
             {
                 GD.Hot.Year++;
-                ByteX=1;
+                byte_x=1;
             }
-            GD.Hot.Data=(int)ByteX*256+1;
+            GD.Hot.Data=(int)byte_x*256+1;
         }
     }
     if (GD.TControl.Data!=GD.Hot.Data)      /*новые сутки*/

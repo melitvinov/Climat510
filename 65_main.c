@@ -8,6 +8,12 @@ char volatile mecPosArray[7];
 
 bool     B_video;
 
+uchar not=230;
+uchar ton=3;
+uchar ton_t=15;
+
+uchar nReset=25;
+
 void saveMech(char tCTepl)
 {
     mecPosArray[0] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position;
@@ -138,12 +144,13 @@ void main(void)
     Delay(1000000);
     Video();
     GD.Hot.News|=bKlTest;
-    ByteX=1;
+
+    int byte_x=1;
     GD.SostRS=OUT_UNIT;
     KeyboardProcess();
     if (keyboardGetBITKL())
-        ByteX=6;
-    TestMem(ByteX);
+        byte_x=6;
+    TestMem(byte_x);
     WTF0.Second=38;
     ClearAllAlarms();
     siodInit();

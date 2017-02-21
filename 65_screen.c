@@ -1,116 +1,4 @@
-/*!
-\brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
-@return int16_t Температура
-*/
-/*int16_t screenGetTempVent()
-{
-    int16_t	tempVent;
-    int16_t temp = 0;
-    int16_t i;
-        switch (pGD_Control_Tepl->sensT_vent)
-        {
-            case 0: // sensor temp 1
-                tempVent = CURRENT_TEMP1_VALUE;
-            break;
-            case 1: // sensor temp 2
-                tempVent = CURRENT_TEMP2_VALUE;
-            break;
-            case 2: // sensor temp 3
-                tempVent = CURRENT_TEMP3_VALUE;
-            break;
-            case 3: // sensor temp 4
-                tempVent = CURRENT_TEMP4_VALUE;
-            break;
-            case 4: // min
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempVent = temp;
-            }
-            break;
-            case 5: // max
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempVent = temp;
-            }
-            break;
-            case 6: // average
-            {
-                for (i=0;i<4;i++)
-                    temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
-                temp = temp / 4;
-                tempVent = temp;
-            }
-            break;
-        }
-        return tempVent;
-}*/
-
-/*!
-\brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
-@return int16_t Температура
-*/
-/*int16_t screenGetTempHeat()
-{
-    int16_t	tempHeat;
-    int16_t temp = 0;
-    int16_t i;
-        switch (pGD_Control_Tepl->sensT_heat)
-        {
-            case 0: // sensor temp 1
-                tempHeat = CURRENT_TEMP1_VALUE;
-            break;
-            case 1: // sensor temp 2
-                tempHeat = CURRENT_TEMP2_VALUE;
-            break;
-            case 2: // sensor temp 3
-                tempHeat = CURRENT_TEMP3_VALUE;
-            break;
-            case 3: // sensor temp 4
-                tempHeat = CURRENT_TEMP4_VALUE;
-            break;
-            case 4: // min
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp > pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempHeat = temp;
-            }
-            break;
-            case 5: // max
-            {
-                temp = pGD_Hot_Tepl->InTeplSens[cSmTSens1].Value;
-                for (i=1;i<4;i++)
-                {
-                    if (temp < pGD_Hot_Tepl->InTeplSens[i].Value)
-                        temp = pGD_Hot_Tepl->InTeplSens[i].Value;
-                }
-                tempHeat = temp;
-            }
-            break;
-            case 6: // average
-            {
-                for (i=0;i<4;i++)
-                    temp = temp + pGD_Hot_Tepl->InTeplSens[i].Value;
-                temp = temp / 4;
-                tempHeat = temp;
-            }
-            break;
-        }
-        return tempHeat;
-}*/
+extern uchar       bNight;
 
 void CheckModeScreen(char typScr,char chType, char fnTepl)
 {
@@ -212,7 +100,6 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
     default:
         if (!bZad)
         {
-            ByteX=0;
             if (IntZ<GD.TuneClimate.sc_TVOutClose)
                 pScr->Mode=1;
             if ((IntZ>GD.TuneClimate.sc_TVOutClose+200)||(!GD.TuneClimate.sc_TVOutClose))
@@ -257,7 +144,7 @@ void SetPosScreen(char typScr)
         pScr->Pause--;return;
     }
 
-    ByteX=(*pMech);    //  текущее положение экрана
+    int byte_x=(*pMech);    //  текущее положение экрана
     IntZ=pScr->Value;
 
     if (!typScr) // Только если термический, то произвести коррекцию
@@ -266,28 +153,28 @@ void SetPosScreen(char typScr)
 
         if YesBit(pGD_TControl_Tepl->RCS1,cbSCCorrection)
         {
-            IntX=((int)(ByteX))-IntZ;
+            IntX=((int)(byte_x))-IntZ;
             if ((!IntZ)||(IntZ==100)||(abs(IntX)>GD.TuneClimate.sc_MinDelta))
                 (*pMech)=IntZ;
             return;
         }
     }
     step=0;
-    if ((ByteX>=GD.TuneClimate.sc_StartP2Zone)&&(ByteX<GD.TuneClimate.sc_StartP1Zone))
+    if ((byte_x>=GD.TuneClimate.sc_StartP2Zone)&&(byte_x<GD.TuneClimate.sc_StartP1Zone))
     {
         step=GD.TuneClimate.sc_StepS2Zone;
         pScr->Pause=GD.TuneClimate.sc_StepP2Zone;
         if ((pScr->Mode == 1) && (!typScr))
             step = step * GD.TuneClimate.ScreenCloseSpeed;
     }
-    if (ByteX>=GD.TuneClimate.sc_StartP1Zone)
+    if (byte_x>=GD.TuneClimate.sc_StartP1Zone)
     {
         step=GD.TuneClimate.sc_StepS1Zone;
         pScr->Pause=GD.TuneClimate.sc_StepP1Zone;
         if ((pScr->Mode == 1) && (!typScr))
             step = step * GD.TuneClimate.ScreenCloseSpeed;
     }
-    IntX=((int)(ByteX))-IntZ;
+    IntX=((int)(byte_x))-IntZ;
     if (IntX>0)
     {
         (*pMech)-=step;
