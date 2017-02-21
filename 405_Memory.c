@@ -9,15 +9,6 @@ eBlockEEP BlockEEP[SUM_BLOCK_EEP];
 //=================================================
 //          Подпрограммы работы с памятью
 //=================================================
-// ------------------------------------------------
-//               Очистка памти
-//-------------------------------------------------
-void MemClr(void *pp1, uint32_t n)
-{
-    char *p;
-    p=pp1;
-    while (n--) *p++=0;
-}
 
 uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)
 {
@@ -34,7 +25,6 @@ uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)
 
 void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 {
-    uint16_t CSum;
     uint16_t i,fSS;
     //I2C_Mem_Write(0,fStartAddr,AdrBlock,sizeBlock);
     for (i=0;i<sizeBlock/2000+1;i++)
@@ -42,7 +32,7 @@ void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
         fSS=2000;
         if (i==sizeBlock/2000)
             fSS=sizeBlock%2000;
-        fm_Write(fStartAddr+i*2000,AdrBlock+i*2000,fSS,&CSum);
+        fm_Write(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
     }
 
 //	I2C_MainLoad(0,AdrBlock,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Transmitter);
@@ -50,7 +40,6 @@ void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 
 void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 {
-    uint16_t CSum;
     uint16_t i,fSS;
 
     //I2C_Mem_Read(0,fStartAddr,AdrBlock,sizeBlock);
@@ -61,7 +50,7 @@ void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
         if (i==sizeBlock/2000)
             fSS=sizeBlock%2000;
 
-        fm_Read(fStartAddr+i*2000,AdrBlock+i*2000,fSS,&CSum);
+        fm_Read(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
     }
 }
 

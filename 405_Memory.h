@@ -9,7 +9,7 @@
     #define NULL	((void*) 0)
 #endif
 
-typedef struct eeBlockEEP
+typedef struct
 {
     uchar*      AdrCopyRAM;
     uint16_t    Size;

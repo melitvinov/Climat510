@@ -1,7 +1,7 @@
 #ifndef _65_SCREEN_H_
 #define _65_SCREEN_H_
 
-typedef struct eeScreen
+typedef struct
 {
     int16_t             Value;
     int8_t              Mode;
@@ -13,6 +13,13 @@ typedef struct eeScreen
 } eScreen;
 
 
+void SetPosScreen(char typScr);
+void LaunchVent(char fnTepl);
+void LaunchCalorifer(char fnTepl);
+void InitScreen(char typScr, char fnTepl);
+
+void RegWorkDiskr(char fHSmReg);
+void MidlWindAndSr(void);
 
 
 #endif

@@ -19,6 +19,5 @@
 
 void i2_fm_Init(void);
 
-u8 fm_Read(u16 adr,u8* buf,u16 size,u8* csum);
-
-u8 fm_Write(u16 adr,u8* buf,u16 size,u8* csum);
+void fm_Read(u16 adr, void *buf,u16 size);
+void fm_Write(u16 adr, const void *buf,u16 size);

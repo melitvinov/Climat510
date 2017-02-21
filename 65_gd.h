@@ -14,7 +14,7 @@
 #pragma pack(1)
 
 
-typedef struct eeCalSensor
+typedef struct
 {
     uint8_t     Type;
     uint8_t     nInput;
@@ -27,7 +27,7 @@ typedef struct eeCalSensor
 
 }eCalSensor;
 
-typedef struct eeFullCal
+typedef struct
 {
 //        int16_t        	Port;
     eCalSensor  InTeplSens[cSTepl][cConfSSens];
@@ -40,7 +40,7 @@ typedef struct eeFullCal
 
 typedef int16_t eSensLevel[4];
 
-typedef struct eeLevel
+typedef struct
 {
     eSensLevel InTeplSens[cSTepl][cConfSSens];
     eSensLevel MeteoSens[cConfSMetSens];
@@ -88,7 +88,7 @@ typedef struct  eeTimer
 }
 eTimer;
 
-typedef struct eeSensing
+typedef struct
 {
     int16_t     Value;
     uchar   RCS;
@@ -103,7 +103,7 @@ typedef struct eeSensing
 */
 } eSensing;
 
-typedef struct eeKontur
+typedef struct
 {
 
     int16_t     Optimal;
@@ -130,7 +130,7 @@ typedef struct eeKontur
 //12*2
 } eKontur;
 
-typedef struct eeClimTask
+typedef struct
 {
     int16_t     TAir;
     int16_t     DoTHeat;
@@ -162,7 +162,7 @@ typedef struct eeClimTask
     int16_t     Rez[10];
 } eClimTask;
 
-typedef struct eeNextTCalc
+typedef struct
 {
     int16_t     DifTAirTDo;//Разница междуизмеренным и заданным
     int16_t     UpSR;//Повышение температуры теплицы солнцем	2
@@ -188,13 +188,14 @@ typedef struct eeNextTCalc
     int16_t     Rez[9];
 
 } eNextTCalc;
-typedef struct eeMechanic  //20
+
+typedef struct  //20
 {
     uchar   RCS;
     int8_t  Position;
 } eMechanic;
 
-typedef struct eeOtherCalc
+typedef struct
 {
     int16_t         CorrScreen;
     int16_t         TaskCritery;
@@ -204,7 +205,7 @@ typedef struct eeOtherCalc
     int16_t         Rez[10];
 } eOtherCalc;
 
-typedef struct eeTepl
+typedef struct
 {
 
     uchar       Cfg[2];
@@ -259,7 +260,7 @@ typedef struct eeTepl
 } eTepl;
 
 
-typedef struct eeHot
+typedef struct
 {
 //0
     uchar       News;
@@ -299,7 +300,7 @@ typedef struct eeHot
 /*-----------------------------------
         Параметры-соединение в иедино
 ------------------------------------*/
-typedef struct eeConstMixVal
+typedef struct
 {
     int16_t     v_TimeMixVal;
     int16_t     v_PFactor;  /*Смесительный клапан - П-коэф разницы Т воды*/
@@ -308,7 +309,8 @@ typedef struct eeConstMixVal
     int8_t      v_Type;
 
 } eConstMixVal;
-typedef struct eeConstMech
+
+typedef struct
 {
     eConstMixVal     ConstMixVal[cSRegCtrl];
     //int8_t			 LuftSm;
@@ -316,7 +318,7 @@ typedef struct eeConstMech
 
 } eConstMech;
 
-typedef struct eeTuneClimate
+typedef struct
 {
 
 /*-- начало сохраняемых данных, размер 130 байт*/
@@ -553,7 +555,7 @@ typedef struct eeTuneClimate
 }
 eTuneClimate;
 
-typedef struct eeTeplControl
+typedef struct
 {
     int16_t     c_MaxTPipe[cSWaterKontur];   /*Максимально допустимая температура Контур1-5*/
     int16_t     f_MaxOpenUn;   /*Фрамуги_Максимально допустимое открытие*/
@@ -580,7 +582,7 @@ typedef struct eeTeplControl
 } eTeplControl;
 
 
-typedef struct eeControl
+typedef struct
 {
     uchar           rModification;
     uchar           rSInTeplSens;
@@ -602,7 +604,7 @@ typedef struct eeControl
 } eControl;
 
 #ifdef AHU1
-typedef struct eeStrategy
+typedef struct
 {
     int8_t   TUpRHUp;
     int8_t   TUpRHDown;
@@ -616,7 +618,7 @@ typedef struct eeStrategy
 } eStrategy;
 #else
 
-typedef struct eeStrategy
+typedef struct
 {
     int8_t TempPower;
     int8_t RHPower;
@@ -629,7 +631,7 @@ typedef struct eeStrategy
 #endif
 
 
-typedef struct eeRegsSettings
+typedef struct
 {
     int16_t             IntVal;
     int16_t             Stop;
@@ -640,7 +642,7 @@ typedef struct eeRegsSettings
 } eRegsSettings;
 
 
-typedef struct eeMechBusy
+typedef struct
 {
     int             TimeSetMech;
     int             TimeRealMech;
@@ -656,7 +658,7 @@ typedef struct eeMechBusy
 
 } eMechBusy;
 
-/*typedef struct eeSensorD
+/*typedef struct
     {
         int16_t				SumD;
         int16_t				ChangeD;
@@ -672,7 +674,7 @@ typedef struct eeMechBusy
     } eSensorD;	*/
 
 
-typedef struct eeTControlKontur
+typedef struct
 {
     int16_t             LastDoT;
     int16_t             RealPower[2];
@@ -689,7 +691,7 @@ typedef struct eeTControlKontur
     int8_t              PumpPause;
 } eTControlKontur;
 
-typedef struct eeTControlTepl
+typedef struct
 {
     eTControlKontur Kontur[cSKontur];
     int16_t         LastLastInTeplSensing[cConfSSens];
@@ -798,7 +800,7 @@ typedef struct eeTControlTepl
     int8_t          Alarms[MAX_ALARMS];
 } eTControlTepl;
 
-typedef struct eeTControl
+typedef struct
 {
     eTControlTepl   Tepl[cSTepl];
 //		int16_t 		LastLastMeteoSensing[cConfSMetSens];
@@ -822,7 +824,7 @@ typedef struct eeTControl
 
 
 
-typedef struct eeMechConfig
+typedef struct
 {
     uint16_t    Systems[cConfSSystem];
     uint16_t    RNum[SUM_NAME_CONF];
@@ -831,7 +833,7 @@ typedef struct eeMechConfig
 
 #define MAX_FAN_COUNT	64
 
-typedef struct eeFanData
+typedef struct
 {
     uint8_t         Actual;
     uint16_t        Cond;
@@ -842,7 +844,7 @@ typedef struct eeFanData
 } eFanData;
 
 
-typedef struct eeFanBlock
+typedef struct
 {
     uint16_t        Speed;
     uint8_t         NFans;
@@ -857,7 +859,6 @@ typedef struct  eGData
     eHot            Hot;           /* не передвигать использовано News в .asm*//*Не буду*/
     eFanBlock       FanBlock[cSTepl][2];
     eControl        Control;
-    eFullCal        Cal;
     eTimer          Timer[cSTimer];
     eConstMech      ConstMechanic[cSTepl];
     eStrategy       Strategy[cSTepl][cSStrategy];
@@ -865,29 +866,42 @@ typedef struct  eGData
     eTuneClimate    TuneClimate;
     eTControl       TControl;
     eLevel          Level;
-    int16_t         uInTeplSens[cSTepl][cConfSSens];
-    int16_t         uMeteoSens[cConfSMetSens];
 } eGData;
 
-#define CtrTime	GD.Hot.Time
-#define CtrData	GD.Hot.Data
-#define CtrYear	GD.Hot.Year
+typedef struct
+{
+    eFullCal        Cal;
+} caldata_t;
+
+typedef struct
+{
+    int16_t         uInTeplSens[cSTepl][cConfSSens];
+    int16_t         uMeteoSens[cConfSMetSens];
+} sens_t;
+
+typedef struct
+{
+    eTepl *Hot_Tepl;
+    eMechanic *Hot_Hand;
+    eTControlTepl *TControl_Tepl;
+    eTeplControl *Control_Tepl;
+    eConstMech *ConstMechanic;
+    eMechConfig *MechConfig;
+    eSensLevel *Level_Tepl;
+    eStrategy *Strategy_Tepl;
+    eKontur *Hot_Tepl_Kontur;
+    eTControlKontur *TControl_Tepl_Kontur;
+    eMechanic *Hot_Hand_Kontur;
+    eStrategy *Strategy_Kontur;
+    uint16_t *MechConfig_Kontur;
+    eConstMixVal *ConstMechanic_Mech;
+} gdp_t;
 
 extern eGData GD;
+extern gdp_t gdp;
 
-extern eTepl *pGD_Hot_Tepl;
-extern eMechanic *pGD_Hot_Hand;
-extern eTControlTepl *pGD_TControl_Tepl;
-extern eTeplControl*pGD_Control_Tepl;
-extern eConstMech *pGD_ConstMechanic;
-extern eMechConfig *pGD_MechConfig;
-extern eSensLevel *pGD_Level_Tepl;
-extern eStrategy *pGD_Strategy_Tepl;
-extern eKontur *pGD_Hot_Tepl_Kontur;
-extern eTControlKontur *pGD_TControl_Tepl_Kontur;
-extern eMechanic *pGD_Hot_Hand_Kontur;
-extern eStrategy *pGD_Strategy_Kontur;
-extern uint16_t *pGD_MechConfig_Kontur;
-extern eConstMixVal *pGD_ConstMechanic_Mech;
+// XXX: caldata do not relate to 65 in fact
+extern caldata_t caldata;
+extern sens_t sensdata;
 
 #endif

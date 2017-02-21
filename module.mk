@@ -42,7 +42,7 @@ SRC += 405_Display.c
 SRC += 405_Menu.c
 
 # temporary hacks
-SRC += climdefstuff.c
+SRC += wtf.c
 SRC += 405_cfg.c
 SRC += main_consts.c
 

@@ -44,13 +44,12 @@
 #define CGHomeAddr		0x1400
 
 #include "65_gd.h"
-#include "climdefstuff.h"
+#include "wtf.h"
 
 // XXX: WTFS
 extern uint16_t x_menu;
 extern bool BlkW;
 extern uchar Ad_Buf;
-extern eGData GD;
 extern uchar AdinB;
 extern uchar Mark;
 
@@ -125,7 +124,7 @@ static const uchar FirstScreen[40*64]={
     63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,
 };
 
-const char ExtCG[SumExtCG*8]={
+static const char ExtCG[SumExtCG*8]={
     0x3F,0x31,0x30,0x3E,0x31,0x31,0x3E,0x20,    //Á - \240
     0x3F,0x31,0x30,0x30,0x30,0x30,0x30,0x20,    //Ã - \241
     0x20,0x20,0x1F,0x20,0x1F,0x20,0x20,0x20,    //==  \242
@@ -502,12 +501,12 @@ void TimeToBuf(void)
     BlkW=1;
     Ad_Buf=PozTime;
 //    buf[Ad_Buf++]=' ';
-    w_int(&CtrTime,SSdSS, 0);
+    w_int(&GD.Hot.Time,SSdSS, 0);
     lcdbuf[Ad_Buf++]=':';
     lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
     lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     Ad_Buf++;
-    w_int(&CtrData,DsMsY, 0);
+    w_int(&GD.Hot.Data,DsMsY, 0);
 }
 
 void VideoSost(void)

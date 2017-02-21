@@ -24,7 +24,7 @@
 #define BUFFER_SIZE 1500//400
 #define PSTR(s) s
 
-typedef struct eeHeader
+typedef struct
 {
     int16_t Adr;
     int16_t Size;
@@ -32,13 +32,13 @@ typedef struct eeHeader
 
 }eHeader;
 
-typedef struct eeAdrGD
+typedef struct
 {
     uint8_t*    Adr;
     uint16_t    MaxSize;
 }eAdrGD;
 
-typedef struct eeSocket
+typedef struct
 {
     uint8_t IP_source[4];
     char    IP_PHASE;

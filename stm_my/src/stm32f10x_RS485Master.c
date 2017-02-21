@@ -42,20 +42,20 @@
 #define MAX_OUT_RELS	32
 #define MAX_OUT_REG		8
 
-typedef struct sOModulConf
+typedef struct
 {
     uint32_t    Type;
     uint8_t     Pulse[MAX_OUT_RELS][2];
 }TOModulConf;
 
-typedef struct sOModulReg
+typedef struct
 {
     uint8_t     Type;
     uint16_t    Value;
 }TOModulReg;
 
 
-typedef struct sModulData
+typedef struct
 {
     uint8_t     Cond;
     uint16_t    CpM;
@@ -74,7 +74,7 @@ typedef struct sModulData
 static TModulData ModulData[OUT_MODUL_SUM];
 
 
-unsigned char   HeadOUT[10];
+static unsigned char   HeadOUT[10];
 static uint8_t  ReadBuf[1000];
 static char PHASE_RS_OUT;
 static int   RSOutTime;
@@ -91,7 +91,11 @@ static CallBackRS GLF;
 static uint8_t bOutIPCBlock;
 
 
-
+static uint8_t*    GLData;
+static uint16_t    GLSize;
+static uint16_t    GLCtr;
+static uint8_t     GLDir;
+static uint8_t*    GLCond;
 
 
 
@@ -121,14 +125,6 @@ static uint8_t bOutIPCBlock;
 
 
 
-
-
-
-uint8_t*    GLData;
-uint16_t    GLSize;
-uint16_t    GLCtr;
-uint8_t     GLDir;
-uint8_t*        GLCond;
 
 
 void CpyBuf(uint8_t *pp1,uint8_t *pp2, uint16_t size)
@@ -770,14 +766,14 @@ uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
 
 
 
-uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
+void UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
 {
     uint16_t vCpM,i,j,k,vInput;
     vCpM=GetIPCComMod(nAddress);
-    if (!vCpM) return 0;
-    if (vCpM/100==6) return 0;
+    if (!vCpM) return;
+    if (vCpM/100==6) return;
     vInput=GetIPCNum(nAddress);
-    if (!vInput) return 0;
+    if (!vInput) return;
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
@@ -787,7 +783,7 @@ uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
             {
                 ModulData[i].Cond|=NEED_MODULE_RESET;
-                CpyBuf(&ModulData[i].InConfig[vInput-1],ModulConf,sizeof(TIModulConf));
+                memcpy(&ModulData[i].InConfig[vInput-1],ModulConf,sizeof(TIModulConf));
             }
 /*			for (j=0;j<sizeof(TIModulConf);j++)
             {
@@ -806,7 +802,6 @@ uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
             //****************************************************************
 
             if (ModulData[i].MaxIn<vInput) ModulData[i].MaxIn=vInput;
-            return;
         }
     }
 }

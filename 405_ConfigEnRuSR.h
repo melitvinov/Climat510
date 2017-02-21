@@ -41,7 +41,8 @@
 #define cSmCOSens		7
 #define cSmRoofSens		12
 #define cSmGlassSens	14
-#warning CHECK THIS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// XXX: warning was too messy. disabled for now
+// #warning CHECK THIS   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //#define cSmTCSens		1
 #define cSmWinNSens		17
 #define cSmWinSSens		18
@@ -136,7 +137,7 @@
 
 
 
-typedef struct  eeNameConfig
+typedef struct
 {
     const char Name[30];
     char Tip;

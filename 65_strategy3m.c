@@ -1,5 +1,8 @@
 #include "syntax.h"
+
 #include "65_gd.h"
+#include "65_subr.h"
+#include "65_screen.h"
 
 
 extern int16_t IntX;
@@ -9,23 +12,26 @@ extern int16_t IntZ;
 /**************************************************************************/
 /*-*-*-*-*-*-*--Процедура установки границ для водных контуров--*-*-*-*-*-*/
 /**************************************************************************/
-int DefRH(void) {
-    if ((!pGD_Hot_Tepl->AllTask.DoRHAir)|| (!pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value)) return 0;
-    return(pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value-pGD_Hot_Tepl->AllTask.DoRHAir);
+int DefRH(void)
+{
+    if ((!gdp.Hot_Tepl->AllTask.DoRHAir)|| (!gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value)) return 0;
+    return(gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value-gdp.Hot_Tepl->AllTask.DoRHAir);
 
 }
 
-void SetNoWorkKontur(void) {
-    SetBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur);
-    pGD_TControl_Tepl_Kontur->PumpStatus = 0;
-    pGD_TControl_Tepl_Kontur->DoT = 0;
+void SetNoWorkKontur(void)
+{
+    SetBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur);
+    gdp.TControl_Tepl_Kontur->PumpStatus = 0;
+    gdp.TControl_Tepl_Kontur->DoT = 0;
 }
 
-void __sMinMaxWater(char fnKontur) {
+void __sMinMaxWater(char fnKontur)
+{
 //------------------------------------------------------------------------
 //Заполняем минимальные и максимальные границы для контуров а также опт температуру
 //------------------------------------------------------------------------
-    pGD_Hot_Tepl_Kontur->MaxCalc = pGD_Control_Tepl->c_MaxTPipe[fnKontur];
+    gdp.Hot_Tepl_Kontur->MaxCalc = gdp.Control_Tepl->c_MaxTPipe[fnKontur];
 //------------------------------------------------------------------------
 //Для контуров начиная с третьего берем минимальные границы и опт. темп. из параметров
 //------------------------------------------------------------------------
@@ -35,57 +41,57 @@ void __sMinMaxWater(char fnKontur) {
 
     if (fnKontur == cSmKontur4)
     {
-        pGD_Hot_Tepl_Kontur->MinTask = pGD_Control_Tepl->c_MinTPipe[1];
-        pGD_Hot_Tepl_Kontur->Optimal = pGD_Control_Tepl->c_OptimalTPipe[1];
-        pGD_Hot_Tepl_Kontur->MinCalc = pGD_Hot_Tepl_Kontur->MinTask;
+        gdp.Hot_Tepl_Kontur->MinTask = gdp.Control_Tepl->c_MinTPipe[1];
+        gdp.Hot_Tepl_Kontur->Optimal = gdp.Control_Tepl->c_OptimalTPipe[1];
+        gdp.Hot_Tepl_Kontur->MinCalc = gdp.Hot_Tepl_Kontur->MinTask;
     }
 //------------------------------------------------------------------------
 //Если установлен минимум то насос должен быть всегда включен
 //------------------------------------------------------------------------
-    if ((pGD_Hot_Tepl_Kontur->MinTask)
-        || (YesBit((*(pGD_Hot_Hand_Kontur + cHSmPump)).RCS, cbManMech)))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
+    if ((gdp.Hot_Tepl_Kontur->MinTask)
+        || (YesBit((*(gdp.Hot_Hand_Kontur + cHSmPump)).RCS, cbManMech)))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
 //------------------------------------------------------------------------
 //Ограничиваем минимум
 //------------------------------------------------------------------------
-    ogrMin(&(pGD_Hot_Tepl_Kontur->MinCalc), cMinAllKontur);
+    gdp.Hot_Tepl_Kontur->MinCalc = clamp_min(gdp.Hot_Tepl_Kontur->MinCalc, cMinAllKontur);
 //------------------------------------------------------------------------
 //В виду особенностей работы 5 контура для него отдельные установки
 //------------------------------------------------------------------------
-    if (pGD_Hot_Tepl_Kontur->MinCalc > pGD_Hot_Tepl_Kontur->MaxCalc)
+    if (gdp.Hot_Tepl_Kontur->MinCalc > gdp.Hot_Tepl_Kontur->MaxCalc)
     {
-        pGD_Hot_Tepl_Kontur->MinCalc = pGD_Hot_Tepl_Kontur->MaxCalc;
+        gdp.Hot_Tepl_Kontur->MinCalc = gdp.Hot_Tepl_Kontur->MaxCalc;
     }
     if (fnKontur == cSmKontur5)
     {
 
-        if ((!(YesBit(pGD_Hot_Tepl->InTeplSens[cSmGlassSens].RCS, cbMinMaxVSens)))
-            && ((pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value
+        if ((!(YesBit(gdp.Hot_Tepl->InTeplSens[cSmGlassSens].RCS, cbMinMaxVSens)))
+            && ((gdp.Hot_Tepl->InTeplSens[cSmGlassSens].Value
                  < GD.TuneClimate.c_DoMinIfGlass)))
         {
-            IntY = pGD_Hot_Tepl->InTeplSens[cSmGlassSens].Value;
+            IntY = gdp.Hot_Tepl->InTeplSens[cSmGlassSens].Value;
             CorrectionRule(GD.TuneClimate.c_DoMaxIfGlass,
                            GD.TuneClimate.c_DoMinIfGlass,
-                           pGD_Hot_Tepl_Kontur->MaxCalc - cMin5Kontur, 0);
-            pGD_Hot_Tepl_Kontur->Do = pGD_Hot_Tepl_Kontur->MaxCalc - IntZ;
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
+                           gdp.Hot_Tepl_Kontur->MaxCalc - cMin5Kontur, 0);
+            gdp.Hot_Tepl_Kontur->Do = gdp.Hot_Tepl_Kontur->MaxCalc - IntZ;
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
 
         }
         if (YesBit(GD.TControl.bSnow, 0x02))
         {
             IntY = GD.TControl.MeteoSensing[cSmOutTSens];
             CorrectionRule(GD.TuneClimate.c_CriticalSnowOut, c_SnowIfOut,
-                           pGD_Hot_Tepl_Kontur->MaxCalc - GD.TuneClimate.c_MinIfSnow,
+                           gdp.Hot_Tepl_Kontur->MaxCalc - GD.TuneClimate.c_MinIfSnow,
                            0);
-            pGD_Hot_Tepl_Kontur->Do = pGD_Hot_Tepl_Kontur->MaxCalc - IntZ;
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
+            gdp.Hot_Tepl_Kontur->Do = gdp.Hot_Tepl_Kontur->MaxCalc - IntZ;
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
         }
 
-        if ((pGD_TControl_Tepl->ScrExtraHeat) || (GD.Hot.Util == 9))
+        if ((gdp.TControl_Tepl->ScrExtraHeat) || (GD.Hot.Util == 9))
         {
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
             //pGD_TControl_Tepl_Kontur->DoT=(pGD_Hot_Tepl_Kontur->MaxCalc*10);
-            pGD_Hot_Tepl_Kontur->Do = pGD_Hot_Tepl_Kontur->MaxCalc;
+            gdp.Hot_Tepl_Kontur->Do = gdp.Hot_Tepl_Kontur->MaxCalc;
         }
 //		else
 //		if  (pGD_TControl_Tepl->LastScrExtraHeat)
@@ -94,11 +100,11 @@ void __sMinMaxWater(char fnKontur) {
 //		pGD_TControl_Tepl->LastScrExtraHeat=pGD_TControl_Tepl->ScrExtraHeat;
 
 //ogrMin(&(pGD_Hot_Tepl_Kontur->MinCalc),cMin5Kontur);
-        ogrMin(&(pGD_Hot_Tepl_Kontur->Do), pGD_Hot_Tepl_Kontur->MinCalc);
-        if (!YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur))
+        gdp.Hot_Tepl_Kontur->Do = clamp_min(gdp.Hot_Tepl_Kontur->Do, gdp.Hot_Tepl_Kontur->MinCalc);
+        if (!YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur))
         {
-            pGD_Hot_Tepl_Kontur->Do = 0;
-            pGD_Hot_Tepl_Kontur->MaxCalc = 0;
+            gdp.Hot_Tepl_Kontur->Do = 0;
+            gdp.Hot_Tepl_Kontur->MaxCalc = 0;
         }
 
     }
@@ -139,57 +145,58 @@ void __sMinMaxWater(char fnKontur) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*--Процедура установки границ для фрамуг--*-*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sMinMaxWindows(void) {
+void __sMinMaxWindows(void)
+{
     int t_max;
 //-------------------------------------------------------
 //Проверяем работу по заданию
 //------------------------------------------------------
 
-    if ((pGD_Hot_Tepl->AllTask.Win < 2)
-        || (YesBit(pGD_TControl_Tepl->Calorifer, 0x02))) //Добавлено для блокировки фрамуг кондиционером
+    if ((gdp.Hot_Tepl->AllTask.Win < 2)
+        || (YesBit(gdp.TControl_Tepl->Calorifer, 0x02))) //Добавлено для блокировки фрамуг кондиционером
     {
 //--------------------------------------------------------------------------------
 //Если установлен режим работы по минимому то минимум должен совпасть с максимумом
 //--------------------------------------------------------------------------------
-        if (pGD_Hot_Tepl->AllTask.Win)
+        if (gdp.Hot_Tepl->AllTask.Win)
         {
-            pGD_Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc =
-            pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc;
-            pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSFollowProg;
-            pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSFollowProg;
+            gdp.Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc =
+            gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc;
+            gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSFollowProg;
+            gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSFollowProg;
         }
         else
         {
-            MemClr(&pGD_Hot_Tepl->Kontur[cSmWindowUnW].Optimal,
+            memclr(&gdp.Hot_Tepl->Kontur[cSmWindowUnW].Optimal,
                    sizeof(eKontur));
         }
 //--------------------------------------------------------------------------------
 //Стираем все накопленные данные
 //--------------------------------------------------------------------------------
-        pGD_TControl_Tepl->Kontur[cSmWindowOnW].DoT = 0;
-        pGD_TControl_Tepl->Kontur[cSmWindowUnW].DoT = 0;
+        gdp.TControl_Tepl->Kontur[cSmWindowOnW].DoT = 0;
+        gdp.TControl_Tepl->Kontur[cSmWindowUnW].DoT = 0;
         return;
     }
-    pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSOn;
-    pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSOn;
+    gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSOn;
+    gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSOn;
 
     IntY = DefRH();
     CorrectionRule(GD.TuneClimate.f_min_RHStart, GD.TuneClimate.f_min_RHEnd,
                    ((int) GD.TuneClimate.f_min_Cor), 0);
-    ogrMin(&(pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc), IntZ);
+    gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc = clamp_min(gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc, IntZ);
 
     IntY = GD.TControl.MeteoSensing[cSmOutTSens];
     CorrectionRule(GD.TuneClimate.f_StartCorrPow, GD.TuneClimate.f_EndCorrPow,
                    (GD.TuneClimate.f_PowFactor - 1000), 0);
-    pGD_TControl_Tepl->f_Power = GD.TuneClimate.f_PowFactor - IntZ;
+    gdp.TControl_Tepl->f_Power = GD.TuneClimate.f_PowFactor - IntZ;
     if (GD.TuneClimate.f_PowFactor < 1000)
-        pGD_TControl_Tepl->f_Power = 1000;
+        gdp.TControl_Tepl->f_Power = 1000;
 
-    t_max = pGD_Control_Tepl->f_MaxOpenUn;
+    t_max = gdp.Control_Tepl->f_MaxOpenUn;
     if ((t_max > GD.TuneClimate.f_MaxOpenRain) && (GD.TControl.bSnow))
     {
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSWRain;
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSWRain;
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSWRain;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSWRain;
 
         t_max = GD.TuneClimate.f_MaxOpenRain;
     }
@@ -213,15 +220,15 @@ void __sMinMaxWindows(void) {
                    GD.TuneClimate.f_StormWind, 100, 0);
 //В IntZ - ограничение по ветру
 
-    if (IntZ > pGD_TControl_Tepl->OldPozUn)
+    if (IntZ > gdp.TControl_Tepl->OldPozUn)
     {
-        pGD_TControl_Tepl->UnWindStorm = GD.TuneClimate.f_WindHold;
-        pGD_TControl_Tepl->OldPozUn = IntZ;
+        gdp.TControl_Tepl->UnWindStorm = GD.TuneClimate.f_WindHold;
+        gdp.TControl_Tepl->OldPozUn = IntZ;
     }
-    if (pGD_TControl_Tepl->UnWindStorm > 0)
+    if (gdp.TControl_Tepl->UnWindStorm > 0)
     {
-        pGD_TControl_Tepl->UnWindStorm--;
-        IntZ = pGD_TControl_Tepl->OldPozUn;
+        gdp.TControl_Tepl->UnWindStorm--;
+        IntZ = gdp.TControl_Tepl->OldPozUn;
     }
 
 //	if (!(GD.TuneClimate.f_MaxWind)) IntZ=100;
@@ -237,10 +244,10 @@ void __sMinMaxWindows(void) {
     }
 //	IntY=t_max-IntX-IntZ;
 
-    ogrMin(&IntY, 0);
-    ogrMax(&IntY, t_max);
+    IntY = clamp_min(IntY, 0);
+    IntY = clamp_max(IntY, t_max);
 
-    pGD_Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc = IntY; //pGD_TControl_Tepl->PrevMaxWinUnW;
+    gdp.Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc = IntY; //pGD_TControl_Tepl->PrevMaxWinUnW;
     /*--------------------------------------------------------------------------------
      //Проверяем было ли отличие от предыдущего максимума хотя бы на один шаг
      //--------------------------------------------------------------------------------
@@ -258,12 +265,12 @@ void __sMinMaxWindows(void) {
 //--------------------------------------------------------------------------------
 //Максимум для наветренной стороны
 //--------------------------------------------------------------------------------
-    t_max = pGD_Control_Tepl->f_MaxOpenOn;
+    t_max = gdp.Control_Tepl->f_MaxOpenOn;
 
     IntY = -DefRH(); //pGD_Hot_Tepl->AllTask.NextRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value;
     CorrectionRule(GD.TuneClimate.f_max_RHStart, GD.TuneClimate.f_max_RHEnd,
                    ((int) GD.TuneClimate.f_max_Cor), 0);
-    ogrMax(&t_max, (100 - IntZ));
+    t_max = clamp_max(t_max, 100 - IntZ);
 
     if ((t_max > GD.TuneClimate.f_MaxOpenRain) && (GD.TControl.bSnow))
         t_max = GD.TuneClimate.f_MaxOpenRain;
@@ -272,24 +279,24 @@ void __sMinMaxWindows(void) {
     CorrectionRule(GD.TuneClimate.f_StormWindOn - f_StartWind,
                    GD.TuneClimate.f_StormWindOn, 100, 0);
 
-    if (IntZ < pGD_TControl_Tepl->OldPozOn)
+    if (IntZ < gdp.TControl_Tepl->OldPozOn)
     {
-        pGD_TControl_Tepl->OnWindStorm = GD.TuneClimate.f_WindHold;
-        pGD_TControl_Tepl->OldPozOn = IntZ;
+        gdp.TControl_Tepl->OnWindStorm = GD.TuneClimate.f_WindHold;
+        gdp.TControl_Tepl->OldPozOn = IntZ;
     }
-    if (pGD_TControl_Tepl->OnWindStorm > 0)
+    if (gdp.TControl_Tepl->OnWindStorm > 0)
     {
-        pGD_TControl_Tepl->OnWindStorm--;
-        IntZ = pGD_TControl_Tepl->OldPozOn;
+        gdp.TControl_Tepl->OnWindStorm--;
+        IntZ = gdp.TControl_Tepl->OldPozOn;
     }
 //--------------------------------------------------------------------------------
 //Если не хотим чтобы открывалась наветренная сторона устанавливаем максимальный ветер в 0
 //--------------------------------------------------------------------------------
     IntY = IntX - IntZ;
-    ogrMin(&IntY, 0); //if (IntY<0) IntY=0;
-    ogrMax(&IntY, t_max); //if (IntY<0) IntY=0;
+    IntY = clamp_min(IntY, 0); //if (IntY<0) IntY=0;
+    IntY = clamp_max(IntY, t_max); //if (IntY<0) IntY=0;
 
-    pGD_Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc = IntY; //pGD_TControl_Tepl->PrevMaxWinOnW;
+    gdp.Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc = IntY; //pGD_TControl_Tepl->PrevMaxWinOnW;
     /*    if ((IntY>=pGD_TControl_Tepl->PrevMaxWinOnW+ByteW)
      ||(IntY<=pGD_TControl_Tepl->PrevMaxWinOnW-ByteW))
      {
@@ -303,58 +310,58 @@ void __sMinMaxWindows(void) {
      }
      */
 //	if (YesBit((*(pGD_Hot_Hand+cHSmWinN+1-GD.Hot.PozFluger)).RCS,(cbNoMech+cbManMech)))
-    if (pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status < 20)
+    if (gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status < 20)
     {
-        if (pGD_TControl_Tepl->Kontur[cSmWindowOnW].DoT / 10
-            == pGD_Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc)
-            pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSReachMax;
+        if (gdp.TControl_Tepl->Kontur[cSmWindowOnW].DoT / 10
+            == gdp.Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc)
+            gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSReachMax;
 
-        if (pGD_TControl_Tepl->Kontur[cSmWindowOnW].DoT / 10
-            == pGD_Hot_Tepl->Kontur[cSmWindowOnW].MinCalc)
-            pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSReachMin;
+        if (gdp.TControl_Tepl->Kontur[cSmWindowOnW].DoT / 10
+            == gdp.Hot_Tepl->Kontur[cSmWindowOnW].MinCalc)
+            gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSReachMin;
     }
-    if (pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status < 20)
+    if (gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status < 20)
     {
-        if (pGD_TControl_Tepl->Kontur[cSmWindowUnW].DoT / 10
-            == pGD_Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc)
-            pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSReachMax;
-        if (pGD_TControl_Tepl->Kontur[cSmWindowUnW].DoT / 10
-            == pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc)
-            pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSReachMin;
+        if (gdp.TControl_Tepl->Kontur[cSmWindowUnW].DoT / 10
+            == gdp.Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc)
+            gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSReachMax;
+        if (gdp.TControl_Tepl->Kontur[cSmWindowUnW].DoT / 10
+            == gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc)
+            gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSReachMin;
     }
 
-    if ((!pGD_TControl_Tepl->Kontur[cHSmWinN + GD.Hot.PozFluger].Separate)
-        || (YesBit((*(pGD_Hot_Hand + cHSmWinN + GD.Hot.PozFluger)).RCS,
+    if ((!gdp.TControl_Tepl->Kontur[cHSmWinN + GD.Hot.PozFluger].Separate)
+        || (YesBit((*(gdp.Hot_Hand + cHSmWinN + GD.Hot.PozFluger)).RCS,
                    cbManMech)))
     {
-        pGD_TControl_Tepl->Kontur[cSmWindowOnW].DoT = 0;
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc = 0;
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].MinCalc = 0;
-        SetBit(pGD_Hot_Tepl->Kontur[cSmWindowOnW].RCS, cbNoWorkKontur);
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSWHand;
+        gdp.TControl_Tepl->Kontur[cSmWindowOnW].DoT = 0;
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc = 0;
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].MinCalc = 0;
+        SetBit(gdp.Hot_Tepl->Kontur[cSmWindowOnW].RCS, cbNoWorkKontur);
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSWHand;
     }
-    if ((!pGD_TControl_Tepl->Kontur[cHSmWinN + 1 - GD.Hot.PozFluger].Separate)
-        || (YesBit((*(pGD_Hot_Hand + cHSmWinN + 1 - GD.Hot.PozFluger)).RCS,
+    if ((!gdp.TControl_Tepl->Kontur[cHSmWinN + 1 - GD.Hot.PozFluger].Separate)
+        || (YesBit((*(gdp.Hot_Hand + cHSmWinN + 1 - GD.Hot.PozFluger)).RCS,
                    cbManMech)))
     {
-        SetBit(pGD_Hot_Tepl->Kontur[cSmWindowUnW].RCS, cbNoWorkKontur);
-        pGD_TControl_Tepl->Kontur[cSmWindowUnW].DoT = 0;
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc = 0;
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc = 0;
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSWHand;
+        SetBit(gdp.Hot_Tepl->Kontur[cSmWindowUnW].RCS, cbNoWorkKontur);
+        gdp.TControl_Tepl->Kontur[cSmWindowUnW].DoT = 0;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc = 0;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc = 0;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSWHand;
     }
 
-    if (YesBit(pGD_Hot_Tepl->DiskrSens[0], cSmDVent))
+    if (YesBit(gdp.Hot_Tepl->DiskrSens[0], cSmDVent))
     {
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSAlrExternal;
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSAlrExternal;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSAlrExternal;
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSAlrExternal;
     }
-    if (YesBit(pGD_TControl_Tepl->MechBusy[cHSmWinN + 1 - GD.Hot.PozFluger].RCS,
+    if (YesBit(gdp.TControl_Tepl->MechBusy[cHSmWinN + 1 - GD.Hot.PozFluger].RCS,
                cMSAlarm))
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].Status = cSAlrNoCtrl;
-    if (YesBit(pGD_TControl_Tepl->MechBusy[cHSmWinN + GD.Hot.PozFluger].RCS,
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].Status = cSAlrNoCtrl;
+    if (YesBit(gdp.TControl_Tepl->MechBusy[cHSmWinN + GD.Hot.PozFluger].RCS,
                cMSAlarm))
-        pGD_Hot_Tepl->Kontur[cSmWindowOnW].Status = cSAlrNoCtrl;
+        gdp.Hot_Tepl->Kontur[cSmWindowOnW].Status = cSAlrNoCtrl;
 
 }
 
@@ -363,13 +370,14 @@ void __sMinMaxWindows(void) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура начальных установок для контура--*-*-*-*-*-*/
 /*************************************************************************/
-void __sInitKontur(char fnKontur) {
+void __sInitKontur(char fnKontur)
+{
 //	char tTepl1;
 //------------------------------------------------------------------------
 //Определяем работает может ли работать контур
 //------------------------------------------------------------------------
-    pGD_Hot_Tepl_Kontur->Status = 0;
-    if (!pGD_TControl_Tepl_Kontur->Separate)
+    gdp.Hot_Tepl_Kontur->Status = 0;
+    if (!gdp.TControl_Tepl_Kontur->Separate)
     {
         SetNoWorkKontur();
         return;
@@ -382,16 +390,16 @@ void __sInitKontur(char fnKontur) {
 //Диагностика работы контура (выявляем ошибки не позволяющиее работать контуру)
 //------------------------------------------------------------------------
     int byte_y = 0;
-    pGD_Hot_Tepl_Kontur->SensValue = pGD_TControl_Tepl_Kontur->SensValue;
-    if (!pGD_Control_Tepl->c_MaxTPipe[fnKontur])
+    gdp.Hot_Tepl_Kontur->SensValue = gdp.TControl_Tepl_Kontur->SensValue;
+    if (!gdp.Control_Tepl->c_MaxTPipe[fnKontur])
     {
-        pGD_Hot_Tepl_Kontur->Status = cSWNoMax;
+        gdp.Hot_Tepl_Kontur->Status = cSWNoMax;
         byte_y++;
     }
-    if (((YesBit((*(pGD_Hot_Hand_Kontur + cHSmPump)).RCS, cbManMech))
-         && (!((*(pGD_Hot_Hand_Kontur + cHSmPump)).Position))))
+    if (((YesBit((*(gdp.Hot_Hand_Kontur + cHSmPump)).RCS, cbManMech))
+         && (!((*(gdp.Hot_Hand_Kontur + cHSmPump)).Position))))
     {
-        pGD_Hot_Tepl_Kontur->Status = cSWHand;
+        gdp.Hot_Tepl_Kontur->Status = cSWHand;
         byte_y++;
     }
 
@@ -404,51 +412,51 @@ void __sInitKontur(char fnKontur) {
 //			SetNoWorkKontur();
 //			return;
 //		}
-    if (!pGD_Hot_Tepl_Kontur->SensValue)
+    if (!gdp.Hot_Tepl_Kontur->SensValue)
     {
-        pGD_Hot_Tepl_Kontur->Status = cSAlrNoSens;
-        SetBit(pGD_Hot_Tepl_Kontur->RCS, cbNoSensKontur);
+        gdp.Hot_Tepl_Kontur->Status = cSAlrNoSens;
+        SetBit(gdp.Hot_Tepl_Kontur->RCS, cbNoSensKontur);
         SetNoWorkKontur();
         return;
     }
     __sMinMaxWater(fnKontur);
 
     for (byte_y = 0; byte_y < 8; byte_y++)
-        ((char*) (&(pGD_Hot_Tepl_Kontur->Optimal)))[byte_y] =
-        ((char*) (&(GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].Optimal)))[byte_y];
-    pGD_TControl_Tepl_Kontur->DoT =
-    GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].DoT;
-    pGD_TControl_Tepl_Kontur->PumpStatus =
-    GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].PumpStatus;
+        ((char*) (&(gdp.Hot_Tepl_Kontur->Optimal)))[byte_y] =
+        ((char*) (&(GD.Hot.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].Optimal)))[byte_y];
+    gdp.TControl_Tepl_Kontur->DoT =
+    GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].DoT;
+    gdp.TControl_Tepl_Kontur->PumpStatus =
+    GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].PumpStatus;
     //GD.TControl.Tepl[cSmTeplB].Kontur[fnKontur].SErr=GD.TControl.Tepl[cSmTeplA].Kontur[fnKontur].SErr;
-    if (pGD_TControl_Tepl_Kontur->DoT)
-        pGD_Hot_Tepl_Kontur->Status = cSOn;
+    if (gdp.TControl_Tepl_Kontur->DoT)
+        gdp.Hot_Tepl_Kontur->Status = cSOn;
 
     if (YesBit(
-              GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].ExtRCS,
+              GD.Hot.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].ExtRCS,
               cbBlockPumpKontur))
     {
-        pGD_Hot_Tepl_Kontur->Status = cSBlPump;
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
+        gdp.Hot_Tepl_Kontur->Status = cSBlPump;
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur);
     }
-    if (pGD_TControl_Tepl_Kontur->DoT / 10 == pGD_Hot_Tepl_Kontur->MaxCalc)
-        pGD_Hot_Tepl_Kontur->Status = cSReachMax;
+    if (gdp.TControl_Tepl_Kontur->DoT / 10 == gdp.Hot_Tepl_Kontur->MaxCalc)
+        gdp.Hot_Tepl_Kontur->Status = cSReachMax;
 
-    if (pGD_TControl_Tepl_Kontur->DoT / 10 == pGD_Hot_Tepl_Kontur->MinCalc)
-        pGD_Hot_Tepl_Kontur->Status = cSReachMin;
+    if (gdp.TControl_Tepl_Kontur->DoT / 10 == gdp.Hot_Tepl_Kontur->MinCalc)
+        gdp.Hot_Tepl_Kontur->Status = cSReachMin;
 
-    if (pGD_Hot_Tepl_Kontur->Do)
-        pGD_Hot_Tepl_Kontur->Status = cSFollowProg;
+    if (gdp.Hot_Tepl_Kontur->Do)
+        gdp.Hot_Tepl_Kontur->Status = cSFollowProg;
 
-    if (pGD_Hot_Tepl_Kontur->MinCalc > pGD_Hot_Tepl_Kontur->MaxCalc - 100)
-        pGD_Hot_Tepl_Kontur->Status = cSWNoRange;
-    if ((pGD_Hot_Tepl_Kontur->SensValue < pGD_Hot_Tepl_Kontur->MaxCalc - 50)
-        && (pGD_Hot_Hand_Kontur->Position == 100))
-        pGD_Hot_Tepl_Kontur->Status = cSWNoHeat;
-    if (YesBit(pGD_Hot_Hand_Kontur->RCS, cbManMech))
-        pGD_Hot_Tepl_Kontur->Status = cSWHand;
-    if (YesBit(pGD_Hot_Tepl->DiskrSens[0], cSmDHeat))
-        pGD_Hot_Tepl_Kontur->Status = cSAlrExternal;
+    if (gdp.Hot_Tepl_Kontur->MinCalc > gdp.Hot_Tepl_Kontur->MaxCalc - 100)
+        gdp.Hot_Tepl_Kontur->Status = cSWNoRange;
+    if ((gdp.Hot_Tepl_Kontur->SensValue < gdp.Hot_Tepl_Kontur->MaxCalc - 50)
+        && (gdp.Hot_Hand_Kontur->Position == 100))
+        gdp.Hot_Tepl_Kontur->Status = cSWNoHeat;
+    if (YesBit(gdp.Hot_Hand_Kontur->RCS, cbManMech))
+        gdp.Hot_Tepl_Kontur->Status = cSWHand;
+    if (YesBit(gdp.Hot_Tepl->DiskrSens[0], cSmDHeat))
+        gdp.Hot_Tepl_Kontur->Status = cSAlrExternal;
 
 //	if (pGD_TControl_Tepl->Critery>0)
 //		ClrBit(GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].RCS,cbMinusCritery);
@@ -461,79 +469,80 @@ void __sInitKontur(char fnKontur) {
 /*************************************************************************/
 /*-*-*-*-*-*--Процедура определения нерегулируемости для контура-*-*-*-*-*/
 /*************************************************************************/
-void __sRegulKontur(char fnKontur) {
+void __sRegulKontur(char fnKontur)
+{
 
 //------------------------------------------------------------------------
 //Контура с выключенными насосами не участвуют в расчете или если не установлена аварийная граница
 //------------------------------------------------------------------------
 #ifdef DEMO
-    pGD_TControl_Tepl_Kontur->SErr=0;
+    gdp.TControl_Tepl_Kontur->SErr=0;
     return;
 #endif
-    if ((!pGD_TControl_Tepl_Kontur->PumpStatus))
+    if ((!gdp.TControl_Tepl_Kontur->PumpStatus))
     {
-        pGD_TControl_Tepl_Kontur->SErr = 0;
+        gdp.TControl_Tepl_Kontur->SErr = 0;
         return;
     }
 //------------------------------------------------------------------------
 //Подсчет нерегулирумости для контура
 //------------------------------------------------------------------------
 
-    IntX = ((pGD_TControl_Tepl_Kontur->DoT / 10))
-           - pGD_TControl_Tepl_Kontur->SensValue;
+    IntX = ((gdp.TControl_Tepl_Kontur->DoT / 10))
+           - gdp.TControl_Tepl_Kontur->SensValue;
     if (((IntX < 0) && (IntX > (-cErrKontur)))
         || ((IntX < cErrKontur) && (IntX > 0)))
         IntX = 0;
 
-    if ((!IntX) || (!SameSign(IntX, pGD_TControl_Tepl_Kontur->SErr))) //(LngX*((long)(pGD_TControl_Tepl_Kontur->SErr)))<0)))
-        pGD_TControl_Tepl_Kontur->SErr = 0;
-    pGD_TControl_Tepl_Kontur->SErr += IntX;
+    if ((!IntX) || (!SameSign(IntX, gdp.TControl_Tepl_Kontur->SErr))) //(LngX*((long)(pGD_TControl_Tepl_Kontur->SErr)))<0)))
+        gdp.TControl_Tepl_Kontur->SErr = 0;
+    gdp.TControl_Tepl_Kontur->SErr += IntX;
 
 //------------------------------------------------------------------------
 //Если общий, то взять нерегулируемость из теплицы А
 //------------------------------------------------------------------------
 //	if (YesBit(pGD_Hot_Tepl_Kontur->RCS,cbAndKontur))
-    if ((&(pGD_TControl_Tepl_Kontur->SErr))
-        != (&GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].SErr))
+    if ((&(gdp.TControl_Tepl_Kontur->SErr))
+        != (&GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].Kontur[fnKontur].SErr))
         ;
-    pGD_TControl_Tepl_Kontur->SErr = 0;
+    gdp.TControl_Tepl_Kontur->SErr = 0;
 //------------------------------------------------------------------------
 //Проверяем на контрольную границу
 //------------------------------------------------------------------------
-    if ((pGD_TControl_Tepl_Kontur->SErr >= v_ControlMidlWater)
-        || (pGD_TControl_Tepl_Kontur->SErr <= -v_ControlMidlWater))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbCtrlErrKontur);
+    if ((gdp.TControl_Tepl_Kontur->SErr >= v_ControlMidlWater)
+        || (gdp.TControl_Tepl_Kontur->SErr <= -v_ControlMidlWater))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbCtrlErrKontur);
 
 //------------------------------------------------------------------------
 //Проверяем на аварийную границу
 //------------------------------------------------------------------------
 
-    if (pGD_TControl_Tepl_Kontur->SErr >= v_AlarmMidlWater)
+    if (gdp.TControl_Tepl_Kontur->SErr >= v_AlarmMidlWater)
     {
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
-        pGD_TControl_Tepl_Kontur->SErr = v_AlarmMidlWater;
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
+        gdp.TControl_Tepl_Kontur->SErr = v_AlarmMidlWater;
     }
-    if (pGD_TControl_Tepl_Kontur->SErr <= -v_AlarmMidlWater)
+    if (gdp.TControl_Tepl_Kontur->SErr <= -v_AlarmMidlWater)
     {
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
-        pGD_TControl_Tepl_Kontur->SErr = -v_AlarmMidlWater;
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
+        gdp.TControl_Tepl_Kontur->SErr = -v_AlarmMidlWater;
     }
 //------------------------------------------------------------------------
 //Устанавливаем нерегулируемость в процентах со знаком
 //------------------------------------------------------------------------
 
-    IntY = pGD_TControl_Tepl_Kontur->SErr;
+    IntY = gdp.TControl_Tepl_Kontur->SErr;
     CorrectionRule(v_ControlMidlWater, v_AlarmMidlWater, 100, 0);
-    pGD_Hot_Tepl_Kontur->SError = (char) IntZ;
+    gdp.Hot_Tepl_Kontur->SError = (char) IntZ;
     if ((IntZ > cv_ResetMidlWater)
-        && (YesBit(pGD_TControl_Tepl->MechBusy[fnKontur].RCS, cMSBlockRegs)))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur);
+        && (YesBit(gdp.TControl_Tepl->MechBusy[fnKontur].RCS, cMSBlockRegs)))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur);
     IntY = -IntY;
     CorrectionRule(v_ControlMidlWater, v_AlarmMidlWater, 100, 0);
-    pGD_Hot_Tepl_Kontur->SError += (char) IntZ;
+    gdp.Hot_Tepl_Kontur->SError += (char) IntZ;
     if ((IntZ > cv_ResetMidlWater)
-        && (YesBit(pGD_TControl_Tepl->MechBusy[fnKontur].RCS, cMSBlockRegs)))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur);
+        && (YesBit(gdp.TControl_Tepl->MechBusy[fnKontur].RCS, cMSBlockRegs)))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur);
 
 }
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
@@ -603,9 +612,10 @@ void __sRegulKontur(char fnKontur) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Потенциальный приоритет для контура--*-*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sPotentialPosibilityKontur(char fInv) {
-    int* pRealPower;
-    pRealPower = &(pGD_TControl_Tepl_Kontur->RealPower[fInv]);
+void __sPotentialPosibilityKontur(char fInv)
+{
+    int16_t *pRealPower;
+    pRealPower = &(gdp.TControl_Tepl_Kontur->RealPower[fInv]);
 //------------------------------------------------------------------------
 //Приоритет по температуре воздуха в теплице
 //------------------------------------------------------------------------
@@ -613,7 +623,7 @@ void __sPotentialPosibilityKontur(char fInv) {
 //------------------------------------------------------------------------
 //Приоритет по влажности воздуха в теплице
 //------------------------------------------------------------------------
-    IntY = (int) pGD_Strategy_Kontur->RHPower;
+    IntY = (int) gdp.Strategy_Kontur->RHPower;
     IntX = -DefRH();
 
     IntZ = (int) (((long) IntY) * IntX / 1000);
@@ -621,13 +631,13 @@ void __sPotentialPosibilityKontur(char fInv) {
 //Приоритет по оптимальный температуре
 //------------------------------------------------------------------------
     IntX = 0;
-    if (pGD_Hot_Tepl_Kontur->Optimal)
+    if (gdp.Hot_Tepl_Kontur->Optimal)
     {
-        IntX = (pGD_Hot_Tepl_Kontur->Optimal - pGD_Hot_Tepl_Kontur->Do);
+        IntX = (gdp.Hot_Tepl_Kontur->Optimal - gdp.Hot_Tepl_Kontur->Do);
 //------------------------------------------------------------------------
 //Если контур выключен то оптимальня температура сравнивается с минимумом контура
 //------------------------------------------------------------------------
-        IntY = (int) pGD_Strategy_Kontur->OptimalPower;
+        IntY = (int) gdp.Strategy_Kontur->OptimalPower;
         IntX = (int) (((long) IntY * IntX / 100));
     }
 
@@ -635,90 +645,91 @@ void __sPotentialPosibilityKontur(char fInv) {
 //Приоритет с экономичностью
 //------------------------------------------------------------------------
 
-    (*pRealPower) = pGD_Strategy_Kontur->TempPower + IntX + IntZ;
+    (*pRealPower) = gdp.Strategy_Kontur->TempPower + IntX + IntZ;
     if ((*pRealPower) < 1)
         (*pRealPower) = 1;
     if (!fInv)
     {
-        (*pRealPower) = 100 - pGD_Strategy_Kontur->TempPower - IntX - IntZ;
+        (*pRealPower) = 100 - gdp.Strategy_Kontur->TempPower - IntX - IntZ;
         if ((*pRealPower) < 1)
             (*pRealPower) = 1;
     }
 
 }
-void __WorkableKontur(char fnKontur, char fnTepl) {
+void __WorkableKontur(char fnKontur, char fnTepl)
+{
 
 //------------------------------------------------------------------------
 //Внимание - нерегулируемость из-за ручного управления
 //------------------------------------------------------------------------
-    if (YesBit((*(pGD_Hot_Hand_Kontur + cHSmMixVal)).RCS,/*(cbNoMech+*/
+    if (YesBit((*(gdp.Hot_Hand_Kontur + cHSmMixVal)).RCS,/*(cbNoMech+*/
                cbManMech))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur);
 
-    IntY = GD.Hot.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].HandCtrl[cHSmMixVal
+    IntY = GD.Hot.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].HandCtrl[cHSmMixVal
                                                                     + fnKontur].Position;
     //------------------------------------------------------------------------
 //Установить возможности регулирования
 //------------------------------------------------------------------------
-    if ((pGD_Hot_Tepl_Kontur->Do < pGD_Hot_Tepl_Kontur->MaxCalc)
+    if ((gdp.Hot_Tepl_Kontur->Do < gdp.Hot_Tepl_Kontur->MaxCalc)
 #ifndef DEMO
-        && (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur)))
+        && (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur)))
 #endif
-        && (pGD_TControl_Tepl_Kontur->PumpStatus) && ((IntY < 100)))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegUpKontur);
+        && (gdp.TControl_Tepl_Kontur->PumpStatus) && ((IntY < 100)))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegUpKontur);
 //------------------------------------------------------------------------
 //Установить бит возможности работы насосом
 //------------------------------------------------------------------------
 #warning CHECK THIS
 // NEW
-    if ((!pGD_TControl_Tepl_Kontur->PumpStatus)
-        && (pGD_TControl_Tepl->Critery > 0) && (fnKontur < cSmKontur5))
+    if ((!gdp.TControl_Tepl_Kontur->PumpStatus)
+        && (gdp.TControl_Tepl->Critery > 0) && (fnKontur < cSmKontur5))
     {
         if ((GD.Hot.MidlSR < GD.TuneClimate.f_MinSun)
-            && (pGD_Hot_Tepl->AllTask.NextTAir
+            && (gdp.Hot_Tepl->AllTask.NextTAir
                 - GD.TControl.MeteoSensing[cSmOutTSens]
                 > GD.TuneClimate.f_DeltaOut)
-            || ((getTempHeat(fnTepl) - pGD_Hot_Tepl->AllTask.DoTHeat) < 0)
-            && (((pGD_Control_Tepl->c_PFactor % 100) < 90)
-                || (pGD_TControl_Tepl->StopVentI > 0)))
+            || ((getTempHeat(fnTepl) - gdp.Hot_Tepl->AllTask.DoTHeat) < 0)
+            && (((gdp.Control_Tepl->c_PFactor % 100) < 90)
+                || (gdp.TControl_Tepl->StopVentI > 0)))
         {
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur);
-            if ((pGD_TControl_Tepl_Kontur->NAndKontur == 1)
-                && (!pGD_TControl_Tepl->qMaxOwnKonturs))
-                pGD_TControl_Tepl_Kontur->RealPower[1] += 100;
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur);
+            if ((gdp.TControl_Tepl_Kontur->NAndKontur == 1)
+                && (!gdp.TControl_Tepl->qMaxOwnKonturs))
+                gdp.TControl_Tepl_Kontur->RealPower[1] += 100;
         }
     }
 //------------------------------------------------------------------------
 //Если надо охлаждать и включен насос
 //------------------------------------------------------------------------
-    if (pGD_TControl_Tepl_Kontur->PumpStatus)
+    if (gdp.TControl_Tepl_Kontur->PumpStatus)
     {
 //------------------------------------------------------------------------
 //Установить возможности регулирования
 //------------------------------------------------------------------------
-        if ((pGD_Hot_Tepl_Kontur->Do > pGD_Hot_Tepl_Kontur->MinCalc)
+        if ((gdp.Hot_Tepl_Kontur->Do > gdp.Hot_Tepl_Kontur->MinCalc)
 #ifndef DEMO
-            && (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur)))
+            && (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbAlarmErrKontur)))
 #endif
             && (IntY > 0))
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur);
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur);
 //------------------------------------------------------------------------
 //Установить возможности работы насосом
 //------------------------------------------------------------------------
-        if ((!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur)))
-            && (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur)))
-            && (!pGD_TControl_Tepl_Kontur->PumpPause)
-            && (pGD_TControl_Tepl->Critery < 0) && (!IntY)
+        if ((!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur)))
+            && (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur)))
+            && (!gdp.TControl_Tepl_Kontur->PumpPause)
+            && (gdp.TControl_Tepl->Critery < 0) && (!IntY)
             && (GD.TControl.MeteoSensing[cSmOutTSens] > 500))
-            SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur);
+            SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur);
     }
 
-    if ((YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur))
-        && (pGD_TControl_Tepl->Critery < 0))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur);
-    if ((YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegUpKontur))
-        && (pGD_TControl_Tepl->Critery > 0))
-        SetBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur);
+    if ((YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegDownKontur))
+        && (gdp.TControl_Tepl->Critery < 0))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur);
+    if ((YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegUpKontur))
+        && (gdp.TControl_Tepl->Critery > 0))
+        SetBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur);
 
 }
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
@@ -730,20 +741,21 @@ void __WorkableKontur(char fnKontur, char fnTepl) {
 /*************************************************************************/
 /*-Процедура определения приоритетов с возможностями и подсчета их суммы-*/
 /*************************************************************************/
-void __sRealPosibilityKonturs(char fnKontur, long* fMinMax) {
+void __sRealPosibilityKonturs(char fnKontur, long* fMinMax)
+{
 
 //------------------------------------------------------------------------
 //Если контур не участвует в управлении то пропускаем
 //------------------------------------------------------------------------
 
-    if (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS,
+    if (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS,
                  (cbReadyRegUpKontur + cbReadyPumpKontur))))
-        pGD_TControl_Tepl_Kontur->RealPower[1] = 0;
-    if (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS,
+        gdp.TControl_Tepl_Kontur->RealPower[1] = 0;
+    if (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS,
                  (cbReadyRegDownKontur + cbReadyPumpKontur))))
-        pGD_TControl_Tepl_Kontur->RealPower[0] = 0;
+        gdp.TControl_Tepl_Kontur->RealPower[0] = 0;
 
-    if (!(YesBit(pGD_Hot_Tepl_Kontur->ExtRCS,
+    if (!(YesBit(gdp.Hot_Tepl_Kontur->ExtRCS,
                  (cbReadyPumpKontur + cbReadyRegsKontur))))
         return; //ByteZ;
 
@@ -757,11 +769,11 @@ void __sRealPosibilityKonturs(char fnKontur, long* fMinMax) {
 //Меняем приоритеты регулирующих контуров в зависимости от нерегулируемости
 //------------------------------------------------------------------------
 
-    if (YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur))
+    if (YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyRegsKontur))
     {
-        if (pGD_TControl_Tepl_Kontur->NAndKontur == 1)
+        if (gdp.TControl_Tepl_Kontur->NAndKontur == 1)
         {
-            pGD_TControl_Tepl->NOwnKonturs++;
+            gdp.TControl_Tepl->NOwnKonturs++;
         }
 //------------------------------------------------------------------------
 //Ищем максимальный приоритет контуров и запоминаем его номер
@@ -769,26 +781,26 @@ void __sRealPosibilityKonturs(char fnKontur, long* fMinMax) {
     }
 
     if (fMinMax[0]
-        < pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower])
+        < gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower])
     {
         fMinMax[0] =
-        pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower];
-        pGD_TControl_Tepl->nMaxKontur = fnKontur;
+        gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower];
+        gdp.TControl_Tepl->nMaxKontur = fnKontur;
     }
     if ((fMinMax[1]
-         < pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower])
-        && (!YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur)))
+         < gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower])
+        && (!YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur)))
     {
         fMinMax[1] =
-        pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower];
+        gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower];
     }
     if ((fMinMax[2]
-         < pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower])
-        && (pGD_TControl_Tepl_Kontur->NAndKontur == 1)
-        && (!YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur)))
+         < gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower])
+        && (gdp.TControl_Tepl_Kontur->NAndKontur == 1)
+        && (!YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbReadyPumpKontur)))
     {
         fMinMax[2] =
-        pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower];
+        gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower];
 
     }
 
@@ -805,45 +817,49 @@ void __sRealPosibilityKonturs(char fnKontur, long* fMinMax) {
 /*************************************************************************/
 /*-*-*-*-*--Процедура распределения критерия на данный контур--*-*-*-*-*-*/
 /*************************************************************************/
-long __sRaspKontur(void) {
-    if ((!pGD_TControl_Tepl->qMaxKonturs)
-        || (!YesBit(pGD_Hot_Tepl_Kontur->RCS, cbGoMax)))
+long __sRaspKontur(void)
+{
+    if ((!gdp.TControl_Tepl->qMaxKonturs)
+        || (!YesBit(gdp.Hot_Tepl_Kontur->RCS, cbGoMax)))
         return 0;
 
-    pGD_TControl_Tepl->StopI = 0;
+    gdp.TControl_Tepl->StopI = 0;
 
-    long long_y = pGD_TControl_Tepl->Critery;
-    long_y = long_y / pGD_TControl_Tepl->qMaxKonturs;
+    long long_y = gdp.TControl_Tepl->Critery;
+    long_y = long_y / gdp.TControl_Tepl->qMaxKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / ((long) pGD_Strategy_Kontur->Powers);
+    long_y = long_y / ((long) gdp.Strategy_Kontur->Powers);
 
     return long_y;
 }
-long __sRaspOwnKontur(void) {
-    if ((!pGD_TControl_Tepl->qMaxOwnKonturs)
-        || (!YesBit(pGD_Hot_Tepl_Kontur->RCS, cbGoMaxOwn)))
+long __sRaspOwnKontur(void)
+{
+    if ((!gdp.TControl_Tepl->qMaxOwnKonturs)
+        || (!YesBit(gdp.Hot_Tepl_Kontur->RCS, cbGoMaxOwn)))
         return 0;
-    long long_y = pGD_TControl_Tepl->Critery;
-    long_y = long_y / pGD_TControl_Tepl->qMaxOwnKonturs;
+    long long_y = gdp.TControl_Tepl->Critery;
+    long_y = long_y / gdp.TControl_Tepl->qMaxOwnKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / ((long) pGD_Strategy_Kontur->Powers);
+    long_y = long_y / ((long) gdp.Strategy_Kontur->Powers);
 
     return long_y;
 }
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
-long __TempToVent(void) {
-    long long_y = 100 * ((long) pGD_TControl_Tepl->TVentCritery);
+long __TempToVent(void)
+{
+    long long_y = 100 * ((long) gdp.TControl_Tepl->TVentCritery);
     long_y = long_y / 50;
     long_y = long_y * 30;
-    long_y /= ((long) pGD_TControl_Tepl->f_Power);
+    long_y /= ((long) gdp.TControl_Tepl->f_Power);
 
     return long_y;
 }
-long __VentToTemp(long sVent) {
-    long long_y = sVent * ((long) pGD_TControl_Tepl->f_Power);
+long __VentToTemp(long sVent)
+{
+    long long_y = sVent * ((long) gdp.TControl_Tepl->f_Power);
     long_y /= 30;
     long_y *= 50; //((long)pGD_ConstMechanic->ConstMixVal[cHSmWinN].Power);
     return long_y / 100;
@@ -852,7 +868,8 @@ long __VentToTemp(long sVent) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки фрамуг--*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sLastCheckWindow(char fnTepl) {
+void __sLastCheckWindow(char fnTepl)
+{
     int DoUn;
     int DoOn;
     int tDo;
@@ -865,12 +882,12 @@ void __sLastCheckWindow(char fnTepl) {
     int tMaximum;
     int tSLevel;
 
-    MinOn = pGD_Hot_Tepl->Kontur[cSmWindowOnW].MinCalc;
-    MinUn = pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc;
-    MaxOn = pGD_Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc;
-    MaxUn = pGD_Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc;
+    MinOn = gdp.Hot_Tepl->Kontur[cSmWindowOnW].MinCalc;
+    MinUn = gdp.Hot_Tepl->Kontur[cSmWindowUnW].MinCalc;
+    MaxOn = gdp.Hot_Tepl->Kontur[cSmWindowOnW].MaxCalc;
+    MaxUn = gdp.Hot_Tepl->Kontur[cSmWindowUnW].MaxCalc;
 
-    IntY = pGD_TControl_Tepl->Kontur[cSmWindowUnW].CalcT;
+    IntY = gdp.TControl_Tepl->Kontur[cSmWindowUnW].CalcT;
     if (IntY < 0)
         IntY = 0;
     if (IntY > GD.TuneClimate.f_S1Level)
@@ -945,7 +962,7 @@ void __sLastCheckWindow(char fnTepl) {
     }
     tDo += tSLevel;
 
-    pGD_TControl_Tepl->AbsMaxVent = __VentToTemp(tDo);
+    gdp.TControl_Tepl->AbsMaxVent = __VentToTemp(tDo);
 
     if (DoOn < MinOn)
         DoOn = MinOn;
@@ -966,22 +983,22 @@ void __sLastCheckWindow(char fnTepl) {
     if (! getTempVent(fnTepl))
         IntY = 0;
     else
-        IntY = getTempVent(fnTepl) - pGD_Hot_Tepl->AllTask.DoTVent;
+        IntY = getTempVent(fnTepl) - gdp.Hot_Tepl->AllTask.DoTVent;
 
     if (((DoUn == MaxUn) && (DoOn == MaxOn) && (IntY > 0))
         || ((DoUn == MinUn) && (DoOn == MinOn) && (IntY < 0)))
-        pGD_TControl_Tepl->StopVentI++;
+        gdp.TControl_Tepl->StopVentI++;
     else
-        pGD_TControl_Tepl->StopVentI = 0;
+        gdp.TControl_Tepl->StopVentI = 0;
 
-    if (pGD_TControl_Tepl->StopVentI > cMaxStopI)
-        pGD_TControl_Tepl->StopVentI = cMaxStopI;
+    if (gdp.TControl_Tepl->StopVentI > cMaxStopI)
+        gdp.TControl_Tepl->StopVentI = cMaxStopI;
 
-    pGD_TControl_Tepl->Kontur[cSmWindowUnW].DoT = DoUn;
-    pGD_TControl_Tepl->Kontur[cSmWindowOnW].DoT = DoOn;
+    gdp.TControl_Tepl->Kontur[cSmWindowUnW].DoT = DoUn;
+    gdp.TControl_Tepl->Kontur[cSmWindowOnW].DoT = DoOn;
 
-    pGD_Hot_Tepl->Kontur[cSmWindowUnW].Do = (DoUn);
-    pGD_Hot_Tepl->Kontur[cSmWindowOnW].Do = (DoOn);
+    gdp.Hot_Tepl->Kontur[cSmWindowUnW].Do = (DoUn);
+    gdp.Hot_Tepl->Kontur[cSmWindowOnW].Do = (DoOn);
 }
 
 
@@ -1010,9 +1027,10 @@ void __sLastCheckWindow(char fnTepl) {
 /*****************************************************************************/
 /*Процедура преобразования значений температуры в температуру первого контура*/
 /*****************************************************************************/
-long __sThisToFirst(int in) {
+long __sThisToFirst(int in)
+{
 //	if (YesBit(pGD_Hot_Tepl_Kontur->RCS,cbScreenKontur)) return 0;
-    return(((((long) in) * ((long) pGD_Strategy_Kontur->Powers)) / 50));
+    return(((((long) in) * ((long) gdp.Strategy_Kontur->Powers)) / 50));
     /********************************************************************
      -----------Работа автонастройки временно приостановлена--------------
      *********************************************************************
@@ -1023,87 +1041,88 @@ long __sThisToFirst(int in) {
 /**************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки контура--*-*-*-*-*-*-*-*/
 /**************************************************************************/
-void __sLastCheckKontur(char fnKontur, int* fnCorCritery) {
+void __sLastCheckKontur(char fnKontur)
+{
     int OldDoT;
     long TempDo;
-    *fnCorCritery = 0;
 
-    if (YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur))
-        pGD_TControl_Tepl_Kontur->PumpStatus = 1;
+    if (YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbBlockPumpKontur))
+        gdp.TControl_Tepl_Kontur->PumpStatus = 1;
 
-    if (!pGD_TControl_Tepl_Kontur->PumpStatus)
+    if (!gdp.TControl_Tepl_Kontur->PumpStatus)
     {
         /*		if(pGD_TControl_Tepl_Kontur->DoT)
          (*fnCorCritery)+=((int)(pGD_TControl_Tepl_Kontur->DoT/100)-GD.Hot.Tepl[fnTepl].AllTask.DoTHeat/10);*/
-        pGD_TControl_Tepl_Kontur->DoT = 0;
-        pGD_Hot_Tepl_Kontur->Do = 0;
+        gdp.TControl_Tepl_Kontur->DoT = 0;
+        gdp.Hot_Tepl_Kontur->Do = 0;
         return;
 
     }
     //SetBit(pGD_Hot_Tepl_Kontur->RCS,cbOnPumpKontur);
 
-    if (pGD_TControl_Tepl_Kontur->Manual)
+    if (gdp.TControl_Tepl_Kontur->Manual)
         return;
 
-    if ((!SameSign(pGD_TControl_Tepl->Critery, pGD_TControl_Tepl_Kontur->SErr))
-        && (YesBit(pGD_Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur)))
+    if ((!SameSign(gdp.TControl_Tepl->Critery, gdp.TControl_Tepl_Kontur->SErr))
+        && (YesBit(gdp.Hot_Tepl_Kontur->ExtRCS, cbResetErrKontur)))
     {
-        OldDoT = pGD_TControl_Tepl_Kontur->DoT;
-        pGD_Hot_Tepl_Kontur->Do = ((pGD_TControl_Tepl_Kontur->SensValue));
-        ogrMin(&(pGD_Hot_Tepl_Kontur->Do), pGD_Hot_Tepl_Kontur->MinCalc);
-        ogrMax(&(pGD_Hot_Tepl_Kontur->Do), pGD_Hot_Tepl_Kontur->MaxCalc);
-        TempDo = pGD_Hot_Tepl_Kontur->Do * 10;
-        pGD_TControl_Tepl_Kontur->SErr = 0;
-        pGD_TControl_Tepl->Integral -= __sThisToFirst((int) ((OldDoT - TempDo)))
+        OldDoT = gdp.TControl_Tepl_Kontur->DoT;
+        gdp.Hot_Tepl_Kontur->Do = ((gdp.TControl_Tepl_Kontur->SensValue));
+        gdp.Hot_Tepl_Kontur->Do = clamp_min(gdp.Hot_Tepl_Kontur->Do, gdp.Hot_Tepl_Kontur->MinCalc);
+        gdp.Hot_Tepl_Kontur->Do = clamp_max(gdp.Hot_Tepl_Kontur->Do, gdp.Hot_Tepl_Kontur->MaxCalc);
+        TempDo = gdp.Hot_Tepl_Kontur->Do * 10;
+        gdp.TControl_Tepl_Kontur->SErr = 0;
+        gdp.TControl_Tepl->Integral -= __sThisToFirst((int) ((OldDoT - TempDo)))
                                        * 100;
         //	pGD_TControl_Tepl->SaveIntegral-=__sThisToFirst((int)((OldDoT-TempDo)))*100;
-        pGD_TControl_Tepl_Kontur->DoT = TempDo;
+        gdp.TControl_Tepl_Kontur->DoT = TempDo;
         return;
     }
-    if ((!pGD_TControl_Tepl_Kontur->DoT)
-        && (pGD_TControl_Tepl_Kontur->LastDoT < 5000))
-        pGD_TControl_Tepl_Kontur->DoT = pGD_TControl_Tepl_Kontur->LastDoT;
-    pGD_TControl_Tepl_Kontur->DoT = pGD_TControl_Tepl_Kontur->DoT
-                                      + (int) (pGD_TControl_Tepl_Kontur->CalcT);
-    pGD_Hot_Tepl_Kontur->Do = (pGD_TControl_Tepl_Kontur->DoT / 10);
+    if ((!gdp.TControl_Tepl_Kontur->DoT)
+        && (gdp.TControl_Tepl_Kontur->LastDoT < 5000))
+        gdp.TControl_Tepl_Kontur->DoT = gdp.TControl_Tepl_Kontur->LastDoT;
+    gdp.TControl_Tepl_Kontur->DoT = gdp.TControl_Tepl_Kontur->DoT
+                                    + (int) (gdp.TControl_Tepl_Kontur->CalcT);
+    gdp.Hot_Tepl_Kontur->Do = (gdp.TControl_Tepl_Kontur->DoT / 10);
 
-    if (pGD_Hot_Tepl_Kontur->Do <= pGD_Hot_Tepl_Kontur->MinCalc)
+    if (gdp.Hot_Tepl_Kontur->Do <= gdp.Hot_Tepl_Kontur->MinCalc)
     {
-        pGD_TControl_Tepl_Kontur->DoT = (((pGD_Hot_Tepl_Kontur->MinCalc)))
-                                          * 10;
+        gdp.TControl_Tepl_Kontur->DoT = (((gdp.Hot_Tepl_Kontur->MinCalc)))
+                                        * 10;
     }
-    if (pGD_Hot_Tepl_Kontur->Do >= pGD_Hot_Tepl_Kontur->MaxCalc)
+    if (gdp.Hot_Tepl_Kontur->Do >= gdp.Hot_Tepl_Kontur->MaxCalc)
     {
-        pGD_TControl_Tepl_Kontur->DoT = (((pGD_Hot_Tepl_Kontur->MaxCalc)))
-                                          * 10;
+        gdp.TControl_Tepl_Kontur->DoT = (((gdp.Hot_Tepl_Kontur->MaxCalc)))
+                                        * 10;
     }
 //	if (pGD_Hot_Tepl_Kontur->Do<pGD_Hot_Tepl->AllTask.DoTHeat/10)
 //		pGD_Hot_Tepl_Kontur->Do=pGD_Hot_Tepl_Kontur->MinCalc;//GD.Hot.Tepl[fnTepl].AllTask.DoTHeat/10;
 
 //	(*fnCorCritery)+=(pGD_Hot_Tepl_Kontur->Do-(pGD_TControl_Tepl_Kontur->DoT/10));
-    pGD_Hot_Tepl_Kontur->Do = (pGD_TControl_Tepl_Kontur->DoT / 10);
+    gdp.Hot_Tepl_Kontur->Do = (gdp.TControl_Tepl_Kontur->DoT / 10);
 
-    pGD_TControl_Tepl_Kontur->LastDoT = pGD_TControl_Tepl_Kontur->DoT;
+    gdp.TControl_Tepl_Kontur->LastDoT = gdp.TControl_Tepl_Kontur->DoT;
 
 }
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 
-int __sCalcTempKonturs(void) {
+int __sCalcTempKonturs(void)
+{
     int SumTemp = 0;
     for (int i = 0; i < cSWaterKontur - 2; i++)
     {
         SetPointersOnKontur(i);
         //if 	(ByteX=) continue;
-        if (pGD_TControl_Tepl_Kontur->DoT)
-            SumTemp += __sThisToFirst(pGD_TControl_Tepl_Kontur->DoT)
-                       - pGD_Hot_Tepl->AllTask.DoTHeat;
-        else if ((pGD_TControl_Tepl_Kontur->LastDoT < 5000)
-                 && (pGD_TControl_Tepl_Kontur->LastDoT
-                     > pGD_Hot_Tepl->AllTask.DoTHeat))
-            SumTemp += __sThisToFirst(pGD_TControl_Tepl_Kontur->LastDoT)
-                       - pGD_Hot_Tepl->AllTask.DoTHeat;
+        if (gdp.TControl_Tepl_Kontur->DoT)
+            SumTemp += __sThisToFirst(gdp.TControl_Tepl_Kontur->DoT)
+                       - gdp.Hot_Tepl->AllTask.DoTHeat;
+        else if ((gdp.TControl_Tepl_Kontur->LastDoT < 5000)
+                 && (gdp.TControl_Tepl_Kontur->LastDoT
+                     > gdp.Hot_Tepl->AllTask.DoTHeat))
+            SumTemp += __sThisToFirst(gdp.TControl_Tepl_Kontur->LastDoT)
+                       - gdp.Hot_Tepl->AllTask.DoTHeat;
     }
     return SumTemp;
 }
@@ -1111,7 +1130,8 @@ int __sCalcTempKonturs(void) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура начальных установок для контура--*-*-*-*-*-*/
 /*************************************************************************/
-void __sCalcKonturs(void) {
+void __sCalcKonturs(void)
+{
     long MinMaxPowerReg[3];
     long temp;
     int OldCrit;
@@ -1125,11 +1145,11 @@ void __sCalcKonturs(void) {
 //		if(!pGD_Hot_Tepl->AllTask.NextTAir) return;
 
 //Определение направления нагрев или охлаждени
-        pGD_TControl_Tepl->CurrPower = 0;
-        if (pGD_TControl_Tepl->Critery > 0)
-            pGD_TControl_Tepl->CurrPower = 1;
+        gdp.TControl_Tepl->CurrPower = 0;
+        if (gdp.TControl_Tepl->Critery > 0)
+            gdp.TControl_Tepl->CurrPower = 1;
 // Отключить, если нет задания
-        if (!pGD_Hot_Tepl->AllTask.DoTHeat)
+        if (!gdp.Hot_Tepl->AllTask.DoTHeat)
             continue;
 // Расчет минимумов и максимумов контуров
         for (int i = 0; i < cSWaterKontur; i++)
@@ -1150,34 +1170,34 @@ void __sCalcKonturs(void) {
         MinMaxPowerReg[2] = 0;
         MinMaxPowerReg[1] = 0;
         MinMaxPowerReg[0] = 0;
-        pGD_TControl_Tepl->nMaxKontur = -1;
-        pGD_TControl_Tepl->NOwnKonturs = 0;
+        gdp.TControl_Tepl->nMaxKontur = -1;
+        gdp.TControl_Tepl->NOwnKonturs = 0;
         if (!GD.Hot.Tepl[fnTepl].AllTask.DoTHeat)
             continue;
         for (int i = 0; i < cSWaterKontur; i++)
         {
             SetPointersOnKontur(i);
             __sRegulKontur(i);
-            pGD_TControl_Tepl_Kontur->Manual = 0;
-            if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
+            gdp.TControl_Tepl_Kontur->Manual = 0;
+            if (YesBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
-            if (pGD_Hot_Tepl_Kontur->Do)
+            if (gdp.Hot_Tepl_Kontur->Do)
             {
-                pGD_TControl_Tepl_Kontur->PumpStatus = 1;
-                pGD_TControl_Tepl_Kontur->Manual = 1;
-                pGD_TControl_Tepl_Kontur->DoT = (pGD_Hot_Tepl_Kontur->Do * 10);
+                gdp.TControl_Tepl_Kontur->PumpStatus = 1;
+                gdp.TControl_Tepl_Kontur->Manual = 1;
+                gdp.TControl_Tepl_Kontur->DoT = (gdp.Hot_Tepl_Kontur->Do * 10);
                 continue;
             }
-            pGD_Hot_Tepl_Kontur->Do = (pGD_TControl_Tepl_Kontur->DoT / 10);
+            gdp.Hot_Tepl_Kontur->Do = (gdp.TControl_Tepl_Kontur->DoT / 10);
             __sPotentialPosibilityKontur(0); //Приоритет в случае охлаждения
             __sPotentialPosibilityKontur(1); //Приоритет в случае нагрева
 
             __WorkableKontur(i, fnTepl);
             __sRealPosibilityKonturs(i, MinMaxPowerReg);
-            pGD_Hot_Tepl_Kontur->Priority =
-            (int) (pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower]);
-            pGD_TControl_Tepl->PowMaxKonturs = MinMaxPowerReg[1];
-            pGD_TControl_Tepl->PowOwnMaxKonturs = MinMaxPowerReg[2];
+            gdp.Hot_Tepl_Kontur->Priority =
+            (int) (gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower]);
+            gdp.TControl_Tepl->PowMaxKonturs = MinMaxPowerReg[1];
+            gdp.TControl_Tepl->PowOwnMaxKonturs = MinMaxPowerReg[2];
         }
 
 //		if ((GD.TControl.PrevPozFluger!=GD.Hot.PozFluger)&&(GD.TuneClimate.f_changeWindows))
@@ -1193,35 +1213,35 @@ void __sCalcKonturs(void) {
 
 //		pGD_TControl_Tepl->Kontur[cSmWindowUnW].CalcT=0;
 
-        pGD_Hot_Tepl->Kontur[cSmWindowUnW].Optimal =
-        pGD_TControl_Tepl->f_NMinDelta;
+        gdp.Hot_Tepl->Kontur[cSmWindowUnW].Optimal =
+        gdp.TControl_Tepl->f_NMinDelta;
 
-        pGD_TControl_Tepl->Kontur[cSmWindowUnW].CalcT = __TempToVent();
+        gdp.TControl_Tepl->Kontur[cSmWindowUnW].CalcT = __TempToVent();
 
         __sLastCheckWindow(fnTepl);
 
-        pGD_TControl_Tepl->qMaxKonturs = 0;
-        pGD_TControl_Tepl->qMaxOwnKonturs = 0;
+        gdp.TControl_Tepl->qMaxKonturs = 0;
+        gdp.TControl_Tepl->qMaxOwnKonturs = 0;
 
         for (int i = 0; i < cSWaterKontur; i++)
         {
             SetPointersOnKontur(i);
-            if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
+            if (YesBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
-            if ((pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower]
-                 >= pGD_TControl_Tepl->PowMaxKonturs)
-                && (pGD_TControl_Tepl->PowMaxKonturs))
+            if ((gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower]
+                 >= gdp.TControl_Tepl->PowMaxKonturs)
+                && (gdp.TControl_Tepl->PowMaxKonturs))
             {
-                SetBit(pGD_Hot_Tepl_Kontur->RCS, cbGoMax);
-                pGD_TControl_Tepl->qMaxKonturs++;
+                SetBit(gdp.Hot_Tepl_Kontur->RCS, cbGoMax);
+                gdp.TControl_Tepl->qMaxKonturs++;
             }
-            if ((pGD_TControl_Tepl_Kontur->RealPower[pGD_TControl_Tepl->CurrPower]
-                 >= pGD_TControl_Tepl->PowOwnMaxKonturs)
-                && (pGD_TControl_Tepl->PowOwnMaxKonturs)
-                && (pGD_TControl_Tepl_Kontur->NAndKontur == 1))
+            if ((gdp.TControl_Tepl_Kontur->RealPower[gdp.TControl_Tepl->CurrPower]
+                 >= gdp.TControl_Tepl->PowOwnMaxKonturs)
+                && (gdp.TControl_Tepl->PowOwnMaxKonturs)
+                && (gdp.TControl_Tepl_Kontur->NAndKontur == 1))
             {
-                SetBit(pGD_Hot_Tepl_Kontur->RCS, cbGoMaxOwn);
-                pGD_TControl_Tepl->qMaxOwnKonturs++;
+                SetBit(gdp.Hot_Tepl_Kontur->RCS, cbGoMaxOwn);
+                gdp.TControl_Tepl->qMaxOwnKonturs++;
             }
         }
     }
@@ -1236,33 +1256,33 @@ void __sCalcKonturs(void) {
 
 //		if (!pGD_TControl_Tepl->qMaxOwnKonturs)
 //			pGD_TControl_Tepl->StopI=2;
-        if (!pGD_Hot_Tepl->AllTask.DoTHeat)
+        if (!gdp.Hot_Tepl->AllTask.DoTHeat)
             continue;
 
-        if ((pGD_TControl_Tepl->nMaxKontur >= 0)
+        if ((gdp.TControl_Tepl->nMaxKontur >= 0)
             && (YesBit(
-                      pGD_Hot_Tepl->Kontur[pGD_TControl_Tepl->nMaxKontur].ExtRCS,
+                      gdp.Hot_Tepl->Kontur[gdp.TControl_Tepl->nMaxKontur].ExtRCS,
                       cbReadyPumpKontur))
             && (!YesBit(
-                       pGD_Hot_Tepl->Kontur[pGD_TControl_Tepl->nMaxKontur].RCS,
+                       gdp.Hot_Tepl->Kontur[gdp.TControl_Tepl->nMaxKontur].RCS,
                        cbPumpChange)))
         {
             int byte_y = 0;
-            pGD_TControl_Tepl->qMaxKonturs = 0;
-            pGD_TControl_Tepl->qMaxOwnKonturs = 0;
-            if (pGD_TControl_Tepl->Critery < 0)
+            gdp.TControl_Tepl->qMaxKonturs = 0;
+            gdp.TControl_Tepl->qMaxOwnKonturs = 0;
+            if (gdp.TControl_Tepl->Critery < 0)
             {
                 for (tTepl = 0; tTepl < cSTepl; tTepl++)
                 {
-                    if (!(pGD_TControl_Tepl->Kontur[pGD_TControl_Tepl->nMaxKontur].Separate
+                    if (!(gdp.TControl_Tepl->Kontur[gdp.TControl_Tepl->nMaxKontur].Separate
                           & (1 << tTepl)))
                         continue;
 
                     if ((!(YesBit(
-                                 GD.Hot.Tepl[tTepl].Kontur[pGD_TControl_Tepl->nMaxKontur].ExtRCS,
+                                 GD.Hot.Tepl[tTepl].Kontur[gdp.TControl_Tepl->nMaxKontur].ExtRCS,
                                  cbReadyPumpKontur)))
                         && ((!GD.TControl.Tepl[tTepl].NOwnKonturs)
-                            || (pGD_TControl_Tepl->NOwnKonturs)))
+                            || (gdp.TControl_Tepl->NOwnKonturs)))
                         byte_y = 1;
                 }
             }
@@ -1270,16 +1290,16 @@ void __sCalcKonturs(void) {
             {
                 for (tTepl = 0; tTepl < cSTepl; tTepl++)
                 {
-                    if (!(pGD_TControl_Tepl->Kontur[pGD_TControl_Tepl->nMaxKontur].Separate
+                    if (!(gdp.TControl_Tepl->Kontur[gdp.TControl_Tepl->nMaxKontur].Separate
                           & (1 << tTepl)))
                         continue;
-                    GD.TControl.Tepl[tTepl].Kontur[pGD_TControl_Tepl->nMaxKontur].PumpStatus =
+                    GD.TControl.Tepl[tTepl].Kontur[gdp.TControl_Tepl->nMaxKontur].PumpStatus =
                     1
-                    - pGD_TControl_Tepl->Kontur[pGD_TControl_Tepl->nMaxKontur].PumpStatus;
-                    GD.TControl.Tepl[tTepl].Kontur[pGD_TControl_Tepl->nMaxKontur].PumpPause =
+                    - gdp.TControl_Tepl->Kontur[gdp.TControl_Tepl->nMaxKontur].PumpStatus;
+                    GD.TControl.Tepl[tTepl].Kontur[gdp.TControl_Tepl->nMaxKontur].PumpPause =
                     cPausePump;
                     SetBit(
-                          GD.Hot.Tepl[tTepl].Kontur[pGD_TControl_Tepl->nMaxKontur].RCS,
+                          GD.Hot.Tepl[tTepl].Kontur[gdp.TControl_Tepl->nMaxKontur].RCS,
                           cbPumpChange);
                 }
             }
@@ -1294,12 +1314,12 @@ void __sCalcKonturs(void) {
         {
             SetPointersOnTepl(fnTepl);
             SetPointersOnKontur(i);
-            pGD_TControl_Tepl->RealPower = 0;
-            if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
+            gdp.TControl_Tepl->RealPower = 0;
+            if (YesBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
-            pGD_TControl_Tepl->NAndKontur =
-            pGD_TControl_Tepl_Kontur->NAndKontur;
-            GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].RealPower +=
+            gdp.TControl_Tepl->NAndKontur =
+            gdp.TControl_Tepl_Kontur->NAndKontur;
+            GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].RealPower +=
             __sRaspKontur();
 //			if ((!pGD_TControl_Tepl->NOwnKonturs)&&(pGD_TControl_Tepl_Kontur->RealPower))
 //			{
@@ -1312,26 +1332,27 @@ void __sCalcKonturs(void) {
         {
             SetPointersOnTepl(fnTepl);
             SetPointersOnKontur(i);
-            if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
+            if (YesBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
-            if (pGD_TControl_Tepl_Kontur->NAndKontur == 1)
+            if (gdp.TControl_Tepl_Kontur->NAndKontur == 1)
                 continue;
-            long long_y = GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].RealPower;
-            int8_t byte_w = GD.TControl.Tepl[pGD_TControl_Tepl_Kontur->MainTepl].NAndKontur;
+            long long_y = GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].RealPower;
+            int8_t byte_w = GD.TControl.Tepl[gdp.TControl_Tepl_Kontur->MainTepl].NAndKontur;
             long_y /= byte_w;
 
-            OldCrit = pGD_TControl_Tepl->Critery;
-            if (pGD_TControl_Tepl->NOwnKonturs)
-                pGD_TControl_Tepl->Critery = pGD_TControl_Tepl->Critery
+            OldCrit = gdp.TControl_Tepl->Critery;
+            if (gdp.TControl_Tepl->NOwnKonturs)
+                gdp.TControl_Tepl->Critery = gdp.TControl_Tepl->Critery
                                              - __sThisToFirst((int) ((long_y)));
-            if (!SameSign(OldCrit, pGD_TControl_Tepl->Critery))
-                pGD_TControl_Tepl->Critery = 0;
-            pGD_TControl_Tepl_Kontur->CalcT = long_y;
-            __sLastCheckKontur(i, &IntY);
+            if (!SameSign(OldCrit, gdp.TControl_Tepl->Critery))
+                gdp.TControl_Tepl->Critery = 0;
+            gdp.TControl_Tepl_Kontur->CalcT = long_y;
+            __sLastCheckKontur(i);
+            IntY = 0;
 
-            if ((pGD_Hot_Tepl->MaxReqWater < pGD_Hot_Tepl_Kontur->Do)
+            if ((gdp.Hot_Tepl->MaxReqWater < gdp.Hot_Tepl_Kontur->Do)
                 && (i < cSWaterKontur))
-                pGD_Hot_Tepl->MaxReqWater = pGD_Hot_Tepl_Kontur->Do;
+                gdp.Hot_Tepl->MaxReqWater = gdp.Hot_Tepl_Kontur->Do;
 //			pGD_TControl_Tepl->KonturIntegral+=__sThisToFirst(IntY);
         }
 
@@ -1343,24 +1364,25 @@ void __sCalcKonturs(void) {
         for (int i = 0; i < cSWaterKontur; i++)
         {
             SetPointersOnKontur(i);
-            if (YesBit(pGD_Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
+            if (YesBit(gdp.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
-            if (pGD_TControl_Tepl_Kontur->NAndKontur != 1)
+            if (gdp.TControl_Tepl_Kontur->NAndKontur != 1)
                 continue;
-            pGD_TControl_Tepl_Kontur->CalcT = __sRaspOwnKontur();
-            __sLastCheckKontur(i, &IntY);
+            gdp.TControl_Tepl_Kontur->CalcT = __sRaspOwnKontur();
+            __sLastCheckKontur(i);
+            IntY = 0;
 //			if ((((long)IntY)*pGD_TControl_Tepl->Critery)<0) IntY=0;
-            if ((pGD_Hot_Tepl->MaxReqWater < pGD_Hot_Tepl_Kontur->Do)
+            if ((gdp.Hot_Tepl->MaxReqWater < gdp.Hot_Tepl_Kontur->Do)
                 && (i < cSWaterKontur))
-                pGD_Hot_Tepl->MaxReqWater = pGD_Hot_Tepl_Kontur->Do;
+                gdp.Hot_Tepl->MaxReqWater = gdp.Hot_Tepl_Kontur->Do;
 //			pGD_TControl_Tepl->KonturIntegral+=__sThisToFirst(IntY);
         }
-        if ((!pGD_TControl_Tepl->NOwnKonturs))
-            pGD_TControl_Tepl->StopI++;
+        if ((!gdp.TControl_Tepl->NOwnKonturs))
+            gdp.TControl_Tepl->StopI++;
         else
-            pGD_TControl_Tepl->StopI = 0;
-        if (pGD_TControl_Tepl->StopI > cMaxStopI)
-            pGD_TControl_Tepl->StopI = cMaxStopI;
+            gdp.TControl_Tepl->StopI = 0;
+        if (gdp.TControl_Tepl->StopI > cMaxStopI)
+            gdp.TControl_Tepl->StopI = cMaxStopI;
     }
 
 }
@@ -1368,15 +1390,16 @@ void __sCalcKonturs(void) {
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура начальных установок для контура--*-*-*-*-*-*/
 /*************************************************************************/
-void __sMechScreen(void) {
+void __sMechScreen(void)
+{
     char fnTepl;
     for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
     {
         SetPointersOnTepl(fnTepl);
-        if (pGD_TControl_Tepl->Screen[0].Value)
+        if (gdp.TControl_Tepl->Screen[0].Value)
         {
-            pGD_Hot_Tepl->OtherCalc.CorrScreen =
-            pGD_Hot_Tepl->Kontur[cSmScreen].Do; //IntZ
+            gdp.Hot_Tepl->OtherCalc.CorrScreen =
+            gdp.Hot_Tepl->Kontur[cSmScreen].Do; //IntZ
         }
         SetPosScreen(cTermHorzScr);
         SetPosScreen(cSunHorzScr);
@@ -1387,7 +1410,8 @@ void __sMechScreen(void) {
     }
 }
 
-void __sMechWindows(void) {
+void __sMechWindows(void)
+{
     char WindWin[2];
     char fnTepl;
 //Оптимизация
@@ -1400,23 +1424,23 @@ void __sMechWindows(void) {
         for (int i = cSWaterKontur; i < cSWaterKontur + 2; i++)
         {
             int byte_z = i - cSWaterKontur;
-            pGD_Hot_Tepl_Kontur = &(pGD_Hot_Tepl->Kontur[i]);
-            pGD_TControl_Tepl_Kontur =
-            &(pGD_TControl_Tepl->Kontur[WindWin[byte_z]]);
-            pGD_Hot_Hand_Kontur = &GD.Hot.Tepl[fnTepl].HandCtrl[cHSmMixVal
+            gdp.Hot_Tepl_Kontur = &(gdp.Hot_Tepl->Kontur[i]);
+            gdp.TControl_Tepl_Kontur =
+            &(gdp.TControl_Tepl->Kontur[WindWin[byte_z]]);
+            gdp.Hot_Hand_Kontur = &GD.Hot.Tepl[fnTepl].HandCtrl[cHSmMixVal
                                                                 + WindWin[byte_z]];
 
-            if (pGD_TControl_Tepl_Kontur->TPause)
+            if (gdp.TControl_Tepl_Kontur->TPause)
             {
-                pGD_TControl_Tepl_Kontur->TPause--;
-                ogrMin(&(pGD_TControl_Tepl_Kontur->TPause), 0);
+                gdp.TControl_Tepl_Kontur->TPause--;
+                gdp.TControl_Tepl_Kontur->TPause = clamp_min(gdp.TControl_Tepl_Kontur->TPause, 0);
                 continue;
             }
 
-            IntX = pGD_Hot_Tepl_Kontur->Do;
+            IntX = gdp.Hot_Tepl_Kontur->Do;
 //			IntY=abs(IntZ-((int)(pGD_Hot_Hand_Kontur->Position)));
 
-            if (YesBit(pGD_Hot_Hand_Kontur->RCS, cbManMech))
+            if (YesBit(gdp.Hot_Hand_Kontur->RCS, cbManMech))
                 continue;
 
             /*		    if ((IntY<pGD_TControl_Tepl->f_NMinDelta)&&(IntX)&&(IntX!=100))continue;
@@ -1431,7 +1455,7 @@ void __sMechWindows(void) {
              }
              */
 
-            pGD_Hot_Hand_Kontur->Position = (char) IntX;
+            gdp.Hot_Hand_Kontur->Position = (char) IntX;
 
 //			pGD_TControl_Tepl_Kontur->TPause=GD.TuneClimate.f_MinTime;
         }
@@ -1443,24 +1467,25 @@ void __sMechWindows(void) {
 }
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 
-void DecPumpPause(void) {
+void DecPumpPause(void)
+{
     for (int i = 0; i < cSWaterKontur; i++)
     {
         SetPointersOnKontur(i);
-        if (((*(pGD_Hot_Hand_Kontur + cHSmMixVal)).Position < 100)
-            && ((*(pGD_Hot_Hand_Kontur + cHSmMixVal)).Position > 0))
+        if (((*(gdp.Hot_Hand_Kontur + cHSmMixVal)).Position < 100)
+            && ((*(gdp.Hot_Hand_Kontur + cHSmMixVal)).Position > 0))
         {
-            pGD_TControl_Tepl_Kontur->PumpPause = cPausePump;
-            if (pGD_TControl_Tepl_Kontur->DoT > 4000)
-                pGD_TControl_Tepl_Kontur->PumpPause += cPausePump;
+            gdp.TControl_Tepl_Kontur->PumpPause = cPausePump;
+            if (gdp.TControl_Tepl_Kontur->DoT > 4000)
+                gdp.TControl_Tepl_Kontur->PumpPause += cPausePump;
         }
-        if (pGD_TControl_Tepl_Kontur->PumpPause > 0)
+        if (gdp.TControl_Tepl_Kontur->PumpPause > 0)
         {
-            pGD_TControl_Tepl_Kontur->PumpPause--;
+            gdp.TControl_Tepl_Kontur->PumpPause--;
 //			SetBit(pGD_Hot_Tepl->ExtRCS,cbPausePumpTepl);
         }
         else
-            pGD_TControl_Tepl_Kontur->PumpPause = 0;
+            gdp.TControl_Tepl_Kontur->PumpPause = 0;
     }
 
 }

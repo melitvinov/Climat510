@@ -6,11 +6,12 @@
 #include "405_EngRus.h"
 
 #include "65_gd.h"
+#include "65_siod.h"
 
 // for modul_sum constant
 #include "stm32f10x_RS485Master.h"
 #include "stm32f10x_LCD240x64.h"
-#include "climdefstuff.h"
+#include "wtf.h"
 
 #define	MaxY_menu		9
 
@@ -19,17 +20,12 @@
 #define SumTeplZones	GD.Control.ConfSTepl
 
 // XXX: this stuff is from climdef.h
-int16_t     SaveInt2;
-uchar   nBlEEP;
-
-uchar   StartMenuY;
-uchar   NowCurRow,NewCurRow;
-int     SaveSample,Savebuf;
+uchar StartMenuY;
+uchar NowCurRow;
+uchar NewCurRow;
+int Savebuf;
 //char	ToLowTime, ToHiTime;
 uchar   StartY_menu2;
-eCalSensor *eCS;
-
-void YMenu(char pozY);
 
 char GrafView;
 
@@ -50,21 +46,16 @@ extern int16_t SaveInt;
 
 extern uchar SumYMenu;
 
-extern uint16_t fnSIOfaza[8];
-extern uint16_t fnSIOpumpOut[8];
-extern uint16_t fnSIOvelvOut[8];
-extern uint16_t fnSIOpause[8];
+extern uint16_t ctx__fnSIOfaza[8];
+extern uint16_t ctx__fnSIOpumpOut[8];
+extern uint16_t ctx__fnSIOvelvOut[8];
+extern uint16_t ctx__fnSIOpause[8];
 
-extern eMechConfig *pGD_MechConfig;
-extern eMechanic *pGD_Hot_Hand_Kontur;
-extern eTControlTepl *pGD_TControl_Tepl;
-extern uint16_t *pGD_MechConfig_Kontur;
-//,ByteY,ByteX,ByteZ;
-//ByteW,ByteY,ByteX,
-
-const uchar DayOfWeek[][10]=
+static const uchar DayOfWeek[][10]=
 {"Mon#\276o\275e\343","Tue#\263\277o\310\275","Wed#c\310e\343a","Thu#\300e\277\263","Fri#\276\307\277\275","Sat#c\311\262\262","Sun#\263oc\272\310"};
 
+static int16_t SaveInt2;
+static uchar nBlEEP;
 
 //-------------------- рассчет дня недели --------------------------
 
@@ -236,14 +227,16 @@ void pmDate(void) {
 //    w_int(&GD.Config[cfSumIrrigVal],SS, 0);
     Ad_Buf=Str3;
     w_txt(Mes70); //Time ~
-    w_int(&CtrTime,SSdSS, 0);
+
+    w_int(&GD.Hot.Time,SSdSS, 0);
+
     lcdbuf[Ad_Buf++]=':';
     lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
     lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
     if (!Y_menu2) BlkW=1;
     Ad_Buf=Str4;
     w_txt(Mes71); //Date~
-    w_int(&CtrData,DsMsY, 0);
+    w_int(&GD.Hot.Data,DsMsY, 0);
     Ad_Buf++;
     int day=NowDayOfWeek;
     int day_of_week;
@@ -256,7 +249,7 @@ void pmDate(void) {
     if (EndInput)
     {
         EndInput=0;
-        if (CtrTime>=24*60) CtrTime=1;
+        if (GD.Hot.Time>=24*60) GD.Hot.Time=1;
 //		CalcDayOfWeek();
         SetRTC();
     }
@@ -286,7 +279,7 @@ void pmStrategy(void) {
 }
 
 void pmParam() {
-    char* OutStr;
+    const char *OutStr;
     w_txt(Mes85); //Parameters
     if (!x_menu) return;
 
@@ -493,7 +486,7 @@ void pmHand(void) {
         while (Y_menu2< cSRegCtrl*2)
         {
             byte_w=Y_menu2/2;
-            if (pGD_MechConfig->RNum[byte_w]) break;
+            if (gdp.MechConfig->RNum[byte_w]) break;
             Y_menu2++;
         }
         if (Y_menu2 >= cSRegCtrl*2)
@@ -512,26 +505,26 @@ void pmHand(void) {
         Ad_Buf=Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
 
-        w_int(&pGD_Hot_Hand_Kontur->RCS,bS, 0x01);
-        AutoMan(pGD_Hot_Hand_Kontur->RCS, 0x01);
+        w_int(&gdp.Hot_Hand_Kontur->RCS,bS, 0x01);
+        AutoMan(gdp.Hot_Hand_Kontur->RCS, 0x01);
         if (!(Y_menu2%2)) BlkW=1;
         Ad_Buf=Str4;
         w_txt(Mes133); /* Ход клап */ //Boiler val time~~
-        w_int(&pGD_Hot_Hand_Kontur->Position,SSS, 0);
+        w_int(&gdp.Hot_Hand_Kontur->Position,SSS, 0);
         lcdbuf[Ad_Buf++]='%';
         BlkW=1;
         lcdbuf[Ad_Buf++]='(';
-        w_int(&pGD_TControl_Tepl->MechBusy[byte_w].TimeRealMech,SSSi, 0);
+        w_int(&gdp.TControl_Tepl->MechBusy[byte_w].TimeRealMech,SSSi, 0);
         w_txt("s) #c) ");
-        if (pGD_TControl_Tepl->MechBusy[byte_w].Sens)
+        if (gdp.TControl_Tepl->MechBusy[byte_w].Sens)
         {
             lcdbuf[Ad_Buf++]='(';
-            w_int(&pGD_TControl_Tepl->MechBusy[byte_w].Sens->Value,SSSpS, 0);
+            w_int(&gdp.TControl_Tepl->MechBusy[byte_w].Sens->Value,SSSpS, 0);
             lcdbuf[Ad_Buf++]=')';
         }
         Ad_Buf=Str5;
         w_txt(Mes136); Ad_Buf++;
-        int_x=(*pGD_MechConfig_Kontur);
+        int_x=(*gdp.MechConfig_Kontur);
         w_int(&int_x,SpSSpSS, 0);
 
 
@@ -544,7 +537,7 @@ void pmHand(void) {
         while (Y_menu2< cSDiskrCtrl*2)
         {
             byte_w=cSRegCtrl+Y_menu2/2;
-            if (pGD_MechConfig->RNum[byte_w]) break;
+            if (gdp.MechConfig->RNum[byte_w]) break;
             Y_menu2++;
         }
         if (Y_menu2 >= cSDiskrCtrl*2)
@@ -564,30 +557,30 @@ void pmHand(void) {
         Ad_Buf=Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
 
-        w_int(&pGD_Hot_Hand_Kontur->RCS,bS, 0x01);
-        AutoMan(pGD_Hot_Hand_Kontur->RCS,0x01);
+        w_int(&gdp.Hot_Hand_Kontur->RCS,bS, 0x01);
+        AutoMan(gdp.Hot_Hand_Kontur->RCS,0x01);
         if (!(Y_menu2%2)) BlkW=1;
 
         if (byte_w == cHSmSIOPump)
         {
             lcdbuf[Ad_Buf++]='(';
-            w_int(&fnSIOfaza[byte_z],SS, 0);
+            w_int(&siod_view()->fnSIOfaza[byte_z],SS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOvelvOut[byte_z],SSSS, 0);
+            w_int(&siod_view()->fnSIOvelvOut[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOpumpOut[byte_z],SSSS, 0);
+            w_int(&siod_view()->fnSIOpumpOut[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=',';
-            w_int(&fnSIOpause[byte_z],SSSS, 0);
+            w_int(&siod_view()->fnSIOpause[byte_z],SSSS, 0);
             lcdbuf[Ad_Buf++]=')';
         }
 
         Ad_Buf=Str4;
         w_txt(Mes133); /* Ход клап */ //Boiler val time~~
-        w_int(&pGD_Hot_Hand_Kontur->Position, bS, 0x01);
+        w_int(&gdp.Hot_Hand_Kontur->Position, bS, 0x01);
         BlkW=1;
         Ad_Buf=Str5;
         w_txt(Mes140);// Ad_Buf++;
-        int_x=(*pGD_MechConfig_Kontur);
+        int_x=(*gdp.MechConfig_Kontur);
         w_int(&int_x,SpSSpSS, 0);
 
 
@@ -693,7 +686,9 @@ void pmCalibr(void) {
     }
 //    if (eCS->nPort>10) {DigitSens();return;}
     Ad_Buf++;
-    eCS=&GD.Cal.InTeplSens[0][int_y];
+
+
+    eCalSensor *eCS=&caldata.Cal.InTeplSens[0][int_y];
     w_txt(NameSensConfig[byte_x].Name);
     lcdbuf[Ad_Buf++]='=';
     w_int(&int_x,NameSensConfig[byte_x].Frm, 0);
@@ -723,7 +718,7 @@ void pmCalibr(void) {
     }
     Ad_Buf++;
     w_txt(Mes158);
-    w_int(&GD.uInTeplSens[0][int_y],SSSS, 0);
+    w_int(&sensdata.uInTeplSens[0][int_y],SSSS, 0);
     w_txt(Mes150);
 
     if ((EndInput)&&(byte_y>=3))
@@ -732,14 +727,14 @@ void pmCalibr(void) {
         if (!byte_z)
         {
             eCS->V1+=(SaveInt-eCS->V0);
-            eCS->U1+=(GD.uInTeplSens[0][int_y]-eCS->U0);
+            eCS->U1+=(sensdata.uInTeplSens[0][int_y]-eCS->U0);
             eCS->V0=SaveInt;
-            eCS->U0=GD.uInTeplSens[0][int_y];
+            eCS->U0=sensdata.uInTeplSens[0][int_y];
         }
         else
         {
             eCS->V1=SaveInt2;
-            eCS->U1=GD.uInTeplSens[0][int_y];
+            eCS->U1=sensdata.uInTeplSens[0][int_y];
         }
         SetInSaveRam(eCS, 12);
         EndInput=0;

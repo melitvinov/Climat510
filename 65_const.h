@@ -106,7 +106,7 @@
 #define cErrKontur			10	//1 градус
 #define cMin5Kontur			250 //45 градусов
 #define cMinPumpOff			350
-#define cMinAllKontur		(pGD_Hot_Tepl->AllTask.DoTHeat/10+20)	//минимум всех контуров выше задания на 5 градусов
+#define cMinAllKontur		(gdp.Hot_Tepl->AllTask.DoTHeat/10+20)	//минимум всех контуров выше задания на 5 градусов
 #define cMinPowerKontur		10
 #define cIFactorEnd			10
 #define cPFactorEnd			300
@@ -427,7 +427,7 @@ char NowDayOfWeek;
 
 
 /*-----------------------------*/
-typedef struct eeDefStrategy
+typedef struct
 {
     char TempPower;
     char RHPower;

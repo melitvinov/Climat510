@@ -5,15 +5,12 @@
 
 #include "65_gd.h"
 
-#include "climdefstuff.h"
+#include "wtf.h"
 
-int  DestSize;
-int  DestAdr;
+static char volatile konturMax[6];
+static char volatile mecPosArray[7];
 
-char volatile konturMax[6];
-char volatile mecPosArray[7];
-
-bool     B_video;
+static bool     B_video;
 
 uchar not=230;
 uchar ton=3;

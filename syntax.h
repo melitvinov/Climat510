@@ -44,4 +44,23 @@ typedef int16_t s16;
 typedef uint8_t u8;
 typedef int8_t s8;
 
+// aliases for gcc builtin functions
+#ifndef offsetof
+    #define offsetof( obj, field)   __builtin_offsetof( obj, field)
+#endif
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+#define ctz(arg)          __builtin_ctz(arg)
+#define memcpy(d, s, l)   __builtin_memcpy(d, s, l)
+#define memmove(d, s, l)  __builtin_memmove(d, s, l)
+#define memcmp(a, b, l)   __builtin_memcmp(a, b, l)
+#define memset(a, c, l)   __builtin_memset(a, c, l)
+#define strcpy(d, s)      __builtin_strcpy(d, s)
+#define strcat(d, s)      __builtin_strcat(d, s)
+#define memclr(d, size)   __builtin_memset(d, 0, size)
+
+// range clamp, abs
+#define CLAMP(min, a, max)  ({ typeof(min) _min = (min); typeof(a) _a = (a); typeof(max) _max = (max); (_a > _max) ? _max : ((_a < min) ? _min : _a);})
+#define ABS(x)          (((x) < 0) ? (-(x)) : (x))
+
 #endif

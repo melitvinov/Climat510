@@ -50,7 +50,7 @@ COMMON_CFLAGS += -Wbad-function-cast -Wsign-compare
 COMMON_CFLAGS += -Wunsafe-loop-optimizations
 COMMON_CFLAGS += -Wwrite-strings
 
-COMMON_CFLAGS += -w
+#COMMON_CFLAGS += -w
 
 # Various
 COMMON_CFLAGS += -ffunction-sections -fdata-sections -fverbose-asm -fstrict-aliasing

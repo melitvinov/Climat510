@@ -12,12 +12,13 @@
 #include "stm32f10x_clock.h"
 #include "stm32f10x_exti.h"
 #include "stm32f10x_iwdg.h"
+#include "stm32f10x_RS485.h"
 #include "I2CSoft.h"
 
 // XXX: isolation
 #include "405_memory.h"
 #include "65_gd.h"
-#include "climdefstuff.h"
+#include "wtf.h"
 #include "stm32f10x_RS485Master.h"
 
 // XXX: this stuff is from climdef.h
@@ -27,10 +28,7 @@ static unsigned char myip[4] = {192,168,1,231};
 static uint16_t    NMinPCOut;
 static uint16_t* IWDG_Reset;
 
-#warning "this crap is for isolation"
-extern eTepl *pGD_Hot_Tepl;
-extern eTControlTepl *pGD_TControl_Tepl;
-extern eSensLevel *pGD_Level_Tepl;
+static void ReadFromFRAM();
 
 void stm32f10x_Rootines_reset_NMinPCOut()
 {
@@ -377,7 +375,7 @@ void WriteToFRAM()
     SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(eTControl)+sizeof(eLevel));
 }
 
-void ReadFromFRAM()
+static void ReadFromFRAM()
 {
     InitBlockEEP();
     RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
@@ -390,11 +388,11 @@ void SetRTC(void)
 {
     eDateTime   fDateTime;
     fDateTime.sec=WTF0.Second;
-    fDateTime.min=CtrTime%60;
-    fDateTime.hour=CtrTime/60;
-    fDateTime.mday=CtrData&0xff;
-    fDateTime.month=CtrData>>8;
-    fDateTime.year=CtrYear+2000;
+    fDateTime.min=GD.Hot.Time%60;
+    fDateTime.hour=GD.Hot.Time/60;
+    fDateTime.mday=GD.Hot.Data&0xff;
+    fDateTime.month=GD.Hot.Data>>8;
+    fDateTime.year=GD.Hot.Year+2000;
     WriteDateTime(&fDateTime);
 }
 
@@ -405,11 +403,11 @@ void GetRTC(void)
 
     //Second=DateTime.Sec&0x0F;
     //Second+=(DateTime.Sec>>4)*10;
-    CtrTime=fDateTime.min;
-    CtrTime+=fDateTime.hour*60;
-    CtrData=fDateTime.mday;
-    CtrData+=fDateTime.month<<8;
-    CtrYear=fDateTime.year-2000;
+    GD.Hot.Time = fDateTime.min;
+    GD.Hot.Time += fDateTime.hour*60;
+    GD.Hot.Data = fDateTime.mday;
+    GD.Hot.Data += fDateTime.month<<8;
+    GD.Hot.Year = fDateTime.year-2000;
     NowDayOfWeek=fDateTime.wday;
 }
 
@@ -511,24 +509,24 @@ void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPau
 
 void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 {
-    int16_t         *uS;
+    const int16_t         *uS;
     eNameASens  *nameS;
     eSensing    *valueS;
     int16_t         *llS;
     int16_t         *lS;
     int16_t         *levelS;
     uint8_t         *tPause;
-    uS=&GD.uInTeplSens[fnTepl][fnSens];
+    uS=&sensdata.uInTeplSens[fnTepl][fnSens];
     nameS=&NameSensConfig[fnSens];
     SetPointersOnTepl(fnTepl);
-    valueS=&(pGD_Hot_Tepl->InTeplSens[fnSens]);
-    llS=&(pGD_TControl_Tepl->LastLastInTeplSensing[fnSens]);
-    lS=&(pGD_TControl_Tepl->LastInTeplSensing[fnSens]);
-    levelS=pGD_Level_Tepl[fnSens];
-    tPause=&pGD_TControl_Tepl->TimeInTepl[fnSens];
+    valueS=&(gdp.Hot_Tepl->InTeplSens[fnSens]);
+    llS=&(gdp.TControl_Tepl->LastLastInTeplSensing[fnSens]);
+    lS=&(gdp.TControl_Tepl->LastInTeplSensing[fnSens]);
+    levelS=gdp.Level_Tepl[fnSens];
+    tPause=&gdp.TControl_Tepl->TimeInTepl[fnSens];
     if (met)
     {
-        uS=&GD.uMeteoSens[fnSens];
+        uS=&sensdata.uMeteoSens[fnSens];
         nameS=&NameSensConfig[fnSens+cConfSSens];
         valueS=&GD.Hot.MeteoSensing[fnSens];
         //llS=&GD.TControl.LastLastMeteoSensing[fnSens];
@@ -594,14 +592,14 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
     if (nameS->TypeSens==cTypeFram)
     {
-        if (! (pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
-            pGD_TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
+        if (! (gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
+            gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
     if (nameS->TypeSens==cTypeScreen)
     {
-        if (!YesBit(pGD_TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSBusyMech))
-            pGD_TControl_Tepl->MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
+        if (!YesBit(gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSBusyMech))
+            gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
 
     }
     valueS->Value=Mes;
@@ -632,16 +630,16 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     if (nSArea)
     {
         fSens=&GD.Hot.Tepl[nTepl].InTeplSens[nSens];
-        fuSens=&GD.uInTeplSens[nTepl][nSens];
-        fCalSens=&GD.Cal.InTeplSens[nTepl][nSens];
+        fuSens=&sensdata.uInTeplSens[nTepl][nSens];
+        fCalSens=&caldata.Cal.InTeplSens[nTepl][nSens];
         fNameSens=&NameSensConfig[nSens];
         met=0;
     }
     else
     {
         fSens=&GD.Hot.MeteoSensing[nSens];
-        fuSens=&GD.uMeteoSens[nSens];
-        fCalSens=&GD.Cal.MeteoSens[nSens];
+        fuSens=&sensdata.uMeteoSens[nSens];
+        fCalSens=&caldata.Cal.MeteoSens[nSens];
         fNameSens=&NameSensConfig[nSens+cConfSSens];
         met=1;
     }
@@ -743,7 +741,7 @@ void Measure()
             {
                 GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
                 GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
-                GD.uInTeplSens[tTepl][nSens]=0;
+                sensdata.uInTeplSens[tTepl][nSens]=0;
                 continue;
             }
             if (ErrModule>=iMODULE_MAX_ERR) tSensVal=0;
@@ -756,7 +754,7 @@ void Measure()
         if (ErrModule<0)
         {
             GD.Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
-            GD.uMeteoSens[nSens]=0;
+            sensdata.uMeteoSens[nSens]=0;
             continue;
         }
         if (ErrModule>=iMODULE_MAX_ERR) tSensVal=0;
@@ -784,9 +782,9 @@ void CheckInputConfig()
         }
     for (tTepl=0;tTepl<cSTepl;tTepl++)
         for (nSens=0;nSens<cConfSSens;nSens++)
-            UpdateInIPC(GetSensConfig(tTepl,nSens), &GD.Cal.InTeplSens[tTepl][nSens]);
+            UpdateInIPC(GetSensConfig(tTepl,nSens), &caldata.Cal.InTeplSens[tTepl][nSens]);
     for (nSens=0;nSens<cConfSMetSens;nSens++)
-        UpdateInIPC(GetMetSensConfig(nSens),&GD.Cal.MeteoSens[nSens]);
+        UpdateInIPC(GetMetSensConfig(nSens),&caldata.Cal.MeteoSens[nSens]);
 
 }
 
@@ -798,7 +796,7 @@ void SetDiskrSens(void)
         SetPointersOnTepl(fnTepl);
         for (nSens=0;nSens<cConfSInputs;nSens++)
             if (GetDiskrIPC(GetInputConfig(fnTepl,nSens),&nErr))
-                pGD_Hot_Tepl->DiskrSens[0]|=1<<nSens;
+                gdp.Hot_Tepl->DiskrSens[0]|=1<<nSens;
 /*		if (YesBit(RegLEV,(cSmLightLev1<<fnTepl)))
             pGD_Hot_Tepl->DiskrSens[0] |= cSmLightDiskr;
 */

@@ -82,7 +82,7 @@
 
 
 
-typedef struct sIModulConf
+typedef struct
 {
     uint8_t     Type;
     uint8_t     Input;
@@ -130,7 +130,7 @@ void ClrAllOutIPCDigit(void);
 void ResumeOutIPCDigit(void);
 uint16_t GetInIPC(uint16_t nAddress,char* nErr);
 uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr);
-uint16_t UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf);
+void UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf);
 void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn,uint16_t **fInputs);
 
 int16_t IMOD_WriteOutput(char COMPort,int nModule, uint32_t Values);

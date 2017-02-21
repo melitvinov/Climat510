@@ -3,23 +3,18 @@
 #include "keyboard.h"
 
 #include "stm32f10x_LCD240x64.h"
-#include "climdefstuff.h"
+#include "wtf.h"
 
 #include "65_gd.h"
 
-extern eGData GD;
-
 // XXX: from climdef
-uchar   SizeForm=0;
 
-int CopyVal;
-int MinimVal, MaximVal;
-char ValSize;
+
+int MinimVal;
+int MaximVal;
 uchar SumYMenu;
-bool     B_input;
 int8_t      SaveChar;
 int16_t     SaveInt;
-void    *AdrVal;
 
 bool EndInput;
 uchar Form;
@@ -33,11 +28,15 @@ uchar   AdinB=0;
 
 bool     BlkW;
 
-void in_val(void);
-
 extern char GrafView;
 extern const uchar Mon[];
 extern char lcdbuf[];
+
+static char ValSize;
+static uchar SizeForm;
+static int CopyVal;
+static bool B_input;
+static void *AdrVal;
 
 void SetValue(int vVal)
 {
@@ -370,8 +369,8 @@ void w_int(void *bu, char frmt, int16_t param)
         if (frmt == DsMsY)
         {
             lcdbuf[Ad_Buf] = '/';
-            lcdbuf[Ad_Buf + 2] = CtrYear % 10 + '0';
-            lcdbuf[Ad_Buf + 1] = CtrYear / 10 + '0';
+            lcdbuf[Ad_Buf + 2] = GD.Hot.Year % 10 + '0';
+            lcdbuf[Ad_Buf + 1] = GD.Hot.Year / 10 + '0';
             Ad_Buf += 3;
         }
         break;
@@ -465,7 +464,7 @@ void in_val(void)
         ValSize = 2;
         break;
     case DsMsY:
-        CtrYear = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
+        GD.Hot.Year = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
     case SSsSS:
         ValSize = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0'; /*день мес€ца*/
         vre = (lcdbuf[AdinB + 3] - '0') * 10 + lcdbuf[AdinB + 4] - '0'; /*мес€ц*/

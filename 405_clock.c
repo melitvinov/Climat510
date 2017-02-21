@@ -257,11 +257,16 @@ void WriteDateTime()
 
 void SetRTC(void) {
     DateTime.sec=Second;
-    DateTime.min=CtrTime%60;
-    DateTime.hour=CtrTime/60;
-    DateTime.mday=CtrData&0xff;
-    DateTime.month=CtrData>>8;
-    DateTime.year=CtrYear+2000;
+
+    uint16_t time = GD.Hot.Time;
+    uint16_t date = GD.Hot.Data;
+    uint16_t year = GD.Hot.Year;
+
+    DateTime.min=time%60;
+    DateTime.hour=time/60;
+    DateTime.mday=date&0xff;
+    DateTime.month=date>>8;
+    DateTime.year=year+2000;
     WriteDateTime();
 }
 void GetRTC(void) {
@@ -269,11 +274,16 @@ void GetRTC(void) {
 
     //Second=DateTime.Sec&0x0F;
     //Second+=(DateTime.Sec>>4)*10;
-    CtrTime=DateTime.min;
-    CtrTime+=DateTime.hour*60;
-    CtrData=DateTime.mday;
-    CtrData+=DateTime.month<<8;
-    CtrYear=DateTime.year-2000;
+    //
+
+    GD.Hot.Time = DateTime.min;
+    GD.Hot.Time += DateTime.hour*60;
+
+    GD.Hot.Data = DateTime.mday;
+    GD.Hot.Data += DateTime.month<<8;
+
+    GD.Hot.Year += DateTime.year-2000;
+
     NowDayOfWeek=DateTime.wday;
 }
 

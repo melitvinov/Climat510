@@ -19,7 +19,8 @@
 
 //TMems* pMems;
 
-void i2_fm_Init(void){
+void i2_fm_Init(void)
+{
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_Pin = i2_SCL_Pin;
@@ -31,24 +32,28 @@ void i2_fm_Init(void){
 
 }
 
-void i2_Start(void){
+void i2_Start(void)
+{
     i2_SetSDA;
     i2_SetSCL;
     i2_ClrSDA;
     i2_ClrSCL;
 }
-void i2_Stop(void){
+void i2_Stop(void)
+{
     i2_ClrSDA;
     i2_SetSCL;
     i2_SetSDA;
 }
 
-void i2_ToSDA(u8 data){
+void i2_ToSDA(u8 data)
+{
     if (data) i2_SetSDA;
     else i2_ClrSDA;
 }
 
-void i2_SetASK(u8 ask){
+void i2_SetASK(u8 ask)
+{
     i2_ClrSCL;
 //	i2_ClrSDA;
     if (ask) i2_ClrSDA;
@@ -58,7 +63,8 @@ void i2_SetASK(u8 ask){
     i2_ClrSCL;
 }
 
-u16 i2_GetASK(void){
+u16 i2_GetASK(void)
+{
     u8 timeout;
 //	i2_ClrSDA;
     i2_ClrSCL;
@@ -72,7 +78,8 @@ u16 i2_GetASK(void){
     return 0;
 }
 
-void i2_WriteByte(int8_t data){
+void i2_WriteByte(int8_t data)
+{
     u8 i;
     i2_ClrSCL;
     for (i=0;i<8;i++)
@@ -84,7 +91,8 @@ void i2_WriteByte(int8_t data){
     }
 //	i2_SetSDA;
 }
-u8 i2_ReadByte(void){
+u8 i2_ReadByte(void)
+{
     u8 i,j,data=0;
     i2_ClrSCL;
     i2_SetSDA;
@@ -101,88 +109,94 @@ u8 i2_ReadByte(void){
 //	i2_ClrSDA;
     return data;
 }
-u8 fm_Read(u16 adr,u8* buf,u16 size,u8* csum){
+
+void fm_Read(u16 adr, void *buf,u16 size)
+{
     u16 i;
     u8 d,sum;
-    if (!size) return 0;
+
+    u8 *p = buf;
+
+    if (!size) return;
     i2_Start();
     i2_WriteByte(FM_ADR);
     if (i2_GetASK())
     {
-        i2_Stop();return 1;
+        i2_Stop();
+        return;
     }
 //Исправлена передача старшего бита адреса в память
 
     i2_WriteByte(adr>>8);
     if (i2_GetASK())
     {
-        i2_Stop();return 2;
+        i2_Stop();
+        return;
     }
 //Исправлена передача младшего бита адреса в память
     i2_WriteByte(adr&0xff);
     if (i2_GetASK())
     {
-        i2_Stop();return 3;
+        i2_Stop();
+        return;
     }
     i2_Start();
     i2_WriteByte(FM_ADR|1);
     if (i2_GetASK())
     {
-        i2_Stop();return 4;
+        i2_Stop();
+        return;
     }
     for (i=0;i<size;i++)
     {
         d=i2_ReadByte();
-        *(buf++)=d;
+        *(p++)=d;
         if (i==size-1)
             i2_SetASK(0);
         else
             i2_SetASK(1);//!(i==size));
     }
     i2_Stop();
-    return(sum+d);
 }
 
-u8 fm_Write(u16 adr,u8* buf,u16 size,u8* csum){
+void fm_Write(u16 adr, const void *buf,u16 size)
+{
+
+    const u8 *p = buf;
+
     u16 i;
     u8 d;
-    if (!size) return 0;
+    if (!size) return;
     i2_Start();
     i2_WriteByte(FM_ADR);
     if (i2_GetASK())
     {
-        i2_Stop();return 1;
+        i2_Stop();
+        return;
     }
 //Исправлена передача старшего бита адреса в память
     i2_WriteByte(adr>>8);
     if (i2_GetASK())
     {
-        i2_Stop();return 2;
+        i2_Stop();
+        return;
     }
 //Исправлена передача младшего бита адреса в память
     i2_WriteByte(adr&0xff);
     if (i2_GetASK())
     {
-        i2_Stop();return 3;
+        i2_Stop();
+        return;
     }
     for (i=0;i<size;i++)
     {
-        d=*(buf++);
+        d=*(p++);
         i2_WriteByte(d);
         if (i2_GetASK())
         {
-            i2_Stop();return 5;
+            i2_Stop();
+            return;
         }
     }
     i2_Stop();
-    return(*csum);
 }
-/*void MemClr(void *pp1,u16 n) {
-        u8 *p;
-        p=pp1;
-        while(n--) *p++=0;
-        }
-void CopyMem(u8 *pp1, u8 *pp2, u16 n) { //dest,source,number
-        while(n--) *pp1++ = *pp2++;
-        }
-*/

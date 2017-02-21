@@ -1,6 +1,6 @@
 
 #include "syntax.h"
 
-#include "climdefstuff.h"
+#include "wtf.h"
 
 climdefstuff_t WTF0;

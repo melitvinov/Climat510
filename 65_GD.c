@@ -4,27 +4,13 @@
 #include "405_memory.h"
 #include "65_gd.h"
 #include "defs.h"
-#include "climdefstuff.h"
+#include "wtf.h"
 
 /* ======== Глобальный блок данных=============*/
 eGData GD;
-
-eTimer *pGD_Timer;
-eKontur *pGD_Hot_Tepl_Kontur;
-eTControlKontur *pGD_TControl_Tepl_Kontur;
-eMechanic *pGD_Hot_Hand_Kontur;
-eTeplControl*pGD_Control_Tepl;
-eTepl *pGD_Hot_Tepl;
-eTControlTepl *pGD_TControl_Tepl;
-eConstMech *pGD_ConstMechanic;
-eMechanic *pGD_Hot_Hand;
-eStrategy *pGD_Strategy_Tepl;
-eStrategy *pGD_Strategy_Kontur;
-eMechConfig *pGD_MechConfig;
-uint16_t *pGD_MechConfig_Kontur;
-eConstMixVal *pGD_ConstMechanic_Mech;
-eSensLevel *pGD_Level_Tepl;
-
+gdp_t gdp;
+caldata_t caldata;
+sens_t sensdata;
 
 void InitBlockEEP(void)
 {
@@ -48,10 +34,10 @@ void InitBlockEEP(void)
     BlockEEP[4].AdrCopyRAM=&GD.MechConfig[0];
     BlockEEP[4].Size=(sizeof(eMechConfig)*cSTepl);
 
-    BlockEEP[5].AdrCopyRAM=&GD.Cal;
+    BlockEEP[5].AdrCopyRAM=&caldata.Cal;
     BlockEEP[5].Size=sizeof(eCalSensor)*cSTepl*cConfSSens;
 
-    BlockEEP[6].AdrCopyRAM=&GD.Cal.MeteoSens;
+    BlockEEP[6].AdrCopyRAM=&caldata.Cal.MeteoSens;
     BlockEEP[6].Size=sizeof(eCalSensor)*cConfSMetSens;
 
     BlockEEP[7].AdrCopyRAM=&GD.ConstMechanic[0];
@@ -74,9 +60,9 @@ void ButtonReset(void)
     WTF0.AdrGD[4].MaxSize=sizeof(eStrategy)*cSTepl*cSStrategy;
     WTF0.AdrGD[5/*cblMechConfig*/].Adr=&GD.MechConfig[0];
     WTF0.AdrGD[5].MaxSize=sizeof(eMechConfig)*cSTepl;
-    WTF0.AdrGD[6/*cblCal*/].Adr=&GD.Cal;
+    WTF0.AdrGD[6/*cblCal*/].Adr=&caldata.Cal;
     WTF0.AdrGD[6/*cblCal*/].MaxSize=sizeof(eFullCal);
-    WTF0.AdrGD[7/*cblCal*/].Adr=&GD.Cal.MeteoSens;
+    WTF0.AdrGD[7/*cblCal*/].Adr=&caldata.Cal.MeteoSens;
     WTF0.AdrGD[7/*cblCal*/].MaxSize=sizeof(eFullCal);
     WTF0.AdrGD[8/*cblMechanic*/].Adr=&GD.ConstMechanic[0];
     WTF0.AdrGD[8/*cblCal*/].MaxSize=sizeof(eConstMech)*cSTepl;
