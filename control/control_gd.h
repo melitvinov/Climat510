@@ -7,9 +7,6 @@
 
 // XXX: isolation
 #include "405_ConfigEnRuSR.h"
-
-#include "control_screen.h"
-
 #include "control_abi.h"
 
 #pragma pack(1)
@@ -116,6 +113,15 @@ typedef struct
     eSensLevel *Level_Tepl;
     eStrategy *Strategy_Tepl;
 } gdp_t;
+
+typedef struct
+{
+    int idx;
+    eTepl *gh;
+    eMechanic *hand;
+    eTControlTepl *gh_tctrl;
+    eTControl *tctrl;
+} gh_ctx_t;
 
 typedef struct
 {

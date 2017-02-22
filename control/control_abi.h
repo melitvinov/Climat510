@@ -645,6 +645,17 @@ typedef struct
 
 typedef struct
 {
+    int16_t             Value;
+    int8_t              Mode;
+    int8_t              OldMode;
+    int16_t             Pause;
+    int16_t             PauseMode;
+//		int16_t				TimeChangeMode;
+//		int16_t				TempStart;
+} eScreen;
+
+typedef struct
+{
     eTControlKontur Kontur[cSKontur];
     int16_t         LastLastInTeplSensing[cConfSSens];
     int16_t         LastInTeplSensing[cConfSSens];

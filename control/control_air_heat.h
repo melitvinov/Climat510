@@ -3,6 +3,6 @@
 
 void airHeatInit(void);
 void airHeatTimers(void);
-void airHeat(char fnTepl);
+void airHeat(const gh_ctx_t *me);
 
 #endif
