@@ -501,12 +501,12 @@ void TimeToBuf(void)
     BlkW=1;
     Ad_Buf=PozTime;
 //    buf[Ad_Buf++]=' ';
-    w_int(&GD.Hot.Time,SSdSS, 0);
+    w_int(&gd()->Hot.Time,SSdSS, 0);
     lcdbuf[Ad_Buf++]=':';
     lcdbuf[Ad_Buf++]=wtf0.Second/10+'0';
     lcdbuf[Ad_Buf++]=wtf0.Second%10+'0';
     Ad_Buf++;
-    w_int(&GD.Hot.Date,DsMsY, 0);
+    w_int(&gd()->Hot.Date,DsMsY, 0);
 }
 
 void VideoSost(void)

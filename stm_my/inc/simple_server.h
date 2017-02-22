@@ -52,7 +52,7 @@ typedef struct
 
 
 
-int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER);
+int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER);
 int simple_servercycle(void);
 
 #endif

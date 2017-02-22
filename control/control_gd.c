@@ -1,10 +1,21 @@
 #include "syntax.h"
 #include "control_gd.h"
 
-eGData GD;
-gdp_t gdp;
+eGData _GD;
+gdp_t _GDP;
+gdcp_t _GDCP;
 
 // blobs in remote reporting
 caldata_t caldata;
 
 sens_t sensdata;
+
+const eGData *gd(void)
+{
+    return &_GD;
+}
+
+eGData *gd_rw(void)
+{
+    return &_GD;
+}

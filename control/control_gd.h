@@ -115,18 +115,28 @@ typedef struct
     eMechConfig *MechConfig;
     eSensLevel *Level_Tepl;
     eStrategy *Strategy_Tepl;
+} gdp_t;
+
+typedef struct
+{
     eKontur *Hot_Tepl_Kontur;
     eTControlKontur *TControl_Tepl_Kontur;
     eMechanic *Hot_Hand_Kontur;
     eStrategy *Strategy_Kontur;
-    uint16_t *MechConfig_Kontur;
     eConstMixVal *ConstMechanic_Mech;
-} gdp_t;
+} gdcp_t;
 
-extern eGData GD;
-extern gdp_t gdp;
+#ifdef _FRIEND_OF_CONTROL_
+extern eGData _GD;
+extern gdp_t _GDP;
+extern gdcp_t _GDCP;
+#endif
+
 // XXX: caldata do not relate to 65 in fact
 extern caldata_t caldata;
 extern sens_t sensdata;
+
+const eGData *gd(void);
+eGData *gd_rw(void);
 
 #endif

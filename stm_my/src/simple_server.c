@@ -34,7 +34,7 @@ static eAdrGD   *pADRGD;
 static uint8_t* EthSost;
 static uint8_t* EthBlock;
 static uint16_t* PORTNUMBER;
-static uint8_t* IPAddr;
+static const uint8_t* IPAddr;
 static uint8_t* MACAddr;
 
 
@@ -367,7 +367,7 @@ int simple_servercycle(void)
 
 }
 
-int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER)
+int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER)
 {
     SPI1_Init();
 

@@ -26,7 +26,7 @@ void SetInSaveRam(void *addr, uint SizeEEP);
 char TestRAM(void);
 void ReWriteFRAM(int numblock);
 
-void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
-void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock);
+void SendBlockFRAM(uint16_t fStartAddr, const void *AdrBlock,uint16_t sizeBlock);
+void RecvBlockFRAM(uint16_t fStartAddr, void *AdrBlock,uint16_t sizeBlock);
 
 #endif

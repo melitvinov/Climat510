@@ -11,9 +11,8 @@
 #include "lcdconsts.h"
 #include "control_const.h"
 
-#define GetSensConfig(nTepl,nSens)	GD.MechConfig[nTepl].RNum[nSens+SUM_NAME_INSENS]
-#define GetInputConfig(nTepl,nSens)	GD.MechConfig[nTepl].RNum[nSens+SUM_NAME_INPUTS]
-#define GetMetSensConfig(nSens)	GD.MechConfig[0].RNum[nSens+SUM_NAME_OUTSENS]
+
+#define GetMetSensConfig(nSens)	(gd()->MechConfig[0].RNum[nSens+SUM_NAME_OUTSENS])
 
 #define tpRELAY		1
 #define tpLEVEL		2

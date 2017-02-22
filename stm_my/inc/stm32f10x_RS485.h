@@ -20,7 +20,7 @@
 #define WORK_UNIT       0x70
 
 
-void USART_PC_Configuration(uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint8_t* fNumBlock,uint16_t fbrate);
+void USART_PC_Configuration(const uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint8_t* fNumBlock,uint16_t fbrate);
 /*
  * fNCtr - указатель на номер контроллера &GD.Control.NFCtr
  * fADRGD - указатель на структуру адресов блоков памяти ArdGD

@@ -4,6 +4,7 @@
 #include "keyboard.h"
 
 #include "control_gd.h"
+#include "unsorted.h"
 
 #include "wtf.h"
 
@@ -18,52 +19,52 @@ uchar nReset=25;
 
 void saveMech(char tCTepl)
 {
-    mecPosArray[0] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position;
-    mecPosArray[1] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position;
-    mecPosArray[2] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position;
-    mecPosArray[3] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position;
-    mecPosArray[4] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position;
-    mecPosArray[5] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position;
-    mecPosArray[6] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
+    mecPosArray[0] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position;
+    mecPosArray[1] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position;
+    mecPosArray[2] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position;
+    mecPosArray[3] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position;
+    mecPosArray[4] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position;
+    mecPosArray[5] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position;
+    mecPosArray[6] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
 }
 
 void loadKontur(char tCTepl)
 {
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
-    GD.Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
 }
 
 void saveKontur(char tCTepl)
 {
-    konturMax[0] = GD.Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
-    konturMax[1] = GD.Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
-    konturMax[2] = GD.Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
-    konturMax[3] = GD.Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
-    konturMax[4] = GD.Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
-    konturMax[5] = GD.Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
+    konturMax[0] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
+    konturMax[1] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
+    konturMax[2] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
+    konturMax[3] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
+    konturMax[4] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
+    konturMax[5] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
 }
 
 void loadMech(char tCTepl)
 {
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].RCS = 1;
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].RCS = 1;
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS = 1;
 
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position = mecPosArray[0];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position = mecPosArray[1];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position = mecPosArray[2];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position = mecPosArray[3];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position = mecPosArray[4];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position = mecPosArray[5];
-    GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position = mecPosArray[0];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position = mecPosArray[1];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position = mecPosArray[2];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position = mecPosArray[3];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position = mecPosArray[4];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position = mecPosArray[5];
+    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
 }
 
 char volatile repeatNews[8];
@@ -85,20 +86,20 @@ void checkConfig()
         checkKontur = 0;
         for (sys=0;sys<6;sys++)
         {
-            if (GD.Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
+            if (gd()->Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
                 checkKontur = 1;
         }
         for (sys=0;sys<6;sys++)
         {
-            if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH+sys].RCS == 0)
+            if (gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH+sys].RCS == 0)
                 checkMech = 1;
         }
-        if (GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS == 0)
+        if (gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS == 0)
             checkMech = 1;
 
         if (checkMech == 1)
         {
-            GD.Hot.Tepl[tCTepl].newsZone = 0x0A;
+            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0x0A;
             loadMech(tCTepl);
             repeatNews[tCTepl] = 4;
         }
@@ -108,7 +109,7 @@ void checkConfig()
         }
         if (checkKontur == 1)
         {
-            GD.Hot.Tepl[tCTepl].newsZone = 0x0F;
+            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0x0F;
             loadKontur(tCTepl);
             repeatNews[tCTepl] = 4;
         }
@@ -119,7 +120,7 @@ void checkConfig()
         if (repeatNews[tCTepl])
             repeatNews[tCTepl]--;
         if (repeatNews[tCTepl] <= 0)
-            GD.Hot.Tepl[tCTepl].newsZone = 0;
+            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0;
     }
 
 }
@@ -165,7 +166,7 @@ static void periodic_task(void)
 
     // XXX: moved here from control.c
     LoadDiscreteInputs();
-    GetRTC(&GD.Hot.Time, &GD.Hot.Date, &GD.Hot.Year, &NowDayOfWeek);
+    GetRTC(&gd_rw()->Hot.Time, &gd_rw()->Hot.Date, &gd_rw()->Hot.Year, &NowDayOfWeek);
 
     ClrAllOutIPCDigit();
 
@@ -220,7 +221,7 @@ static void init(void)
     w_txt("\252\245TO F405 (c)APL&DAL");
     Delay(1000000);
     Video();
-    GD.Hot.News |= bKlTest;
+    gd_rw()->Hot.News |= bKlTest;
 
     int byte_x=1;
     wtf0.SostRS=OUT_UNIT;
@@ -245,7 +246,7 @@ static void process_pc_input(void)
 
 
     #warning "strange logic we got here"
-    if (!wtf0.NumBlock && (GD.Hot.News & bWriEEP))
+    if (!wtf0.NumBlock && (gd()->Hot.News & bWriEEP))
         SetRTC();
     /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
 
@@ -279,8 +280,9 @@ void main(void)
 
         if (keyboardGetBITKL())
         {
-            GD.Hot.News |= bOperator;
-            if (wtf0.Menu) GD.Hot.News |= bEdit;
+            gd_rw()->Hot.News |= bOperator;
+            if (wtf0.Menu)
+                gd_rw()->Hot.News |= bEdit;
             KeyBoard();
             should_show_video = 1;
         }

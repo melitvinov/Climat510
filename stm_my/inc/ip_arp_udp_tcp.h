@@ -38,7 +38,7 @@ static unsigned char seqnum=0xa; // my initial tcp sequence number
 
 
 // you must call this function once before you use any of the other functions:
-extern void init_ip_arp_udp_tcp(unsigned char *mymac,unsigned char *myip,unsigned int wwwp);
+extern void init_ip_arp_udp_tcp(unsigned char *mymac, const unsigned char *myip,unsigned int wwwp);
 //
 extern unsigned char eth_type_is_arp_and_my_ip(unsigned char *buf,unsigned int len);
 extern unsigned char eth_type_is_ip_and_my_ip(unsigned char *buf,unsigned int len);

@@ -1,3 +1,5 @@
+#define _FRIEND_OF_CONTROL_
+
 #include "syntax.h"
 
 
@@ -23,14 +25,14 @@ static int16_t teplTmes[8][6];
 
 static int16_t getTempSensor(char fnTepl, char sensor)
 {
-    if (gdp.Hot_Tepl->InTeplSens[sensor].RCS  ==  0)
+    if (_GDP.Hot_Tepl->InTeplSens[sensor].RCS  ==  0)
     {
-        teplTmes[fnTepl][sensor] = gdp.Hot_Tepl->InTeplSens[sensor].Value;
-        return gdp.Hot_Tepl->InTeplSens[sensor].Value;
+        teplTmes[fnTepl][sensor] = _GDP.Hot_Tepl->InTeplSens[sensor].Value;
+        return _GDP.Hot_Tepl->InTeplSens[sensor].Value;
     }
-    if (gdp.Hot_Tepl->InTeplSens[sensor].RCS != 0)
+    if (_GDP.Hot_Tepl->InTeplSens[sensor].RCS != 0)
     {
-        if (gdp.Hot_Tepl->InTeplSens[sensor].Value  ==  0)
+        if (_GDP.Hot_Tepl->InTeplSens[sensor].Value  ==  0)
             return 0;
         return teplTmes[fnTepl][sensor];
     }
@@ -53,8 +55,8 @@ int16_t getTempVent(char fnTepl)
     int16_t average = 0;
     char averageCount = 0;
     int16_t singleSensor = 0;
-    calcType = GD.Control.Tepl[fnTepl].sensT_vent >> 6;
-    mask = GD.Control.Tepl[fnTepl].sensT_vent << 2;
+    calcType = _GD.Control.Tepl[fnTepl].sensT_vent >> 6;
+    mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
@@ -78,13 +80,13 @@ int16_t getTempVent(char fnTepl)
     average = average / averageCount;
     if (error)
     {
-        GD.Hot.Tepl[fnTepl].tempParamVent=maskN+(calcType<<6); //GD.Control.Tepl[fnTepl].sensT_vent;
-        GD.Hot.Tepl[fnTepl].tempVent = average;
+        _GD.Hot.Tepl[fnTepl].tempParamVent=maskN+(calcType<<6); //GD.Control.Tepl[fnTepl].sensT_vent;
+        _GD.Hot.Tepl[fnTepl].tempVent = average;
         if (calcType & 1)
-            GD.Hot.Tepl[fnTepl].tempVent = min;
+            _GD.Hot.Tepl[fnTepl].tempVent = min;
         if (calcType >> 1 & 1)
-            GD.Hot.Tepl[fnTepl].tempVent = max;
-        return GD.Hot.Tepl[fnTepl].tempVent;
+            _GD.Hot.Tepl[fnTepl].tempVent = max;
+        return _GD.Hot.Tepl[fnTepl].tempVent;
     }
 }
 
@@ -105,8 +107,8 @@ int16_t getTempHeat(char fnTepl)
     int16_t average = 0;
     int8_t averageCount = 0;
     int16_t singleSensor = 0;
-    calcType = GD.Control.Tepl[fnTepl].sensT_heat >> 6;
-    mask = GD.Control.Tepl[fnTepl].sensT_heat << 2;
+    calcType = _GD.Control.Tepl[fnTepl].sensT_heat >> 6;
+    mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
@@ -129,13 +131,13 @@ int16_t getTempHeat(char fnTepl)
     average = average / averageCount;
     if (error)
     {
-        GD.Hot.Tepl[fnTepl].tempParamHeat=maskN+(calcType<<6);
-        GD.Hot.Tepl[fnTepl].tempHeat = average;
+        _GD.Hot.Tepl[fnTepl].tempParamHeat=maskN+(calcType<<6);
+        _GD.Hot.Tepl[fnTepl].tempHeat = average;
         if (calcType & 1)
-            GD.Hot.Tepl[fnTepl].tempHeat = min;
+            _GD.Hot.Tepl[fnTepl].tempHeat = min;
         if (calcType >> 1 & 1)
-            GD.Hot.Tepl[fnTepl].tempHeat = max;
-        return GD.Hot.Tepl[fnTepl].tempHeat;
+            _GD.Hot.Tepl[fnTepl].tempHeat = max;
+        return _GD.Hot.Tepl[fnTepl].tempHeat;
     }
 }
 
@@ -155,8 +157,8 @@ int8_t getTempVentAlarm(char fnTepl)
     int16_t average = 0;
     int8_t averageCount = 0;
     int16_t singleSensor = 0;
-    calcType = GD.Control.Tepl[fnTepl].sensT_vent >> 6;
-    mask = GD.Control.Tepl[fnTepl].sensT_vent << 2;
+    calcType = _GD.Control.Tepl[fnTepl].sensT_vent >> 6;
+    mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
@@ -195,8 +197,8 @@ int8_t getTempHeatAlarm(char fnTepl)
     int16_t average = 0;
     int8_t averageCount = 0;
     int16_t singleSensor = 0;
-    calcType = GD.Control.Tepl[fnTepl].sensT_heat >> 6;
-    mask = GD.Control.Tepl[fnTepl].sensT_heat << 2;
+    calcType = _GD.Control.Tepl[fnTepl].sensT_heat >> 6;
+    mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
@@ -248,7 +250,7 @@ static void airHeatSetTimeWork(char timeInc, char fnTepl)
 
 static void airHeatOn(char fnTepl)
 {
-    GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 1;
+    _GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 1;
     //(*(pGD_Hot_Hand+cHSmHeat)).Position=1;//pGD_TControl_Tepl->Calorifer;
     airHeatOnOff[fnTepl]=1;
     airHeatSetHeatPause(1, fnTepl);
@@ -256,7 +258,7 @@ static void airHeatOn(char fnTepl)
 
 static void airHeatOff(char fnTepl)
 {
-    GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 0;
+    _GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 0;
     airHeatSetTimeWork(0, fnTepl);
     airHeatSetHeatPause(0, fnTepl);
     airHeatSetHeatPause(1, fnTepl);  // запускаем счетчик паузы
@@ -285,7 +287,7 @@ void airHeatTimers(void)
         if (airHeatOnOff[tCTepl]  ==  1)
         //if (pGD_Hot_Tepl->airHeatOnOff  ==  1)
         {
-            if (airHeatGetTimeWork(tCTepl) >= (GD.TuneClimate.airHeatMaxWork / 100)) // если обогреватель включен проверяем макс время работы
+            if (airHeatGetTimeWork(tCTepl) >= (_GD.TuneClimate.airHeatMaxWork / 100)) // если обогреватель включен проверяем макс время работы
                 airHeatOff(tCTepl);
             else
                 airHeatSetTimeWork(1,tCTepl);   // если обогреватель включен увеличиваем его время на 1 мин
@@ -293,7 +295,7 @@ void airHeatTimers(void)
         if (airHeatOnOff[tCTepl]  ==  0)
         //if (pGD_Hot_Tepl->airHeatOnOff  ==  0)   // если обогреватель выключен увеличиваем его время паузы на 1 мин
         {
-            if (airHeatGetHeatPause(tCTepl) >= (GD.TuneClimate.airHeatPauseWork / 100))
+            if (airHeatGetHeatPause(tCTepl) >= (_GD.TuneClimate.airHeatPauseWork / 100))
                 airHeatSetHeatPause(0, tCTepl); // 0 означает что обогреватель может быть включен
             else if (airHeatGetHeatPause(tCTepl) > 0)
                 airHeatSetHeatPause(1, tCTepl);     // считаем паузу пока она не обнулится
@@ -303,23 +305,23 @@ void airHeatTimers(void)
 
 void airHeat(char fnTepl)
 {
-    if ((YesBit((gdp.Hot_Hand+cHSmHeat)->RCS,(cbManMech)))) return;
+    if ((YesBit((_GDP.Hot_Hand+cHSmHeat)->RCS,(cbManMech)))) return;
     int16_t tempT, tempTon, tempToff = 0;
 //	if ( fnTepl != 0) return;
     tempT = getTempHeat(fnTepl);
-    if (tempT < GD.Hot.Tepl[fnTepl].AllTask.TAir)
-        tempTon = GD.Hot.Tepl[fnTepl].AllTask.TAir - tempT;
-    else tempToff = tempT - GD.Hot.Tepl[fnTepl].AllTask.TAir;
+    if (tempT < _GD.Hot.Tepl[fnTepl].AllTask.TAir)
+        tempTon = _GD.Hot.Tepl[fnTepl].AllTask.TAir - tempT;
+    else tempToff = tempT - _GD.Hot.Tepl[fnTepl].AllTask.TAir;
     if (tempT > 0)
     {
         //if ((GD.TuneClimate.airHeatTemperOn >= tempTon) && (GD.TuneClimate.airHeatTemperOff > tempToff) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
-        if ((GD.TuneClimate.airHeatTemperOn <= tempTon) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
+        if ((_GD.TuneClimate.airHeatTemperOn <= tempTon) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
             airHeatOn(fnTepl);
-        if ((GD.TuneClimate.airHeatTemperOff <= tempToff) && (airHeatGetTimeWork(fnTepl) >= (GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
+        if ((_GD.TuneClimate.airHeatTemperOff <= tempToff) && (airHeatGetTimeWork(fnTepl) >= (_GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
             airHeatOff(fnTepl);
     }
-    GD.Hot.Tepl[fnTepl].airHeatTimeWork = airHeatTimeWork[fnTepl]*100;
-    GD.Hot.Tepl[fnTepl].airHeatOnOff = airHeatOnOff[fnTepl];
+    _GD.Hot.Tepl[fnTepl].airHeatTimeWork = airHeatTimeWork[fnTepl]*100;
+    _GD.Hot.Tepl[fnTepl].airHeatOnOff = airHeatOnOff[fnTepl];
 }
 
 //***********************************************************************************************************
@@ -335,41 +337,40 @@ bool SameSign(int Val1,int Val2)
 
 void SetPointersOnTepl(char fnTepl)
 {
-    gdp.Hot_Tepl=&GD.Hot.Tepl[fnTepl];
-    gdp.TControl_Tepl=&GD.TControl.Tepl[fnTepl];
-    gdp.Control_Tepl=&GD.Control.Tepl[fnTepl];
-    gdp.Hot_Hand=&GD.Hot.Tepl[fnTepl].HandCtrl[0];
-    gdp.ConstMechanic=&GD.ConstMechanic[fnTepl];
-    gdp.MechConfig=&GD.MechConfig[fnTepl];
+    _GDP.Hot_Tepl=&_GD.Hot.Tepl[fnTepl];
+    _GDP.TControl_Tepl=&_GD.TControl.Tepl[fnTepl];
+    _GDP.Control_Tepl=&_GD.Control.Tepl[fnTepl];
+    _GDP.Hot_Hand=&_GD.Hot.Tepl[fnTepl].HandCtrl[0];
+    _GDP.ConstMechanic=&_GD.ConstMechanic[fnTepl];
+    _GDP.MechConfig=&_GD.MechConfig[fnTepl];
     #warning "this was fucked. not sure if [0] is ok"
-    gdp.Level_Tepl=&GD.Level.InTeplSens[fnTepl][0];
+    _GDP.Level_Tepl=&_GD.Level.InTeplSens[fnTepl][0];
     #warning "this was fucked too. not sure if [0] is ok"
-    gdp.Strategy_Tepl=&GD.Strategy[fnTepl][0];
+    _GDP.Strategy_Tepl=&_GD.Strategy[fnTepl][0];
 }
 
 
 
 void SetPointersOnKontur(char fnKontur)
 {
-    gdp.Hot_Tepl_Kontur=&(gdp.Hot_Tepl->Kontur[fnKontur]);
-    gdp.TControl_Tepl_Kontur=&(gdp.TControl_Tepl->Kontur[fnKontur]);
-    gdp.Hot_Hand_Kontur=&(gdp.Hot_Hand[fnKontur]);
-    gdp.Strategy_Kontur=&gdp.Strategy_Tepl[fnKontur];
-    gdp.MechConfig_Kontur=&gdp.MechConfig->RNum[fnKontur];
-    gdp.ConstMechanic_Mech=&gdp.ConstMechanic->ConstMixVal[fnKontur];
+    _GDCP.Hot_Tepl_Kontur=&_GDP.Hot_Tepl->Kontur[fnKontur];
+    _GDCP.TControl_Tepl_Kontur=&_GDP.TControl_Tepl->Kontur[fnKontur];
+    _GDCP.Hot_Hand_Kontur=&_GDP.Hot_Hand[fnKontur];
+    _GDCP.Strategy_Kontur=&_GDP.Strategy_Tepl[fnKontur];
+    _GDCP.ConstMechanic_Mech=&_GDP.ConstMechanic->ConstMixVal[fnKontur];
 }
 
 void MidlWindAndSr(void)
 {
-    GD.TControl.SumSun+=((long int)GD.TControl.MeteoSensing[cSmFARSens]);
-    GD.TControl.MidlSR=((((long int)GD.TControl.MidlSR)*(1000-o_MidlSRFactor))/1000
-                        +((long int)GD.TControl.MeteoSensing[cSmFARSens])*o_MidlSRFactor);
-    GD.Hot.MidlSR=(int)(GD.TControl.MidlSR/1000);
+    _GD.TControl.SumSun+=((long int)_GD.TControl.MeteoSensing[cSmFARSens]);
+    _GD.TControl.MidlSR=((((long int)_GD.TControl.MidlSR)*(1000-o_MidlSRFactor))/1000
+                        +((long int)_GD.TControl.MeteoSensing[cSmFARSens])*o_MidlSRFactor);
+    _GD.Hot.MidlSR=(int)(_GD.TControl.MidlSR/1000);
     if (GetMetSensConfig(cSmFARSens))
     {
-        GD.Hot.SumSun=(int)((GD.TControl.SumSun*6)/1000);
+        _GD.Hot.SumSun=(int)((_GD.TControl.SumSun*6)/1000);
     }
-    GD.Hot.MidlWind=(int)((((long int)GD.Hot.MidlWind)*(1000-o_MidlWindFactor)+((long int)GD.TControl.MeteoSensing[cSmVWindSens])*o_MidlWindFactor)/1000);
+    _GD.Hot.MidlWind=(int)((((long int)_GD.Hot.MidlWind)*(1000-o_MidlWindFactor)+((long int)_GD.TControl.MeteoSensing[cSmVWindSens])*o_MidlWindFactor)/1000);
 
 }
 
@@ -377,35 +378,27 @@ void CheckMidlSr(void)
 {
     if (GetMetSensConfig(cSmFARSens))
     {
-        GD.Hot.SumSun=(int)((GD.TControl.SumSun*6)/1000);
+        _GD.Hot.SumSun=(int)((_GD.TControl.SumSun*6)/1000);
     }
-    GD.Hot.MidlSR=(int)(GD.TControl.MidlSR/1000);
-}
-
-int clamp_min(int f_in, int f_gr)
-{
-    return f_in < f_gr ? f_gr : f_in;
-}
-
-int clamp_max(int f_in, int f_gr)
-{
-    return f_in > f_gr ? f_gr : f_in;
+    _GD.Hot.MidlSR=(int)(_GD.TControl.MidlSR/1000);
 }
 
 char CheckSeparate (char fnKontur)
 {
     char t2;
     char t1;
-    gdp.TControl_Tepl_Kontur->NAndKontur=0;
-    if (!(*gdp.MechConfig_Kontur))
+    _GDCP.TControl_Tepl_Kontur->NAndKontur=0;
+    if (! _GDP.MechConfig->RNum[fnKontur])
         return 0;
     t1 = 0;
     for (t2 = 0;t2<cSTepl;t2++)
-        if (GD.MechConfig[t2].RNum[fnKontur] == (*gdp.MechConfig_Kontur))
+    {
+        if (_GD.MechConfig[t2].RNum[fnKontur] == _GDP.MechConfig->RNum[fnKontur])
         {
             t1 |= (1<<t2);
-            gdp.TControl_Tepl_Kontur->NAndKontur++;
+            _GDCP.TControl_Tepl_Kontur->NAndKontur++;
         }
+    }
     return t1;
 }
 
@@ -415,7 +408,7 @@ char CheckMain(char fnTepl)
     tTepl=0;
     while (tTepl<cSTepl)
     {
-        if ((gdp.TControl_Tepl_Kontur->Separate>>tTepl)&1)
+        if ((_GDCP.TControl_Tepl_Kontur->Separate>>tTepl)&1)
             return tTepl;
         tTepl++;
     }
@@ -427,27 +420,27 @@ void InitGD(void)
     eCalSensor *eCS;
 
     #warning "this one is fucked. we're cleaning too much"
-    memclr(&GD.Control,sizeof(eControl)
+    memclr(&_GD.Control,sizeof(eControl)
            +sizeof(eFullCal)
            +sizeof(eLevel)
            +sizeof(eTimer)*cSTimer);
 
     #warning "this one is fucked. we're cleaning too much"
-    memclr(&GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
+    memclr(&_GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
 
 
     #warning "meteo is not cleaned"
     memclr(&sensdata.uInTeplSens,sizeof(sensdata.uInTeplSens));
 
     // default datetime
-    GD.Hot.Year=01;
-    GD.Hot.Date=257;
-    GD.Hot.Time=8*60;
+    _GD.Hot.Year=01;
+    _GD.Hot.Date=257;
+    _GD.Hot.Time=8*60;
 
     #warning "sizeof is fucked"
     // XXX: this sizeof is fucked, TStart[i] is fucked too
     for (uint gh_idx  =0; gh_idx< sizeof(NameConst)/3; gh_idx++)
-        GD.TuneClimate.s_TStart[gh_idx] = NameConst[gh_idx].StartZn;
+        _GD.TuneClimate.s_TStart[gh_idx] = NameConst[gh_idx].StartZn;
 
     for (int i=0; i<cConfSMetSens;i++)
     {
@@ -469,12 +462,12 @@ void InitGD(void)
         {
             #warning "looks like this is fucked too"
             for (uint byte_y=0;byte_y<sizeof(eStrategy);byte_y++)
-                (*((&(gdp.Strategy_Tepl[int_x].TempPower))+byte_y))=(*((&DefStrategy[int_x].TempPower)+byte_y));
+                (*((&(_GDP.Strategy_Tepl[int_x].TempPower))+byte_y))=(*((&DefStrategy[int_x].TempPower)+byte_y));
         }
 
         bWaterReset[gh_idx]=1;
 
-        eMechConfig *mech_cfg = &GD.MechConfig[gh_idx];
+        eMechConfig *mech_cfg = &_GD.MechConfig[gh_idx];
 
         for (int int_x=0;int_x<SUM_NAME_CONF;int_x++)
             mech_cfg->RNum[int_x]=MechC[gh_idx][int_x];
@@ -484,14 +477,14 @@ void InitGD(void)
 
         for (int int_x=0;int_x<cSRegCtrl;int_x++)
         {
-            eTControlTepl *dst = &GD.TControl.Tepl[gh_idx];
+            eTControlTepl *dst = &_GD.TControl.Tepl[gh_idx];
 
             //pGD_TControl_Tepl->MechBusy[IntX].BlockRegs=1;
             dst->MechBusy[int_x].PauseMech=300;
             dst->MechBusy[int_x].Sens=0;
         }
 
-        eTeplControl *ctrl = &GD.Control.Tepl[gh_idx];
+        eTeplControl *ctrl = &_GD.Control.Tepl[gh_idx];
 
         #warning "sizeof is fucked"
         //PANIC_IF(countof(ctrl->c_MaxTPipe) != countof(DefControl));
@@ -501,7 +494,7 @@ void InitGD(void)
 
         for (int int_x=0;int_x<cSRegCtrl;int_x++)
         {
-            eConstMech *dst = &GD.ConstMechanic[gh_idx];
+            eConstMech *dst = &_GD.ConstMechanic[gh_idx];
 
             dst->ConstMixVal[int_x].v_TimeMixVal=DefMechanic[0];
             dst->ConstMixVal[int_x].v_MinTim=(char)DefMechanic[3];
@@ -542,46 +535,30 @@ int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet)
 
 void WindDirect(void)
 {
-    GD.Hot.PozFluger &= 1;
-    if (GD.TuneClimate.o_TeplPosition == 180)
+    _GD.Hot.PozFluger &= 1;
+    if (_GD.TuneClimate.o_TeplPosition == 180)
     {
-        GD.Hot.PozFluger=0;
+        _GD.Hot.PozFluger=0;
         return;
     }
-    if (GD.Hot.MidlWind<GD.TuneClimate.f_WindStart) return;
-    creg.Z=GD.TControl.MeteoSensing[cSmDWindSens]+GD.TuneClimate.o_TeplPosition;
+    if (_GD.Hot.MidlWind<_GD.TuneClimate.f_WindStart) return;
+    creg.Z=_GD.TControl.MeteoSensing[cSmDWindSens]+_GD.TuneClimate.o_TeplPosition;
     creg.Z%=360;
-    GD.TControl.Tepl[0].CurrPozFluger=GD.Hot.PozFluger;
-    if ((!GD.Hot.PozFluger)&&(creg.Z
+    _GD.TControl.Tepl[0].CurrPozFluger=_GD.Hot.PozFluger;
+    if ((!_GD.Hot.PozFluger)&&(creg.Z
                               >(90+f_DeadWindDirect))
         &&(creg.Z<(270-f_DeadWindDirect)))
-        GD.TControl.Tepl[0].CurrPozFluger=1;
-    if ((GD.Hot.PozFluger)&&((creg.Z
+        _GD.TControl.Tepl[0].CurrPozFluger=1;
+    if ((_GD.Hot.PozFluger)&&((creg.Z
                               <(90-f_DeadWindDirect))
                              ||(creg.Z>(270+f_DeadWindDirect))))
-        GD.TControl.Tepl[0].CurrPozFluger=0;
-    if (GD.Hot.PozFluger!=GD.TControl.Tepl[0].CurrPozFluger)
+        _GD.TControl.Tepl[0].CurrPozFluger=0;
+    if (_GD.Hot.PozFluger!=_GD.TControl.Tepl[0].CurrPozFluger)
     {
-        GD.TControl.Tepl[0].CurrPozFlugerTime++;
-        if (GD.TControl.Tepl[0].CurrPozFlugerTime<5)
+        _GD.TControl.Tepl[0].CurrPozFlugerTime++;
+        if (_GD.TControl.Tepl[0].CurrPozFlugerTime<5)
             return;
-        GD.Hot.PozFluger=GD.TControl.Tepl[0].CurrPozFluger;
+        _GD.Hot.PozFluger=_GD.TControl.Tepl[0].CurrPozFluger;
     }
-    GD.TControl.Tepl[0].CurrPozFlugerTime=0;
+    _GD.TControl.Tepl[0].CurrPozFlugerTime=0;
 }
-
-
-
-/*void _SetBitOutReg(char fnTepl,char fnMech,char fnBit,char fnclr,char fnSm)
-{	char nBit,nByte,Mask;
-    nBit=BitMech[fnTepl][fnMech][fnBit]&0x0F;
-    if(!nBit) return;
-    Mask=1;
-    Mask<<=(nBit-1+fnSm);
-    nByte=BitMech[fnTepl][fnMech][fnBit]/16;
-    if (fnclr)
-        OutR[nByte] &= (~Mask);
-    else
-        OutR[nByte] |= Mask;
-
-}*/

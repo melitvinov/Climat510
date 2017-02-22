@@ -141,7 +141,7 @@ static uint16_t  fSendByte;
 static uint16_t fAdrSend;
 static uint8_t  *pSostRS485;
 static eAdrGD   *pADRGD;
-static uint8_t  *pNFCtr;
+static const uint8_t  *pNFCtr;
 static uint8_t *pNumBlock;
 static uint8_t *pDataRS;
 
@@ -302,7 +302,7 @@ USART_PC_INT_VECT
 * Return         : None
 *******************************************************************************/
 
-void USART_PC_Configuration(uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint8_t* fNumBlock,uint16_t fbrate)
+void USART_PC_Configuration(const uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostRS,uint8_t* fNumBlock,uint16_t fbrate)
 {
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;

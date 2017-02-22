@@ -20,7 +20,7 @@
 #include "ip_arp_udp_tcp.h"
 #include "enc28j60.h"
 
-static unsigned char *ipaddr;
+static const unsigned char *ipaddr;
 
 // The Ip checksum is calculated over the ip header only starting
 // with the header length field and a total length of 20 bytes
@@ -91,7 +91,7 @@ unsigned  int checksum(unsigned char *fbuf, unsigned  int len,unsigned char type
 }
 
 // you must call this function once before you use any of the other functions:
-void init_ip_arp_udp_tcp(unsigned char *mymac,unsigned char *myip,unsigned int wwwp)
+void init_ip_arp_udp_tcp(unsigned char *mymac, const unsigned char *myip,unsigned int wwwp)
 {
     unsigned char i=0;
     myARPport=wwwp;

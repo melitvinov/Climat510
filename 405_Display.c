@@ -7,6 +7,11 @@
 
 #include "control_gd.h"
 
+#include "unsorted.h"
+
+#include "405_menu.h"
+
+
 // XXX: from climdef
 
 
@@ -36,7 +41,7 @@ static char ValSize;
 static uchar SizeForm;
 static int CopyVal;
 static bool B_input;
-static void *AdrVal;
+static const void *AdrVal;
 
 void SetValue(int vVal)
 {
@@ -150,7 +155,7 @@ void KeyBoard(void)
 //        GD.TControl.tAutoInf = GD.Control.AutoInf;
     if (GrafView)
         GrafView = 1;
-    GD.TControl.tCodTime = 3;
+    gd_rw()->TControl.tCodTime = 3;
     keyboardSetBITKL(0);
     #warning "disabled this beepy"
 //  not += 180;
@@ -218,7 +223,7 @@ void KeyBoard(void)
 void w_txt(const char *bu)
 {
     const char *vu;
-    if (GD.Control.Language)
+    if (gd()->Control.Language)
     {
         vu = bu;
         while ((*vu))
@@ -238,7 +243,7 @@ void w_txt(const char *bu)
  }
  */
 
-void w_int(void *bu, char frmt, int16_t param)
+void w_int(const void *bu, char frmt, int16_t param)
 {
     uint16_t vre;
     unsigned char vrel;
@@ -370,8 +375,8 @@ void w_int(void *bu, char frmt, int16_t param)
         if (frmt  ==  DsMsY)
         {
             lcdbuf[Ad_Buf] = '/';
-            lcdbuf[Ad_Buf + 2] = GD.Hot.Year % 10 + '0';
-            lcdbuf[Ad_Buf + 1] = GD.Hot.Year / 10 + '0';
+            lcdbuf[Ad_Buf + 2] = gd()->Hot.Year % 10 + '0';
+            lcdbuf[Ad_Buf + 1] = gd()->Hot.Year / 10 + '0';
             Ad_Buf += 3;
         }
         break;
@@ -465,7 +470,7 @@ void in_val(void)
         ValSize = 2;
         break;
     case DsMsY:
-        GD.Hot.Year = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
+        gd_rw()->Hot.Year = (lcdbuf[AdinB + 6] - '0') * 10 + lcdbuf[AdinB + 7] - '0';
     case SSsSS:
         ValSize = (lcdbuf[AdinB] - '0') * 10 + lcdbuf[AdinB + 1] - '0'; /*день мес€ца*/
         vre = (lcdbuf[AdinB + 3] - '0') * 10 + lcdbuf[AdinB + 4] - '0'; /*мес€ц*/

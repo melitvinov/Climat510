@@ -62,5 +62,7 @@ typedef int8_t s8;
 // range clamp, abs
 #define CLAMP(min, a, max)  ({ typeof(min) _min = (min); typeof(a) _a = (a); typeof(max) _max = (max); (_a > _max) ? _max : ((_a < min) ? _min : _a);})
 #define ABS(x)          (((x) < 0) ? (-(x)) : (x))
+#define MIN(a, b)          ({ typeof(a) _a = (a); typeof(b) _b = (b); _a < _b ? _a : _b; })
+#define MAX(a, b)          ({ typeof(a) _a = (a); typeof(b) _b = (b); _a > _b ? _a : _b; })
 
 #endif

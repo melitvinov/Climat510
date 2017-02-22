@@ -21,6 +21,16 @@
 #include "wtf.h"
 #include "stm32f10x_RS485Master.h"
 
+#include "control_gd.h"
+
+#include "keyboard.h"
+#include "stm32f10x_LCD240x64.h"
+#include "unsorted.h"
+
+
+#define GetSensConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INSENS])
+#define GetInputConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INPUTS])
+
 // XXX: this stuff is from climdef.h
 static uchar   nSensor;
 static uint8_t* mymac = 0x1FFFF7EE;
@@ -28,7 +38,8 @@ static unsigned char myip[4] = {192,168,1,231};
 static uint16_t    NMinPCOut;
 static uint16_t* IWDG_Reset;
 
-static void ReadFromFRAM();
+static void ReadFromFRAM(void);
+static void Init_MEAS_INPUT(void);
 
 void stm32f10x_Rootines_reset_NMinPCOut()
 {
@@ -40,9 +51,9 @@ void CheckWithoutPC(void)
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        USART_PC_Configuration(&GD.Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
-        simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
-        GD.TControl.Tepl[0].WithoutPC++;
+        USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
+        simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
+        gd_rw()->TControl.Tepl[0].WithoutPC++;
     }
     NMinPCOut++;
 }
@@ -75,7 +86,7 @@ void Init_STM32(void)
     InitRTC();
     wtf0.PORTNUM=DEF_PORTNUM;
 
-    simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
+    simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
 
 
     w1Init();
@@ -360,7 +371,7 @@ void Reg48ToI2C()
     uint16_t i;
 //	for (i=0;i<8;i++)
 //		I2C_Rel_Write(OutR[i],i);
-    SendIPC(&GD.Hot.Tepl[0].ConnectionStatus);
+    SendIPC(&gd_rw()->Hot.Tepl[0].ConnectionStatus);
 }
 
 void OutReg()
@@ -371,15 +382,17 @@ void OutReg()
 void WriteToFRAM()
 {
     InitBlockEEP();
-    SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
-    SendBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(eTControl)+sizeof(eLevel));
+    #warning "maybe these addresses are wrong"
+    SendBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM), &gd()->Hot, sizeof(gd()->Hot));
+    SendBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(gd()->Hot), &gd()->TControl,sizeof(eTControl)+sizeof(eLevel));
 }
 
 static void ReadFromFRAM()
 {
     InitBlockEEP();
-    RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM),(uchar*)(&GD.Hot),sizeof(GD.Hot));
-    RecvBlockFRAM((uint32_t)(&GD.TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(GD.Hot),(uchar*)(&GD.TControl),sizeof(GD.TControl)+sizeof(eLevel));
+    #warning "maybe these addresses are wrong"
+    RecvBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM), &gd_rw()->Hot, sizeof(gd()->Hot));
+    RecvBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM)+sizeof(gd()->Hot), &gd_rw()->TControl, sizeof(gd()->TControl)+sizeof(eLevel));
 
 }
 
@@ -388,15 +401,15 @@ void SetRTC(void)
 {
     eDateTime   fDateTime;
     fDateTime.sec=wtf0.Second;
-    fDateTime.min=GD.Hot.Time%60;
-    fDateTime.hour=GD.Hot.Time/60;
-    fDateTime.mday=GD.Hot.Date&0xff;
-    fDateTime.month=GD.Hot.Date>>8;
-    fDateTime.year=GD.Hot.Year+2000;
+    fDateTime.min=gd()->Hot.Time%60;
+    fDateTime.hour=gd()->Hot.Time/60;
+    fDateTime.mday=gd()->Hot.Date&0xff;
+    fDateTime.month=gd()->Hot.Date>>8;
+    fDateTime.year=gd()->Hot.Year+2000;
     WriteDateTime(&fDateTime);
 }
 
-void GetRTC(uint16_t *time, uint16_t *date, uint16_t *year, u8 *day_of_week)
+void GetRTC(uint16_t *time, uint16_t *date, uint8_t *year, u8 *day_of_week)
 {
     eDateTime   fDateTime;
     ReadDateTime(&fDateTime); //CtrTime=0;
@@ -481,7 +494,7 @@ void Check_IWDG(void)
 
 }
 
-void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPause, uint16_t tFilter)
+static void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPause, uint16_t tFilter)
 {
     if (((*Mes<*ValueS+tFilter)&&(*Mes>*ValueS-tFilter))||(*tPause>30)||(!*ValueS))
         *tPause=0;
@@ -506,7 +519,7 @@ void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPau
 void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 {
     const int16_t         *uS;
-    eNameASens  *nameS;
+    const eNameASens  *nameS;
     eSensing    *valueS;
     int16_t         *llS;
     int16_t         *lS;
@@ -514,21 +527,21 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     uint8_t         *tPause;
     uS=&sensdata.uInTeplSens[fnTepl][fnSens];
     nameS=&NameSensConfig[fnSens];
-    SetPointersOnTepl(fnTepl);
-    valueS=&(gdp.Hot_Tepl->InTeplSens[fnSens]);
-    llS=&(gdp.TControl_Tepl->LastLastInTeplSensing[fnSens]);
-    lS=&(gdp.TControl_Tepl->LastInTeplSensing[fnSens]);
-    levelS=gdp.Level_Tepl[fnSens];
-    tPause=&gdp.TControl_Tepl->TimeInTepl[fnSens];
+
+    valueS=&gd_rw()->Hot.Tepl[fnTepl].InTeplSens[fnSens];
+    llS=&gd_rw()->TControl.Tepl[fnTepl].LastLastInTeplSensing[fnSens];
+    lS=&gd_rw()->TControl.Tepl[fnTepl].LastInTeplSensing[fnSens];
+    levelS=gd_rw()->Level.InTeplSens[fnTepl][fnSens];
+    tPause=&gd_rw()->TControl.Tepl[fnTepl].TimeInTepl[fnSens];
     if (met)
     {
         uS=&sensdata.uMeteoSens[fnSens];
         nameS=&NameSensConfig[fnSens+cConfSSens];
-        valueS=&GD.Hot.MeteoSensing[fnSens];
+        valueS=&gd_rw()->Hot.MeteoSensing[fnSens];
         //llS=&GD.TControl.LastLastMeteoSensing[fnSens];
         //lS=&GD.TControl.LastMeteoSensing[fnSens];
-        levelS=GD.Level.MeteoSens[fnSens];
-        tPause=&GD.TControl.TimeMeteoSensing[fnSens];
+        levelS=gd_rw()->Level.MeteoSens[fnSens];
+        tPause=&gd_rw()->TControl.TimeMeteoSensing[fnSens];
     }
     if (full)
     {
@@ -588,14 +601,14 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
     if (nameS->TypeSens == cTypeFram)
     {
-        if (! (gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
-            gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Tepl[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
+            gd_rw()->TControl.Tepl[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
     if (nameS->TypeSens == cTypeScreen)
     {
-        if (!YesBit(gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSBusyMech))
-            gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Tepl[fnTepl].MechBusy[cHSmScrTH].RCS & cMSBusyMech))
+            gd_rw()->TControl.Tepl[fnTepl].MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
 
     }
     valueS->Value=Mes;
@@ -619,13 +632,13 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
 void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
 {
     eSensing    *fSens;
-    eNameASens  *fNameSens;
+    const eNameASens  *fNameSens;
     int16_t     *fuSens;
     eCalSensor  *fCalSens;
     char        met=0;
     if (nSArea)
     {
-        fSens=&GD.Hot.Tepl[nTepl].InTeplSens[nSens];
+        fSens=&gd_rw()->Hot.Tepl[nTepl].InTeplSens[nSens];
         fuSens=&sensdata.uInTeplSens[nTepl][nSens];
         fCalSens=&caldata.Cal.InTeplSens[nTepl][nSens];
         fNameSens=&NameSensConfig[nSens];
@@ -633,7 +646,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     }
     else
     {
-        fSens=&GD.Hot.MeteoSensing[nSens];
+        fSens=&gd_rw()->Hot.MeteoSensing[nSens];
         fuSens=&sensdata.uMeteoSens[nSens];
         fCalSens=&caldata.Cal.MeteoSens[nSens];
         fNameSens=&NameSensConfig[nSens+cConfSSens];
@@ -699,7 +712,7 @@ void TestMem(uchar TipReset)
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
     TestFRAM(TipReset);
     ButtonReset();
-    GetRTC(&GD.Hot.Time, &GD.Hot.Date, &GD.Hot.Year, &NowDayOfWeek);
+    GetRTC(&gd_rw()->Hot.Time, &gd_rw()->Hot.Date, &gd_rw()->Hot.Year, &NowDayOfWeek);
 }
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
@@ -709,14 +722,14 @@ void    TestFRAM(char EraseBl)
     uint8_t nBlFRAM;
     for (nBlFRAM=0;nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
     {
-        RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+        RecvBlockFRAM((u32)BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
         RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
         cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
         if ((CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase  ==  1))
         {
             keyboardSetSIM(100);
             InitAllThisThings(5);
-            SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            SendBlockFRAM((u32)BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
             BlockEEP[nBlFRAM].CSum=cSum;
@@ -739,8 +752,8 @@ void Measure()
             tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
             if (ErrModule<0)
             {
-                GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
-                GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
+                gd_rw()->Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
+                gd_rw()->Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
                 sensdata.uInTeplSens[tTepl][nSens]=0;
                 continue;
             }
@@ -753,7 +766,7 @@ void Measure()
         tSensVal=GetInIPC(GetMetSensConfig(nSens),&ErrModule);
         if (ErrModule<0)
         {
-            GD.Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
+            gd_rw()->Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
             sensdata.uMeteoSens[nSens]=0;
             continue;
         }
@@ -792,7 +805,7 @@ void LoadDiscreteInputs(void)
 {
     for (int gh_idx=0; gh_idx<cSTepl; gh_idx++)
     {
-        eTepl *gh = &GD.Hot.Tepl[gh_idx];
+        eTepl *gh = &gd_rw()->Hot.Tepl[gh_idx];
         char nErr;
         for (int input_idx=0; input_idx < cConfSInputs; input_idx++)
         {

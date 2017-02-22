@@ -23,7 +23,7 @@ uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)
 }
 
 
-void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
+void SendBlockFRAM(uint16_t fStartAddr, const void *AdrBlock,uint16_t sizeBlock)
 {
     uint16_t i,fSS;
     //I2C_Mem_Write(0,fStartAddr,AdrBlock,sizeBlock);
@@ -32,13 +32,13 @@ void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
         fSS = 2000;
         if (i == sizeBlock/2000)
             fSS = sizeBlock%2000;
-        fm_Write(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
+        fm_Write(fStartAddr+i*2000, (const u8 *)AdrBlock+i*2000,fSS);
     }
 
 //	I2C_MainLoad(0,AdrBlock,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Transmitter);
 }
 
-void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
+void RecvBlockFRAM(uint16_t fStartAddr, void *AdrBlock,uint16_t sizeBlock)
 {
     uint16_t i,fSS;
 
@@ -50,7 +50,7 @@ void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
         if (i == sizeBlock/2000)
             fSS = sizeBlock%2000;
 
-        fm_Read(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
+        fm_Read(fStartAddr+i*2000, (u8 *)AdrBlock+i*2000,fSS);
     }
 }
 
@@ -116,7 +116,7 @@ void ReWriteFRAM(int numblock)
 
     uint16_t cSum;
     int block_idx = numblock-1;
-    SendBlockFRAM(BlockEEP[block_idx].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
+    SendBlockFRAM((uint32_t)BlockEEP[block_idx].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
     cSum = CalcRAMSum(BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
     SendBlockFRAM(ADDRESS_FRAM_SUM+block_idx*2,&cSum,2);
     BlockEEP[block_idx].CSum = cSum;

@@ -40,4 +40,4 @@ void CheckInputConfig(void);
 // XXX: isolation
 void stm32f10x_Rootines_reset_NMinPCOut(void);
 
-void GetRTC(uint16_t *time, uint16_t *date, uint16_t *year, u8 *day_of_week);
+void GetRTC(uint16_t *time, uint16_t *date, uint8_t *year, u8 *day_of_week);

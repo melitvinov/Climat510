@@ -10,8 +10,6 @@
 #define SETEA	__enable_irq()
 #define CLREA	__disable_irq()
 
-#pragma pack(1)
-
 
 /* Ќазначение битов регистра новостей - GD.SostPol.News */
 #define bOperator       0x01
@@ -22,9 +20,6 @@
 #define bWriEEP         0x80
 
 
-void w_int(void *bu, char frmt, int16_t param);
-void in_val (void);
-void w_txt(const char *bu);
 void CrcCalc(void);
 
 

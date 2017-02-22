@@ -1,3 +1,5 @@
+#define _FRIEND_OF_CONTROL_
+
 #include "syntax.h"
 #include "control_gd.h"
 
@@ -10,7 +12,7 @@ void write_output_bit(char fnTepl, char fnMech, char fnclr, char fnSm)
     if (fnTepl == -1)
         nBit=fnMech;
     else
-        nBit=GD.MechConfig[fnTepl].RNum[fnMech];
+        nBit=_GD.MechConfig[fnTepl].RNum[fnMech];
     if (!nBit) return;
     if (GetIPCComMod(nBit))
     {
