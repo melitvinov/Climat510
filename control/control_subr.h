@@ -5,21 +5,19 @@
 
 int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet);
 void WindDirect(void);
-void airHeatTimers(void);
+
+int16_t getTempHeat(int fnTepl);
 
 void CheckMidlSr(void);
-char CheckSeparate (char fnKontur);
-char CheckMain(char fnTepl);
+char CheckSeparate (int fnKontur);
+char CheckMain(int fnTepl);
 
-void airHeat(char fnTepl);
+int8_t getTempHeatAlarm(int fnTepl);
+int8_t getTempVentAlarm(int fnTepl);
 
-int8_t getTempHeatAlarm(char fnTepl);
-int8_t getTempVentAlarm(char fnTepl);
-
-int16_t getTempHeat(char fnTepl);
-int16_t getTempVent(char fnTepl);
-void SetPointersOnKontur(char fnKontur);
-void SetPointersOnTepl(char fnTepl);
+int16_t getTempVent(int fnTepl);
+void SetPointersOnKontur(int fnKontur);
+void SetPointersOnTepl(int fnTepl);
 
 bool SameSign(int Val1,int Val2);
 

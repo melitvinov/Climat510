@@ -67,7 +67,7 @@ void loadMech(char tCTepl)
     gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
 }
 
-char volatile repeatNews[8];
+static char repeatNews[8];
 
 void initCheckConfig()
 {
@@ -170,7 +170,7 @@ static void periodic_task(void)
 
     ClrAllOutIPCDigit();
 
-    Control_pre();
+    control_pre();
 
     #warning "so these IPC fucks are transferred from interrupts. so lame"
 
@@ -183,7 +183,7 @@ static void periodic_task(void)
         InitLCD();
     }
 
-    Control_post(wtf0.Second, wtf0.SostRS == WORK_UNIT);
+    control_post(wtf0.Second, wtf0.SostRS == WORK_UNIT);
 
     if (wtf0.Second >= 60)
     {
@@ -230,9 +230,7 @@ static void init(void)
         byte_x=6;
     TestMem(byte_x);
     wtf0.Second=38;
-    ClearAllAlarms();
-    siodInit();
-    airHeatInit();   // airHeat
+    control_init();
     initCheckConfig();
 }
 

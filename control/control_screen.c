@@ -12,7 +12,6 @@ extern uchar       bNight;
 void CheckModeScreen(char typScr,char chType, char fnTepl)
 {
 //Оптимицация на typScr
-    char tvs_DegSt,tvs_DegEnd;
     char ttyp,bZad;
     eScreen *pScr;
     int SunZClose;
@@ -372,6 +371,7 @@ void RegWorkDiskr(char fHSmReg)
                 if (_GD.TuneClimate.co2Fram2 > _GD.TuneClimate.co2Fram1)
                     val = _GD.TuneClimate.co2Fram2 - _GD.TuneClimate.co2Fram1;
                 val = ((sum - _GD.TuneClimate.co2Fram1) * _GD.TuneClimate.co2Off) / val;
+                #warning "WTF: statement with no effect"
                 _GD.TuneClimate.co_MaxTime-(((int)tMech)*(_GD.TuneClimate.co_MaxTime-_GD.TuneClimate.co_MinTime))/100;
                 COset = COset - val;
             }

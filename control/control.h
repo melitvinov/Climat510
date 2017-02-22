@@ -3,6 +3,7 @@
 
 #include "control_gd.h"
 
+#ifdef _FRIEND_OF_CONTROL_
 typedef struct
 {
     int16_t X;
@@ -11,8 +12,11 @@ typedef struct
 } control_regs_t;
 
 extern control_regs_t creg;
+#endif
 
-void Control_pre(void);
-void Control_post(int second, bool is_transfer_in_progress);
+
+void control_init(void);
+void control_pre(void);
+void control_post(int second, bool is_transfer_in_progress);
 
 #endif

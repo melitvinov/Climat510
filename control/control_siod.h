@@ -12,6 +12,7 @@ typedef struct
 
 const siod_ctx_t *siod_view(void);
 
+void siodInit(void);
 void SetUpSiod(char fnTepl);
 void DoSiod(char fnTepl);
 

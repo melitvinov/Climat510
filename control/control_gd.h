@@ -122,8 +122,6 @@ typedef struct
     eKontur *Hot_Tepl_Kontur;
     eTControlKontur *TControl_Tepl_Kontur;
     eMechanic *Hot_Hand_Kontur;
-    eStrategy *Strategy_Kontur;
-    eConstMixVal *ConstMechanic_Mech;
 } gdcp_t;
 
 #ifdef _FRIEND_OF_CONTROL_

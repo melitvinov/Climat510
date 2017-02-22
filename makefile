@@ -43,6 +43,8 @@ COMMON_CFLAGS += -Wa,-adlmns=$(@:.o=.lst)
 #COMMON_CFLAGS += -Wall -Wcast-align -Wimplicit -Wstrict-prototypes -Wuninitialized
 #COMMON_CFLAGS += -Wpointer-arith -Wswitch -Wredundant-decls -Wreturn-type -Wunused
 
+COMMON_CFLAGS += -Wno-char-subscripts
+
 #COMMON_CFLAGS += -Wshadow -Winline
 
 COMMON_CFLAGS += -Wstrict-aliasing

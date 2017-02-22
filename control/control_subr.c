@@ -14,16 +14,12 @@
 #include "control.h"
 #include "control_subr.h"
 
-static int16_t  airHeatPause[8];
-static int16_t  airHeatTimeWork[8];
-static int16_t  airHeatOnOff[8];
-
 extern int8_t  bWaterReset[16];
 
 static int16_t teplTmes[8][6];
 
 
-static int16_t getTempSensor(char fnTepl, char sensor)
+static int16_t getTempSensor(int fnTepl, int sensor)
 {
     if (_GDP.Hot_Tepl->InTeplSens[sensor].RCS  ==  0)
     {
@@ -42,7 +38,7 @@ static int16_t getTempSensor(char fnTepl, char sensor)
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempVent(char fnTepl)
+int16_t getTempVent(int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -54,7 +50,6 @@ int16_t getTempVent(char fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     char averageCount = 0;
-    int16_t singleSensor = 0;
     calcType = _GD.Control.Tepl[fnTepl].sensT_vent >> 6;
     mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
@@ -71,11 +66,13 @@ int16_t getTempVent(char fnTepl)
                 max = temp;
             average += temp;
             averageCount++;
-            singleSensor = temp;
             maskN = (maskN >> 1) + 32;
             error = 1;
         }
-        else maskN = (maskN >> 1);
+        else
+        {
+            maskN = (maskN >> 1);
+        }
     }
     average = average / averageCount;
     if (error)
@@ -94,7 +91,7 @@ int16_t getTempVent(char fnTepl)
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempHeat(char fnTepl)
+int16_t getTempHeat(int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -106,7 +103,6 @@ int16_t getTempHeat(char fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    int16_t singleSensor = 0;
     calcType = _GD.Control.Tepl[fnTepl].sensT_heat >> 6;
     mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
@@ -122,7 +118,6 @@ int16_t getTempHeat(char fnTepl)
                 max = temp;
             average += temp;
             averageCount++;
-            singleSensor = temp;
             maskN = (maskN >> 1) + 32;
             error = 1;
         }
@@ -144,23 +139,18 @@ int16_t getTempHeat(char fnTepl)
 /*!
 \brief Авария датчика температуры воздуха вентиляции в зависимости от выбранного значение в Параметрах управления
 */
-int8_t getTempVentAlarm(char fnTepl)
+int8_t getTempVentAlarm(int fnTepl)
 {
-    int16_t error = 0;
     int16_t temp = 0;
     int16_t i;
-    int8_t calcType = 0;
     int8_t mask = 0;
     int8_t maskN = 0;
     int16_t max = 0;
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    int16_t singleSensor = 0;
-    calcType = _GD.Control.Tepl[fnTepl].sensT_vent >> 6;
     mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
-    error = 0;
     for (i=0;i<6;i++)
     {
         if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
@@ -172,11 +162,12 @@ int8_t getTempVentAlarm(char fnTepl)
                 max = temp;
             average += temp;
             averageCount++;
-            singleSensor = temp;
             maskN = (maskN >> 1) + 32;
-            error = 1;
         }
-        else maskN = (maskN >> 1);
+        else
+        {
+            maskN = (maskN >> 1);
+        }
     }
     return maskN;
 }
@@ -184,23 +175,18 @@ int8_t getTempVentAlarm(char fnTepl)
 /*!
 \brief Авария датчика температуры воздуха обогрева в зависимости от выбранного значение в Параметрах управления
 */
-int8_t getTempHeatAlarm(char fnTepl)
+int8_t getTempHeatAlarm(int fnTepl)
 {
-    int16_t error = 0;
     int16_t temp = 0;
     int16_t i;
-    int8_t calcType = 0;
     int8_t mask = 0;
     int8_t maskN = 0;
     int16_t max = 0;
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    int16_t singleSensor = 0;
-    calcType = _GD.Control.Tepl[fnTepl].sensT_heat >> 6;
     mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
-    error = 0;
     for (i=0;i<6;i++)
     {
         if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
@@ -212,119 +198,15 @@ int8_t getTempHeatAlarm(char fnTepl)
                 max = temp;
             average += temp;
             averageCount++;
-            singleSensor = temp;
             maskN = (maskN >> 1) + 32;
-            error = 1;
         }
-        else maskN = (maskN >> 1);
+        else
+        {
+            maskN = (maskN >> 1);
+        }
     }
     return maskN;
 }
-
-//*****************************************************************************************************************
-static uint16_t airHeatGetHeatPause(char fnTepl)
-{
-    return airHeatPause[fnTepl];
-}
-
-static void airHeatSetHeatPause(char timeInc, char fnTepl)
-{
-    if (timeInc)
-        airHeatPause[fnTepl] = airHeatPause[fnTepl] + timeInc;
-    else
-        airHeatPause[fnTepl] = 0;
-}
-
-static uint16_t airHeatGetTimeWork(char fnTepl)
-{
-    return airHeatTimeWork[fnTepl];
-}
-
-static void airHeatSetTimeWork(char timeInc, char fnTepl)
-{
-    if (timeInc)
-        airHeatTimeWork[fnTepl] = airHeatTimeWork[fnTepl] + timeInc;
-    else
-        airHeatTimeWork[fnTepl] = 0;
-}
-
-static void airHeatOn(char fnTepl)
-{
-    _GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 1;
-    //(*(pGD_Hot_Hand+cHSmHeat)).Position=1;//pGD_TControl_Tepl->Calorifer;
-    airHeatOnOff[fnTepl]=1;
-    airHeatSetHeatPause(1, fnTepl);
-}
-
-static void airHeatOff(char fnTepl)
-{
-    _GD.Hot.Tepl[fnTepl].HandCtrl[cHSmHeat].Position = 0;
-    airHeatSetTimeWork(0, fnTepl);
-    airHeatSetHeatPause(0, fnTepl);
-    airHeatSetHeatPause(1, fnTepl);  // запускаем счетчик паузы
-    airHeatOnOff[fnTepl]=0;
-}
-
-void airHeatInit(void)
-{
-    char tCTepl;
-    for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
-    {
-        airHeatPause[tCTepl] = 0;
-        airHeatTimeWork[tCTepl] = 0;
-        airHeatOnOff[tCTepl] = 0;
-        //airHeatSetTimeWork(GD.TuneClimate.airHeatMinWork,tCTepl);  // что бы сработывало условие выключения обогревателя при вервом старте
-        airHeatOff(tCTepl);
-    }
-}
-
-void airHeatTimers(void)
-{
-    char tCTepl;
-    for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
-    {
-//		if ( tCTepl != 0) return;
-        if (airHeatOnOff[tCTepl]  ==  1)
-        //if (pGD_Hot_Tepl->airHeatOnOff  ==  1)
-        {
-            if (airHeatGetTimeWork(tCTepl) >= (_GD.TuneClimate.airHeatMaxWork / 100)) // если обогреватель включен проверяем макс время работы
-                airHeatOff(tCTepl);
-            else
-                airHeatSetTimeWork(1,tCTepl);   // если обогреватель включен увеличиваем его время на 1 мин
-        }
-        if (airHeatOnOff[tCTepl]  ==  0)
-        //if (pGD_Hot_Tepl->airHeatOnOff  ==  0)   // если обогреватель выключен увеличиваем его время паузы на 1 мин
-        {
-            if (airHeatGetHeatPause(tCTepl) >= (_GD.TuneClimate.airHeatPauseWork / 100))
-                airHeatSetHeatPause(0, tCTepl); // 0 означает что обогреватель может быть включен
-            else if (airHeatGetHeatPause(tCTepl) > 0)
-                airHeatSetHeatPause(1, tCTepl);     // считаем паузу пока она не обнулится
-        }
-    }
-}
-
-void airHeat(char fnTepl)
-{
-    if ((YesBit((_GDP.Hot_Hand+cHSmHeat)->RCS,(cbManMech)))) return;
-    int16_t tempT, tempTon, tempToff = 0;
-//	if ( fnTepl != 0) return;
-    tempT = getTempHeat(fnTepl);
-    if (tempT < _GD.Hot.Tepl[fnTepl].AllTask.TAir)
-        tempTon = _GD.Hot.Tepl[fnTepl].AllTask.TAir - tempT;
-    else tempToff = tempT - _GD.Hot.Tepl[fnTepl].AllTask.TAir;
-    if (tempT > 0)
-    {
-        //if ((GD.TuneClimate.airHeatTemperOn >= tempTon) && (GD.TuneClimate.airHeatTemperOff > tempToff) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
-        if ((_GD.TuneClimate.airHeatTemperOn <= tempTon) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
-            airHeatOn(fnTepl);
-        if ((_GD.TuneClimate.airHeatTemperOff <= tempToff) && (airHeatGetTimeWork(fnTepl) >= (_GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
-            airHeatOff(fnTepl);
-    }
-    _GD.Hot.Tepl[fnTepl].airHeatTimeWork = airHeatTimeWork[fnTepl]*100;
-    _GD.Hot.Tepl[fnTepl].airHeatOnOff = airHeatOnOff[fnTepl];
-}
-
-//***********************************************************************************************************
 
 
 bool SameSign(int Val1,int Val2)
@@ -335,7 +217,7 @@ bool SameSign(int Val1,int Val2)
         return 0;
 }
 
-void SetPointersOnTepl(char fnTepl)
+void SetPointersOnTepl(int fnTepl)
 {
     _GDP.Hot_Tepl=&_GD.Hot.Tepl[fnTepl];
     _GDP.TControl_Tepl=&_GD.TControl.Tepl[fnTepl];
@@ -351,13 +233,11 @@ void SetPointersOnTepl(char fnTepl)
 
 
 
-void SetPointersOnKontur(char fnKontur)
+void SetPointersOnKontur(int fnKontur)
 {
     _GDCP.Hot_Tepl_Kontur=&_GDP.Hot_Tepl->Kontur[fnKontur];
     _GDCP.TControl_Tepl_Kontur=&_GDP.TControl_Tepl->Kontur[fnKontur];
     _GDCP.Hot_Hand_Kontur=&_GDP.Hot_Hand[fnKontur];
-    _GDCP.Strategy_Kontur=&_GDP.Strategy_Tepl[fnKontur];
-    _GDCP.ConstMechanic_Mech=&_GDP.ConstMechanic->ConstMixVal[fnKontur];
 }
 
 void MidlWindAndSr(void)
@@ -383,7 +263,7 @@ void CheckMidlSr(void)
     _GD.Hot.MidlSR=(int)(_GD.TControl.MidlSR/1000);
 }
 
-char CheckSeparate (char fnKontur)
+char CheckSeparate (int fnKontur)
 {
     char t2;
     char t1;
@@ -402,7 +282,7 @@ char CheckSeparate (char fnKontur)
     return t1;
 }
 
-char CheckMain(char fnTepl)
+char CheckMain(int fnTepl)
 {
     char tTepl;
     tTepl=0;

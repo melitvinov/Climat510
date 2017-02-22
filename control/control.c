@@ -9,6 +9,7 @@
 #include "control_subr.h"
 #include "control_strategy.h"
 #include "control_upstream.h"
+#include "control_air_heat.h"
 #include "control.h"
 
 #warning "WTF: control ABI contains pointer. no reason to pass pointers thru ABI"
@@ -27,15 +28,12 @@ typedef enum
 
 typedef struct
 {
-    eTimer *Timer;
     int16_t settingsVosx;
     int16_t settingsZax;
-    bool fLightOn;
     int16_t fLightPause;
     uchar MaskRas;
     int PastPerRas;
     int TecPerRas;
-    eMechBusy *MBusy;
 } control_ctx_t;
 
 // XXX: these 3 'registers' are used in control wide and wild
@@ -81,6 +79,7 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
     case TYPE_START_BEFORE_SUNRISE:
         if (sunRise >= timeStart)
             return sunRise - timeStart;
+        #warning "garbage is returned"
         //else return -1;
         break;
     case TYPE_START_AFTER_SUNRISE:
@@ -141,8 +140,8 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     sTimerPrev=-1;
     for (nTimer = 0;nTimer<cSTimer;nTimer++) //20
     {
-        ctx.Timer = &_GD.Timers[nTimer];
-        typeStartCorrection = controlTypeStartCorrection(ctx.Timer->TypeStart, ctx.Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
+        eTimer *Timer = &_GD.Timers[nTimer];
+        typeStartCorrection = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
         //if (typeStartCorrection  ==  -1)
         //    typeStartCorrection = GD.Timer[nTimer].TimeStart;
 
@@ -182,10 +181,10 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 
     pGD_CurrTimer=&_GD.Timers[sTimerPrev];
     pGD_NextTimer=&_GD.Timers[sTimerNext];
-    ctx.Timer = &_GD.Timers[sTimerPrev];
-    prevTimer = controlTypeStartCorrection(ctx.Timer->TypeStart, ctx.Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
-    ctx.Timer = &_GD.Timers[sTimerNext];
-    nextTimer = controlTypeStartCorrection(ctx.Timer->TypeStart, ctx.Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
+    eTimer *Timer = &_GD.Timers[sTimerPrev];
+    prevTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
+    Timer = &_GD.Timers[sTimerNext];
+    nextTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
     creg.X= _GD.Hot.Time - prevTimer;
     creg.Y= nextTimer - prevTimer;
 //        if (!GD.Timer[nTimer].TimeStart)
@@ -454,7 +453,7 @@ void SetIfReset(void)
 /**********************************************************************/
 /*-*-*-*-*--Нахождение прогнозируемого изменения температуры--*-*-*-*-*/
 /**********************************************************************/
-#warning Прогнозы температуры по внешним факторам !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning Прогнозы температуры по внешним факторам !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void __cNextTCalc(char fnTepl)
 {
     int CalcAllKontur;
@@ -481,7 +480,7 @@ void __cNextTCalc(char fnTepl)
 //	pGD_Hot_Tepl->AllTask.Rez[0]=CURRENT_TEMP_VALUE;
 //	IntX=(pGD_Hot_Tepl->AllTask.DoTHeat-CURRENT_TEMP_VALUE);
 
-#warning NEW CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning NEW CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // смотря по какому датчику работаем того и считаем
 // ---------------------
 // NEW
@@ -787,7 +786,7 @@ void    DoPumps(void)
 
 }
 
-#warning вкл воздушного обогревателя !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning вкл воздушного обогревателя !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void    DoVentCalorifer(void)
 {
 
@@ -808,7 +807,7 @@ void    DoVentCalorifer(void)
 }
 
 
-#warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void    DoLights(void)
 {
     if (YesBit((*(_GDP.Hot_Hand+cHSmLight)).RCS,(/*cbNoMech+*/cbManMech))) return;
@@ -858,12 +857,15 @@ void ClearAllAlarms(void)
     char fnAlr;
     char fnTepl;
     for (fnTepl = 0;fnTepl<cSTepl;fnTepl++)
+    {
         for (fnAlr = 0;fnAlr<cSRegCtrl;fnAlr++)
         {
             ClrBit(_GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].RCS,cMSAlarm);
             _GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].TryMove = 0;
             _GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].TryMes = 0;
         }
+    }
+    #warning "statement with no effect"
     for (fnAlr = 0;fnAlr<MAX_ALARMS;fnAlr++)
         _GD.TControl.Tepl[fnTepl].Alarms[fnAlr];
 }
@@ -944,11 +946,11 @@ void SetDiskr(char fnTepl)
         nLight=((*(_GDP.Hot_Hand+cHSmLight)).Position-50)/10+2;
         if (nLight<1) nLight = 1;
     }
-    ctx.fLightOn = 0;
+    bool is_light_on = 0;
     if (nLight>1)
     {
         write_output_bit(fnTepl,cHSmLight,0,0);
-        ctx.fLightOn = 1;
+        is_light_on = 1;
     }
     tMaxLight = 8;
 
@@ -980,7 +982,7 @@ void SetDiskr(char fnTepl)
         tMaxLight = _GDP.Control_Tepl->sLight-10;
         if (ctx.fLightPause>CONTROL_LIGHT_DELAY*8) ctx.fLightPause = CONTROL_LIGHT_DELAY*8;
         if (ctx.fLightPause<0) ctx.fLightPause = 0;
-        if (ctx.fLightOn)
+        if (is_light_on)
         {
             nLight=~(0xff<<(ctx.fLightPause/CONTROL_LIGHT_DELAY));
             ctx.fLightPause++;
@@ -1046,8 +1048,11 @@ void DoMechanics(char fnTepl)
     for (int i = cHSmMixVal;i<cHSmPump;i++)
     {
         SetPointersOnKontur(i);
+
+        const eConstMixVal *ConstMechanic_Mech = &_GDP.ConstMechanic->ConstMixVal[i];
+
 //		pGD_Hot_Hand_Kontur = pGD_Hot_Hand+ByteX;
-        ctx.MBusy=&(_GDP.TControl_Tepl->MechBusy[i]);
+        eMechBusy *mechbusy=&(_GDP.TControl_Tepl->MechBusy[i]);
 
         if (_GDCP.Hot_Hand_Kontur->Position>100)
             _GDCP.Hot_Hand_Kontur->Position = 100;
@@ -1078,81 +1083,81 @@ void DoMechanics(char fnTepl)
         write_output_bit(fnTepl,i,1,0);
         write_output_bit(fnTepl,i,1,1);
 
-        ClrBit(ctx.MBusy->RCS,cMSBusyMech);
+        ClrBit(mechbusy->RCS,cMSBusyMech);
         int byte_y = 0;
-        if ((!YesBit(ctx.MBusy->RCS,cMSAlarm))&&(ctx.MBusy->Sens)&&(!YesBit(ctx.MBusy->Sens->RCS,cbNoWorkSens))&&(_GD.TuneClimate.f_MaxAngle))
+        if ((!YesBit(mechbusy->RCS,cMSAlarm))&&(mechbusy->Sens)&&(!YesBit(mechbusy->Sens->RCS,cbNoWorkSens))&&(_GD.TuneClimate.f_MaxAngle))
         {
-            ctx.MBusy->PauseMech = 10;
-            if (YesBit(ctx.MBusy->RCS,cMSFreshSens))
+            mechbusy->PauseMech = 10;
+            if (YesBit(mechbusy->RCS,cMSFreshSens))
             {
-                ctx.MBusy->PauseMech = 0;
-                ClrBit(ctx.MBusy->RCS,cMSFreshSens);
+                mechbusy->PauseMech = 0;
+                ClrBit(mechbusy->RCS,cMSFreshSens);
 //				if ((MBusy->PrevDelta>10)&&(MBusy->Sens->Value-MBusy->PrevTask>10))
 //					MBusy->CalcTime=(((long)MBusy->CalcTime)*MBusy->PrevDelta/(MBusy->Sens->Value-MBusy->PrevTask));
                 //(MBusy->PrevPosition-MBusy->CurrPosition)
-                if (ctx.MBusy->TryMove>4)
+                if (mechbusy->TryMove>4)
                 {
-                    SetBit(ctx.MBusy->RCS,cMSAlarm);
+                    SetBit(mechbusy->RCS,cMSAlarm);
                     continue;
                 }
-                if (ctx.MBusy->PrevTask == _GDCP.Hot_Hand_Kontur->Position*10)
+                if (mechbusy->PrevTask == _GDCP.Hot_Hand_Kontur->Position*10)
                 {
                     creg.Y = _GD.TuneClimate.f_MaxAngle*10;
                     creg.Y = CLAMP(10, creg.Y, 50);
-                    if (abs(ctx.MBusy->Sens->Value-ctx.MBusy->PrevTask)>creg.Y)
+                    if (abs(mechbusy->Sens->Value - mechbusy->PrevTask)>creg.Y)
                     {
-                        ctx.MBusy->TryMes++;
-                        if (ctx.MBusy->TryMes>4)
+                        mechbusy->TryMes++;
+                        if (mechbusy->TryMes>4)
                         {
-                            ctx.MBusy->TryMes = 0;
-                            ctx.MBusy->TryMove+=(abs(ctx.MBusy->Sens->Value-ctx.MBusy->PrevTask)/creg.Y);
+                            mechbusy->TryMes = 0;
+                            mechbusy->TryMove+=(abs(mechbusy->Sens->Value-mechbusy->PrevTask)/creg.Y);
                         }
                         else continue;
                     }
 
 
-                    long long_x = ctx.MBusy->Sens->Value;
-                    long_x *= _GDCP.ConstMechanic_Mech->v_TimeMixVal;//MBusy->CalcTime;
+                    long long_x = mechbusy->Sens->Value;
+                    long_x *= ConstMechanic_Mech->v_TimeMixVal;//MBusy->CalcTime;
                     long_x /= 1000;
 
-                    if (abs(ctx.MBusy->Sens->Value-ctx.MBusy->PrevTask)<=creg.Y)
+                    if (abs(mechbusy->Sens->Value-mechbusy->PrevTask)<=creg.Y)
                     {
-                        ctx.MBusy->TryMove = 0;
-                        if (ctx.MBusy->PrevDelta>10)
+                        mechbusy->TryMove = 0;
+                        if (mechbusy->PrevDelta>10)
                         {
-                            ctx.MBusy->TimeRealMech++;
+                            mechbusy->TimeRealMech++;
                         }
-                        if (ctx.MBusy->PrevDelta<-10)
+                        if (mechbusy->PrevDelta<-10)
                         {
-                            ctx.MBusy->TimeRealMech--;
+                            mechbusy->TimeRealMech--;
                         }
                     }
                     else
                     {
-                        ctx.MBusy->TimeRealMech=(int)long_x;
+                        mechbusy->TimeRealMech=(int)long_x;
                     }
                 }
-                ctx.MBusy->PrevTask = _GDCP.Hot_Hand_Kontur->Position*10;
+                mechbusy->PrevTask = _GDCP.Hot_Hand_Kontur->Position*10;
             }
             //else return;
         }
 //Выход из паузы при блокировке на крайних положениях
-        if (YesBit(ctx.MBusy->RCS,cMSBlockRegs)
-            &&((_GDCP.Hot_Hand_Kontur->Position>0)||(ctx.MBusy->TimeSetMech>0))
-            &&((_GDCP.Hot_Hand_Kontur->Position<100)||(ctx.MBusy->TimeSetMech<_GDCP.ConstMechanic_Mech->v_TimeMixVal)))
+        if (YesBit(mechbusy->RCS,cMSBlockRegs)
+            &&((_GDCP.Hot_Hand_Kontur->Position>0)||(mechbusy->TimeSetMech>0))
+            &&((_GDCP.Hot_Hand_Kontur->Position<100)||(mechbusy->TimeSetMech < ConstMechanic_Mech->v_TimeMixVal)))
         {
-            ClrBit(ctx.MBusy->RCS,cMSBlockRegs);
-            ctx.MBusy->TimeRealMech = ctx.MBusy->TimeSetMech;
+            ClrBit(mechbusy->RCS,cMSBlockRegs);
+            mechbusy->TimeRealMech = mechbusy->TimeSetMech;
             byte_y++;
         }
 //Расчет
 
-        if ((!ctx.MBusy->PauseMech)||(YesBit(_GDCP.Hot_Hand_Kontur->RCS,cbManMech)))
+        if ((!mechbusy->PauseMech)||(YesBit(_GDCP.Hot_Hand_Kontur->RCS,cbManMech)))
         {
             long long_x =_GDCP.Hot_Hand_Kontur->Position;
-            long_x *= _GDCP.ConstMechanic_Mech->v_TimeMixVal;
+            long_x *= ConstMechanic_Mech->v_TimeMixVal;
             long_x /= 100;
-            ctx.MBusy->TimeSetMech=(int)(long_x);
+            mechbusy->TimeSetMech=(int)(long_x);
 /*			if (YesBit(pGD_Hot_Hand_Kontur->RCS,cbResetMech))
             {
                 MBusy->TimeRealMech = MBusy->TimeSetMech;
@@ -1163,54 +1168,54 @@ void DoMechanics(char fnTepl)
             {
                 if (!_GDCP.Hot_Hand_Kontur->Position)
                 {
-                    SetBit(ctx.MBusy->RCS,cMSBlockRegs);
-                    ctx.MBusy->TimeRealMech+=_GDCP.ConstMechanic_Mech->v_TimeMixVal/4;
+                    SetBit(mechbusy->RCS,cMSBlockRegs);
+                    mechbusy->TimeRealMech+= ConstMechanic_Mech->v_TimeMixVal/4;
                 }
                 if (_GDCP.Hot_Hand_Kontur->Position == 100)
                 {
-                    SetBit(ctx.MBusy->RCS,cMSBlockRegs);
-                    ctx.MBusy->TimeRealMech-=_GDCP.ConstMechanic_Mech->v_TimeMixVal/4;
+                    SetBit(mechbusy->RCS,cMSBlockRegs);
+                    mechbusy->TimeRealMech -= ConstMechanic_Mech->v_TimeMixVal/4;
                 }
             }
         }
-        if (ctx.MBusy->TimeSetMech>ctx.MBusy->TimeRealMech)
+        if (mechbusy->TimeSetMech>mechbusy->TimeRealMech)
         {
-            ctx.MBusy->TimeRealMech++;
+            mechbusy->TimeRealMech++;
             write_output_bit(fnTepl,i,0,1);
-            SetBit(ctx.MBusy->RCS,cMSBusyMech);
+            SetBit(mechbusy->RCS,cMSBusyMech);
             //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
             byte_y++;
         }
-        if (ctx.MBusy->TimeSetMech<ctx.MBusy->TimeRealMech)
+        if (mechbusy->TimeSetMech<mechbusy->TimeRealMech)
         {
-            ctx.MBusy->TimeRealMech--;
+            mechbusy->TimeRealMech--;
             write_output_bit(fnTepl,i,0,0);
-            SetBit(ctx.MBusy->RCS,cMSBusyMech);
+            SetBit(mechbusy->RCS,cMSBusyMech);
             //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
             byte_y++;
         }
         if (byte_y)
         {
-            creg.Y=_GDCP.ConstMechanic_Mech->v_MinTim;
+            creg.Y = ConstMechanic_Mech->v_MinTim;
 /*			if ((ByteX == cHSmWinN)||(ByteX == cHSmWinS))
             {
                 ogrMin(&IntY,90);
                 pGD_TControl_Tepl->FramUpdate[ByteX-cHSmWinN]=0;
             }*/
             creg.Y = MAX(creg.Y, 5);
-            ctx.MBusy->PauseMech = creg.Y;
-            if (YesBit(ctx.MBusy->RCS,cMSBlockRegs))
-                ctx.MBusy->PauseMech = 150;
+            mechbusy->PauseMech = creg.Y;
+            if (YesBit(mechbusy->RCS,cMSBlockRegs))
+                mechbusy->PauseMech = 150;
         }
         //	if (GD.Hot.Hand) continue;
-        if (ctx.MBusy->PauseMech)
+        if (mechbusy->PauseMech)
         {
-            ctx.MBusy->PauseMech--;
+            mechbusy->PauseMech--;
 //			if (!(YesBit(MBusy->RCS,cMSBlockRegs)))
 //				SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
 
         }
-        ctx.MBusy->PauseMech = MAX(ctx.MBusy->PauseMech, 0);// MBusy->PauseMech = 0;
+        mechbusy->PauseMech = MAX(mechbusy->PauseMech, 0);// MBusy->PauseMech = 0;
 
     }
 }
@@ -1329,7 +1334,7 @@ void SetCO2(void)
 }
 
 
-#warning light Досветка !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning light Досветка !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void SetLighting(void)
 {
     char bZad;
@@ -1562,23 +1567,22 @@ void loadSettings(char tCTepl, const int *src)
     _GD.Hot.Tepl[tCTepl].newsZone = src[4];
 }
 
-void Control_pre(void)
+void control_pre(void)
 {
     Configuration();
     SetAlarm();
 
-    char tCTepl,ttTepl;
-    for (tCTepl = 0;tCTepl<cSTepl;tCTepl++)
+    for (int gh_idx = 0;gh_idx<cSTepl;gh_idx++)
     {
-        SetPointersOnTepl(tCTepl);
+        SetPointersOnTepl(gh_idx);
         SetSensOnMech();
-        DoMechanics(tCTepl);
-        SetDiskr(tCTepl);
+        DoMechanics(gh_idx);
+        SetDiskr(gh_idx);
 
-        SetUpSiod(tCTepl);  // !!!
+        SetUpSiod(gh_idx);  // !!!
 
 
-        DoSiod(tCTepl);
+        DoSiod(gh_idx);
         DoPumps();
 //			CheckReadyMeasure();
         DoVentCalorifer();
@@ -1592,7 +1596,7 @@ void Control_pre(void)
     }
 }
 
-void Control_post(int second, bool is_transfer_in_progress)
+void control_post(int second, bool is_transfer_in_progress)
 {
     for (int tCTepl = 0;tCTepl<cSTepl;tCTepl++)
     {
@@ -1635,7 +1639,7 @@ void Control_post(int second, bool is_transfer_in_progress)
                 SetPointersOnTepl(tCTepl);
                 SetTepl(tCTepl);
 
-                airHeat(tCTepl);    // airHeat
+                airHeat(tCTepl);
             }
             __sCalcKonturs();
             __sMechWindows();
@@ -1674,7 +1678,7 @@ void Control_post(int second, bool is_transfer_in_progress)
     if (second < 60)
         return;
 
-    airHeatTimers();    // airHeat
+    airHeatTimers();
     MidlWindAndSr();
     WindDirect();
 
@@ -1699,4 +1703,11 @@ void Control_post(int second, bool is_transfer_in_progress)
         _GD.TControl.Date = _GD.Hot.Date;
         _GD.TControl.FullVol = 0;
     }
+}
+
+void control_init(void)
+{
+    ClearAllAlarms();
+    siodInit();
+    airHeatInit();   // airHeat
 }

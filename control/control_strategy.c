@@ -609,7 +609,7 @@ void __sRegulKontur(char fnKontur)
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Потенциальный приоритет для контура--*-*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sPotentialPosibilityKontur(char fInv)
+void __sPotentialPosibilityKontur(char fInv, const eStrategy *strategy)
 {
     int16_t *pRealPower;
     pRealPower = &(_GDCP.TControl_Tepl_Kontur->RealPower[fInv]);
@@ -620,7 +620,7 @@ void __sPotentialPosibilityKontur(char fInv)
 //------------------------------------------------------------------------
 //Приоритет по влажности воздуха в теплице
 //------------------------------------------------------------------------
-    creg.Y = (int) _GDCP.Strategy_Kontur->RHPower;
+    creg.Y = strategy->RHPower;
     creg.X = -DefRH();
 
     creg.Z = (int) (((long) creg.Y) * creg.X / 1000);
@@ -634,7 +634,7 @@ void __sPotentialPosibilityKontur(char fInv)
 //------------------------------------------------------------------------
 //Если контур выключен то оптимальня температура сравнивается с минимумом контура
 //------------------------------------------------------------------------
-        creg.Y = (int) _GDCP.Strategy_Kontur->OptimalPower;
+        creg.Y = strategy->OptimalPower;
         creg.X = (int) (((long) creg.Y * creg.X / 100));
     }
 
@@ -642,17 +642,17 @@ void __sPotentialPosibilityKontur(char fInv)
 //Приоритет с экономичностью
 //------------------------------------------------------------------------
 
-    (*pRealPower) = _GDCP.Strategy_Kontur->TempPower + creg.X + creg.Z;
+    *pRealPower = strategy->TempPower + creg.X + creg.Z;
     if ((*pRealPower) < 1)
         (*pRealPower) = 1;
     if (!fInv)
     {
-        (*pRealPower) = 100 - _GDCP.Strategy_Kontur->TempPower - creg.X - creg.Z;
+        (*pRealPower) = 100 - strategy->TempPower - creg.X - creg.Z;
         if ((*pRealPower) < 1)
             (*pRealPower) = 1;
     }
-
 }
+
 void __WorkableKontur(char fnKontur, char fnTepl)
 {
 
@@ -814,7 +814,7 @@ void __sRealPosibilityKonturs(char fnKontur, long* fMinMax)
 /*************************************************************************/
 /*-*-*-*-*--Процедура распределения критерия на данный контур--*-*-*-*-*-*/
 /*************************************************************************/
-long __sRaspKontur(void)
+long __sRaspKontur(const eStrategy *strategy)
 {
     if ((!_GDP.TControl_Tepl->qMaxKonturs)
         || (!YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbGoMax)))
@@ -826,11 +826,12 @@ long __sRaspKontur(void)
     long_y = long_y / _GDP.TControl_Tepl->qMaxKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / ((long) _GDCP.Strategy_Kontur->Powers);
+    long_y = long_y / strategy->Powers;
 
     return long_y;
 }
-long __sRaspOwnKontur(void)
+
+long __sRaspOwnKontur(const eStrategy *strategy)
 {
     if ((!_GDP.TControl_Tepl->qMaxOwnKonturs)
         || (!YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbGoMaxOwn)))
@@ -839,7 +840,7 @@ long __sRaspOwnKontur(void)
     long_y = long_y / _GDP.TControl_Tepl->qMaxOwnKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / ((long) _GDCP.Strategy_Kontur->Powers);
+    long_y = long_y / strategy->Powers;
 
     return long_y;
 }
@@ -1024,10 +1025,10 @@ void __sLastCheckWindow(char fnTepl)
 /*****************************************************************************/
 /*Процедура преобразования значений температуры в температуру первого контура*/
 /*****************************************************************************/
-long __sThisToFirst(int in)
+long __sThisToFirst(int in, const eStrategy *strategy)
 {
 //	if (YesBit(pGD_Hot_Tepl_Kontur->RCS,cbScreenKontur)) return 0;
-    return(((((long) in) * ((long) _GDCP.Strategy_Kontur->Powers)) / 50));
+    return in * strategy->Powers / 50;
     /********************************************************************
      -----------Работа автонастройки временно приостановлена--------------
      *********************************************************************
@@ -1038,7 +1039,7 @@ long __sThisToFirst(int in)
 /**************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки контура--*-*-*-*-*-*-*-*/
 /**************************************************************************/
-void __sLastCheckKontur(char fnKontur)
+void __sLastCheckKontur(char fnKontur, const eStrategy *strategy)
 {
     int OldDoT;
     long TempDo;
@@ -1068,7 +1069,7 @@ void __sLastCheckKontur(char fnKontur)
         _GDCP.Hot_Tepl_Kontur->Do = CLAMP(_GDCP.Hot_Tepl_Kontur->MinCalc, _GDCP.Hot_Tepl_Kontur->Do, _GDCP.Hot_Tepl_Kontur->MaxCalc);
         TempDo = _GDCP.Hot_Tepl_Kontur->Do * 10;
         _GDCP.TControl_Tepl_Kontur->SErr = 0;
-        _GDP.TControl_Tepl->Integral -= __sThisToFirst((int) ((OldDoT - TempDo)))
+        _GDP.TControl_Tepl->Integral -= __sThisToFirst((int) ((OldDoT - TempDo)), strategy)
                                        * 100;
         //	pGD_TControl_Tepl->SaveIntegral-=__sThisToFirst((int)((OldDoT-TempDo)))*100;
         _GDCP.TControl_Tepl_Kontur->DoT = TempDo;
@@ -1107,18 +1108,20 @@ void __sLastCheckKontur(char fnKontur)
 int __sCalcTempKonturs(void)
 {
     int SumTemp = 0;
-    for (int i = 0; i < cSWaterKontur - 2; i++)
+    for (int contour_idx = 0; contour_idx < cSWaterKontur - 2; contour_idx++)
     {
-        SetPointersOnKontur(i);
-        //if 	(ByteX=) continue;
+        SetPointersOnKontur(contour_idx);
+        const eStrategy *strategy = &_GDP.Strategy_Tepl[contour_idx];
+
         if (_GDCP.TControl_Tepl_Kontur->DoT)
-            SumTemp += __sThisToFirst(_GDCP.TControl_Tepl_Kontur->DoT)
-                       - _GDP.Hot_Tepl->AllTask.DoTHeat;
-        else if ((_GDCP.TControl_Tepl_Kontur->LastDoT < 5000)
-                 && (_GDCP.TControl_Tepl_Kontur->LastDoT
-                     > _GDP.Hot_Tepl->AllTask.DoTHeat))
-            SumTemp += __sThisToFirst(_GDCP.TControl_Tepl_Kontur->LastDoT)
-                       - _GDP.Hot_Tepl->AllTask.DoTHeat;
+        {
+            SumTemp += __sThisToFirst(_GDCP.TControl_Tepl_Kontur->DoT, strategy) - _GDP.Hot_Tepl->AllTask.DoTHeat;
+        }
+        else if (   (_GDCP.TControl_Tepl_Kontur->LastDoT < 5000)
+                 && (_GDCP.TControl_Tepl_Kontur->LastDoT > _GDP.Hot_Tepl->AllTask.DoTHeat))
+        {
+            SumTemp += __sThisToFirst(_GDCP.TControl_Tepl_Kontur->LastDoT, strategy) - _GDP.Hot_Tepl->AllTask.DoTHeat;
+        }
     }
     return SumTemp;
 }
@@ -1170,10 +1173,12 @@ void __sCalcKonturs(void)
         _GDP.TControl_Tepl->NOwnKonturs = 0;
         if (!_GD.Hot.Tepl[fnTepl].AllTask.DoTHeat)
             continue;
-        for (int i = 0; i < cSWaterKontur; i++)
+        for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
         {
-            SetPointersOnKontur(i);
-            __sRegulKontur(i);
+            SetPointersOnKontur(contour_idx);
+            const eStrategy *strategy = &_GDP.Strategy_Tepl[contour_idx];
+
+            __sRegulKontur(contour_idx);
             _GDCP.TControl_Tepl_Kontur->Manual = 0;
             if (YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
@@ -1185,11 +1190,11 @@ void __sCalcKonturs(void)
                 continue;
             }
             _GDCP.Hot_Tepl_Kontur->Do = (_GDCP.TControl_Tepl_Kontur->DoT / 10);
-            __sPotentialPosibilityKontur(0); //Приоритет в случае охлаждения
-            __sPotentialPosibilityKontur(1); //Приоритет в случае нагрева
+            __sPotentialPosibilityKontur(0, strategy); //Приоритет в случае охлаждения
+            __sPotentialPosibilityKontur(1, strategy); //Приоритет в случае нагрева
 
-            __WorkableKontur(i, fnTepl);
-            __sRealPosibilityKonturs(i, MinMaxPowerReg);
+            __WorkableKontur(contour_idx, fnTepl);
+            __sRealPosibilityKonturs(contour_idx, MinMaxPowerReg);
             _GDCP.Hot_Tepl_Kontur->Priority =
             (int) (_GDCP.TControl_Tepl_Kontur->RealPower[_GDP.TControl_Tepl->CurrPower]);
             _GDP.TControl_Tepl->PowMaxKonturs = MinMaxPowerReg[1];
@@ -1219,9 +1224,9 @@ void __sCalcKonturs(void)
         _GDP.TControl_Tepl->qMaxKonturs = 0;
         _GDP.TControl_Tepl->qMaxOwnKonturs = 0;
 
-        for (int i = 0; i < cSWaterKontur; i++)
+        for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
         {
-            SetPointersOnKontur(i);
+            SetPointersOnKontur(contour_idx);
             if (YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             if ((_GDCP.TControl_Tepl_Kontur->RealPower[_GDP.TControl_Tepl->CurrPower]
@@ -1303,20 +1308,22 @@ void __sCalcKonturs(void)
 
     }
 //	CheckReadyMeasure();
-    for (int i = 0; i < cSWaterKontur; i++)
+    for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
     {
 
         for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
         {
             SetPointersOnTepl(fnTepl);
-            SetPointersOnKontur(i);
+            SetPointersOnKontur(contour_idx);
+            const eStrategy *strategy = &_GDP.Strategy_Tepl[contour_idx];
+
             _GDP.TControl_Tepl->RealPower = 0;
             if (YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             _GDP.TControl_Tepl->NAndKontur =
             _GDCP.TControl_Tepl_Kontur->NAndKontur;
             _GD.TControl.Tepl[_GDCP.TControl_Tepl_Kontur->MainTepl].RealPower +=
-            __sRaspKontur();
+            __sRaspKontur(strategy);
 //			if ((!pGD_TControl_Tepl->NOwnKonturs)&&(pGD_TControl_Tepl_Kontur->RealPower))
 //			{
 //				pGD_TControl_Tepl->NAndKontur=1;
@@ -1327,7 +1334,9 @@ void __sCalcKonturs(void)
         for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
         {
             SetPointersOnTepl(fnTepl);
-            SetPointersOnKontur(i);
+            SetPointersOnKontur(contour_idx);
+            const eStrategy *strategy = &_GDP.Strategy_Tepl[contour_idx];
+
             if (YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             if (_GDCP.TControl_Tepl_Kontur->NAndKontur  ==  1)
@@ -1339,15 +1348,15 @@ void __sCalcKonturs(void)
             OldCrit = _GDP.TControl_Tepl->Critery;
             if (_GDP.TControl_Tepl->NOwnKonturs)
                 _GDP.TControl_Tepl->Critery = _GDP.TControl_Tepl->Critery
-                                             - __sThisToFirst((int) ((long_y)));
+                                             - __sThisToFirst((int) ((long_y)), strategy);
             if (!SameSign(OldCrit, _GDP.TControl_Tepl->Critery))
                 _GDP.TControl_Tepl->Critery = 0;
             _GDCP.TControl_Tepl_Kontur->CalcT = long_y;
-            __sLastCheckKontur(i);
+            __sLastCheckKontur(contour_idx, strategy);
             creg.Y = 0;
 
             if ((_GDP.Hot_Tepl->MaxReqWater < _GDCP.Hot_Tepl_Kontur->Do)
-                && (i < cSWaterKontur))
+                && (contour_idx < cSWaterKontur))
                 _GDP.Hot_Tepl->MaxReqWater = _GDCP.Hot_Tepl_Kontur->Do;
 //			pGD_TControl_Tepl->KonturIntegral+=__sThisToFirst(IntY);
         }
@@ -1357,19 +1366,22 @@ void __sCalcKonturs(void)
     for (fnTepl = 0; fnTepl < cSTepl; fnTepl++)
     {
         SetPointersOnTepl(fnTepl);
-        for (int i = 0; i < cSWaterKontur; i++)
+
+        for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
         {
-            SetPointersOnKontur(i);
+            SetPointersOnKontur(contour_idx);
+            const eStrategy *strategy = &_GDP.Strategy_Tepl[contour_idx];
+
             if (YesBit(_GDCP.Hot_Tepl_Kontur->RCS, cbNoWorkKontur))
                 continue;
             if (_GDCP.TControl_Tepl_Kontur->NAndKontur != 1)
                 continue;
-            _GDCP.TControl_Tepl_Kontur->CalcT = __sRaspOwnKontur();
-            __sLastCheckKontur(i);
+            _GDCP.TControl_Tepl_Kontur->CalcT = __sRaspOwnKontur(strategy);
+            __sLastCheckKontur(contour_idx, strategy);
             creg.Y = 0;
 //			if ((((long)IntY)*pGD_TControl_Tepl->Critery)<0) IntY=0;
             if ((_GDP.Hot_Tepl->MaxReqWater < _GDCP.Hot_Tepl_Kontur->Do)
-                && (i < cSWaterKontur))
+                && (contour_idx < cSWaterKontur))
                 _GDP.Hot_Tepl->MaxReqWater = _GDCP.Hot_Tepl_Kontur->Do;
 //			pGD_TControl_Tepl->KonturIntegral+=__sThisToFirst(IntY);
         }
