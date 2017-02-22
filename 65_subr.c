@@ -12,6 +12,7 @@
 #include "65_const.c"
 
 #include "65_gd.h"
+#include "65_control.h"
 #include "65_subr.h"
 
 #warning air heat working time
@@ -25,10 +26,6 @@ extern uchar nReset;
 
 static int16_t teplTmes[8][6];
 
-
-extern int16_t IntX;
-extern int16_t IntY;
-extern int16_t IntZ;
 
 static int16_t getTempSensor(char fnTepl, char sensor)
 {
@@ -947,15 +944,15 @@ void InitGD(char fTipReset)
 
 int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet)
 {
-    if ((IntY<=fStartCorr)||(fStartCorr==fEndCorr))
+    if ((creg.Y<=fStartCorr)||(fStartCorr==fEndCorr))
     {
-        IntZ=0;
+        creg.Z=0;
         return 0;
     }
-    if (IntY>fEndCorr)
-        IntZ=fCorrectOnEnd;
+    if (creg.Y>fEndCorr)
+        creg.Z=fCorrectOnEnd;
     else
-        IntZ=(int)((((long)(IntY-fStartCorr))*fCorrectOnEnd)/(fEndCorr-fStartCorr));
+        creg.Z=(int)((((long)(creg.Y-fStartCorr))*fCorrectOnEnd)/(fEndCorr-fStartCorr));
     return fbSet;
 }
 
@@ -968,16 +965,16 @@ void WindDirect(void)
         return;
     }
     if (GD.Hot.MidlWind<GD.TuneClimate.f_WindStart) return;
-    IntZ=GD.TControl.MeteoSensing[cSmDWindSens]+GD.TuneClimate.o_TeplPosition;
-    IntZ%=360;
+    creg.Z=GD.TControl.MeteoSensing[cSmDWindSens]+GD.TuneClimate.o_TeplPosition;
+    creg.Z%=360;
     GD.TControl.Tepl[0].CurrPozFluger=GD.Hot.PozFluger;
-    if ((!GD.Hot.PozFluger)&&(IntZ
+    if ((!GD.Hot.PozFluger)&&(creg.Z
                               >(90+f_DeadWindDirect))
-        &&(IntZ<(270-f_DeadWindDirect)))
+        &&(creg.Z<(270-f_DeadWindDirect)))
         GD.TControl.Tepl[0].CurrPozFluger=1;
-    if ((GD.Hot.PozFluger)&&((IntZ
+    if ((GD.Hot.PozFluger)&&((creg.Z
                               <(90-f_DeadWindDirect))
-                             ||(IntZ>(270+f_DeadWindDirect))))
+                             ||(creg.Z>(270+f_DeadWindDirect))))
         GD.TControl.Tepl[0].CurrPozFluger=0;
     if (GD.Hot.PozFluger!=GD.TControl.Tepl[0].CurrPozFluger)
     {

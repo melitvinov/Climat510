@@ -1,6 +1,7 @@
 #include "syntax.h"
 #include "65_gd.h"
 #include "65_subr.h"
+#include "65_control.h"
 #include "65_siod.h"
 
 #define cSIOFazaPump	1
@@ -9,10 +10,6 @@
 #define cSIOFazaEnd		4
 
 #define cNumValSiodMax	4
-
-extern int16_t IntX;
-extern int16_t IntY;
-extern int16_t IntZ;
 
 static siod_ctx_t ctx;
 
@@ -122,7 +119,7 @@ void SetUpSiod(char fnTepl)
         gdp.TControl_Tepl->PauseSIO++;
 
 
-    IntX=0;
+    creg.X=0;
     if ((((gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value-gdp.Hot_Tepl->AllTask.DoRHAir)>GD.TuneClimate.sio_RHStop)
          ||(gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value>9600))
         &&(gdp.Hot_Tepl->AllTask.DoRHAir)) return;              // если достигнута заданная влажность влажность + коэфицент
@@ -135,20 +132,20 @@ void SetUpSiod(char fnTepl)
         &&(((gdp.Hot_Tepl->AllTask.DoRHAir-gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value)<GD.TuneClimate.sio_RHStart)
            ||(!gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
 
-    IntY=getTempHeat(fnTepl)-gdp.Hot_Tepl->AllTask.DoTHeat;
+    creg.Y=getTempHeat(fnTepl)-gdp.Hot_Tepl->AllTask.DoTHeat;
     CorrectionRule(GD.TuneClimate.sio_TStart,GD.TuneClimate.sio_TEnd,GD.TuneClimate.sio_TStartFactor-GD.TuneClimate.sio_TEndFactor,0);
-    IntX=(int)(GD.TuneClimate.sio_TStartFactor-IntZ);
+    creg.X=(int)(GD.TuneClimate.sio_TStartFactor-creg.Z);
 
-    IntY=gdp.Hot_Tepl->AllTask.DoRHAir-gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value;
+    creg.Y=gdp.Hot_Tepl->AllTask.DoRHAir-gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value;
     CorrectionRule(GD.TuneClimate.sio_RHStart,GD.TuneClimate.sio_RHEnd,GD.TuneClimate.sio_RHStartFactor-GD.TuneClimate.sio_RHEndFactor,0);
-    IntZ=GD.TuneClimate.sio_RHStartFactor-IntZ;
+    creg.Z=GD.TuneClimate.sio_RHStartFactor-creg.Z;
     if ((gdp.Hot_Tepl->InTeplSens[cSmRHSens].Value)&&(gdp.Hot_Tepl->AllTask.DoRHAir))
-        if (IntX>IntZ)
-            IntX=IntZ;
+        if (creg.X>creg.Z)
+            creg.X=creg.Z;
 
     ctx.fnSIOpause[fnTepl] = gdp.TControl_Tepl->PauseSIO;     // out
 
-    if (gdp.TControl_Tepl->PauseSIO<IntX*60) return;        // проверка паузы между вкл
+    if (gdp.TControl_Tepl->PauseSIO<creg.X*60) return;        // проверка паузы между вкл
     if (YesBit(RegLEV,cSmSIONo)) return;
 
     gdp.TControl_Tepl->FazaSiod=cSIOFazaPump;
@@ -177,12 +174,12 @@ void DoSiod(char fnTepl)
     switch (gdp.TControl_Tepl->FazaSiod)
     {
     case cSIOFazaVal:
-        IntX=1;
-        IntX<<=(gdp.TControl_Tepl->CurVal%4);
+        creg.X=1;
+        creg.X<<=(gdp.TControl_Tepl->CurVal%4);
 
         //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
 
-        SetBit((*(gdp.Hot_Hand+cHSmSIOVals)).Position,IntX);
+        SetBit((*(gdp.Hot_Hand+cHSmSIOVals)).Position,creg.X);
         if (!gdp.TControl_Tepl->TPauseSIO)  gdp.TControl_Tepl->TPauseSIO=gdp.Hot_Tepl->AllTask.SIO;
     case cSIOFazaPause:
         if (!gdp.TControl_Tepl->TPauseSIO)
