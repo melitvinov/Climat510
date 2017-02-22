@@ -1,8 +1,8 @@
 #include "syntax.h"
-#include "65_gd.h"
-#include "65_subr.h"
-#include "65_control.h"
-#include "65_siod.h"
+#include "control_gd.h"
+#include "control_subr.h"
+#include "control.h"
+#include "control_siod.h"
 
 #define cSIOFazaPump	1
 #define cSIOFazaVal		2

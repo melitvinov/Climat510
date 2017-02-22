@@ -1,9 +1,9 @@
 #include "syntax.h"
 
-#include "65_gd.h"
-#include "65_control.h"
-#include "65_subr.h"
-#include "65_screen.h"
+#include "control_gd.h"
+#include "control.h"
+#include "control_subr.h"
+#include "control_screen.h"
 
 
 /**************************************************************************/

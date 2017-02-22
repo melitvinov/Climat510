@@ -9,7 +9,7 @@
 
 // XXX: isolation
 #include "lcdconsts.h"
-#include "65_const.h"
+#include "control_const.h"
 
 #define GetSensConfig(nTepl,nSens)	GD.MechConfig[nTepl].RNum[nSens+SUM_NAME_INSENS]
 #define GetInputConfig(nTepl,nSens)	GD.MechConfig[nTepl].RNum[nSens+SUM_NAME_INPUTS]

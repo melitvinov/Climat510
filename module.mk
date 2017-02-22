@@ -24,12 +24,6 @@ SRC += keyboard/keyboard.c
 # these are 'coarse fixed'
 SRC += 405_Memory.c
 
-SRC += 65_subr.c
-SRC += 65_gd.c
-SRC += 65_screen.c
-SRC += 65_control.c
-SRC += 65_strategy3m.c
-SRC += 65_siod.c
 
 SRC += stm_my/src/spi.c
 SRC += stm_my/src/enc28j60.c
@@ -45,6 +39,7 @@ SRC += 405_Menu.c
 SRC += wtf.c
 SRC += 405_cfg.c
 SRC += main_consts.c
+SRC += unsorted.c
 
 SRC += main.c
 

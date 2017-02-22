@@ -3,7 +3,7 @@
 
 #include "keyboard.h"
 
-#include "65_gd.h"
+#include "control_gd.h"
 
 #include "wtf.h"
 
@@ -126,11 +126,25 @@ void checkConfig()
 
 }
 
-#define Sound   GPIOA->ODR^=GPIO_Pin_4;
+static void do_sound_stuff(void)
+{
+    if (not)
+    {
+        if (!ton_t--)
+        {
+            ton_t=ton;
+            not--;
+            GPIOA->ODR^=GPIO_Pin_4;
+        }
+    }
+    if (!not && nReset)
+    {
+        ton=(nReset--)+2;not=80;
+    }
+}
 
 void main(void)
 {
-    char    timeDog;
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();
@@ -160,24 +174,9 @@ void main(void)
     siodInit();
     airHeatInit();   // airHeat
     initCheckConfig();
-    start:
 
-    if (not)
-    {
-        if (!ton_t--)
-        {
-            ton_t=ton; not--; Sound;
-        }
-    }
-    if (!not && nReset)
-    {
-        ton=(nReset--)+2;not=80;
-    }
-
-    if (!timeDog--)
-    {
-        timeDog=7;
-    }
+start:
+    do_sound_stuff();
 
     if (GD.SostRS == (uchar)IN_UNIT)  /*Если приняли блок с ПК */
     {
@@ -187,19 +186,22 @@ void main(void)
         // XXX: isolation
         stm32f10x_Rootines_reset_NMinPCOut();
 
-        if (!WTF0.NumBlock && (GD.Hot.News&0x80)) SetRTC();
+
+        #warning "strange logic we got here"
+        if (!WTF0.NumBlock && (GD.Hot.News & bWriEEP))
+            SetRTC();
         /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
-#warning Изменение блока
-        //убрать, тестовая вещь показывает прием пакета
 
         checkConfig();
 
         if (WTF0.NumBlock)
             ReWriteFRAM(WTF0.NumBlock);
-//				}
+
         GD.SostRS=OUT_UNIT;
+        // what ?
         keyboardSetSIM(105);
     }
+
     if (WTF0.bSec)
     {
         if (WTF0.Second==58)
@@ -213,8 +215,12 @@ void main(void)
         if (GD.SostRS==OUT_UNIT) TestMem(0);
 #endif
         WTF0.bSec=0;
+
+        // so control is firing every second
         Control();
+
         B_video=1;
+        #warning "will fire always, since Second is reset inside the control. so lame"
         if (!(WTF0.Second%9))
             Measure();
     }
@@ -232,7 +238,7 @@ void main(void)
         Video();
         B_video=0;
     }
-    simple_servercycle(); //Перенесено в прерывание клавиатуры
+    simple_servercycle();
 
     goto start;
 }

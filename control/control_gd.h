@@ -8,8 +8,8 @@
 // XXX: isolation
 #include "405_ConfigEnRuSR.h"
 
-#include "65_screen.h"
-#include "65_control.h"
+#include "control_screen.h"
+#include "control.h"
 
 #pragma pack(1)
 
@@ -856,7 +856,9 @@ typedef struct
 typedef struct  eGData
 {
     uchar           SostRS;   /* не передвигать использовано в .asm*//*Ќе буду*/
+
     eHot            Hot;           /* не передвигать использовано News в .asm*//*Ќе буду*/
+
     eFanBlock       FanBlock[cSTepl][2];
     eControl        Control;
     eTimer          Timer[cSTimer];
@@ -899,7 +901,6 @@ typedef struct
 
 extern eGData GD;
 extern gdp_t gdp;
-
 // XXX: caldata do not relate to 65 in fact
 extern caldata_t caldata;
 extern sens_t sensdata;

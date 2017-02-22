@@ -5,7 +5,7 @@
 #include "stm32f10x_LCD240x64.h"
 #include "wtf.h"
 
-#include "65_gd.h"
+#include "control_gd.h"
 
 // XXX: from climdef
 
@@ -217,14 +217,15 @@ void KeyBoard(void)
  ----------------------------------------------------*/
 void w_txt(const char *bu)
 {
-    char *vu;
+    const char *vu;
     if (GD.Control.Language)
     {
         vu=bu;
-        while ((*vu)) if ((*(vu++))=='#')
-            {
+        while ((*vu))
+        {
+            if (*vu++ =='#')
                 bu=vu;break;
-            }
+        }
     }
     while ((*bu)&&((*bu)!='#'))
     {

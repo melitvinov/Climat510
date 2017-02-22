@@ -2,7 +2,7 @@
 
 #include "syntax.h"
 
-#include "65_const.h"
+//#include "control_const.h"
 #include "405_ConfigEnRuSR.h"
 
 const eNameASens NameSensConfig[cConfSSens+cConfSMetSens]={

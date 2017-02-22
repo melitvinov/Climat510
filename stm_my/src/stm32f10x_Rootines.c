@@ -17,7 +17,7 @@
 
 // XXX: isolation
 #include "405_memory.h"
-#include "65_gd.h"
+#include "control_gd.h"
 #include "wtf.h"
 #include "stm32f10x_RS485Master.h"
 

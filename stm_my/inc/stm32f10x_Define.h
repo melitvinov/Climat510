@@ -27,9 +27,6 @@ void SetRTC(void);
 
 void w_int(void *bu, char frmt, int16_t param);
 void in_val (void);
-// Прототипы функций
-void InitBlockEEP(void);
-void ButtonReset(void);
 void w_txt(const char *bu);
 void CrcCalc(void);
 

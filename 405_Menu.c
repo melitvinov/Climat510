@@ -5,8 +5,8 @@
 #include "405_ConfigEnRuSR.h"
 #include "405_EngRus.h"
 
-#include "65_gd.h"
-#include "65_siod.h"
+#include "control_gd.h"
+#include "control_siod.h"
 
 // for modul_sum constant
 #include "stm32f10x_RS485Master.h"

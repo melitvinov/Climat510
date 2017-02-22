@@ -9,11 +9,11 @@
 #include "main_consts.h"
 
 // XXX: dirty, but ok for now
-#include "65_const.c"
+#include "control_const.c"
 
-#include "65_gd.h"
-#include "65_control.h"
-#include "65_subr.h"
+#include "control_gd.h"
+#include "control.h"
+#include "control_subr.h"
 
 #warning air heat working time
 static int16_t  airHeatPause[8];

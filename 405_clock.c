@@ -240,7 +240,6 @@ static void my_RTC_SetCounter(uint32_t cnt)
 void WriteDateTime()
 {
     uint32_t cnt;
-    volatile uint16_t i;
     eDateTime ts;
 
     cnt = struct_to_counter( DateTime ); // non-DST counter-value
@@ -255,7 +254,8 @@ void WriteDateTime()
 }
 
 
-void SetRTC(void) {
+void SetRTC(void)
+{
     DateTime.sec=Second;
 
     uint16_t time = GD.Hot.Time;
@@ -269,7 +269,9 @@ void SetRTC(void) {
     DateTime.year=year+2000;
     WriteDateTime();
 }
-void GetRTC(void) {
+
+void GetRTC(void)
+{
     ReadDateTime(); //CtrTime=0;
 
     //Second=DateTime.Sec&0x0F;

@@ -43,7 +43,7 @@
 #define OffSet			0x02
 #define CGHomeAddr		0x1400
 
-#include "65_gd.h"
+#include "control_gd.h"
 #include "wtf.h"
 
 // XXX: WTFS

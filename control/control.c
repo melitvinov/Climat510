@@ -2,11 +2,11 @@
 
 #include "wtf.h"
 #include "defs.h"
-#include "65_gd.h"
-#include "65_siod.h"
-#include "65_subr.h"
-#include "65_control.h"
-#include "65_strategy3m.h"
+#include "control_gd.h"
+#include "control_siod.h"
+#include "control_subr.h"
+#include "control_strategy.h"
+#include "control.h"
 
 /*!
 \brief Таблица типов старта
