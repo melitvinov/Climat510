@@ -13,7 +13,7 @@
 
 #include "control_gd.h"
 
-#define USART_MASTER_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
+#define USART_MASTER_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE) == RESET)&&(fTimeout)) fTimeout--;
 #define USART_MASTER_TX     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TC))&&(fTimeout)) fTimeout--;
 #define USART_MASTER_TXE     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TXE))&&(fTimeout)) fTimeout--;
 
@@ -21,7 +21,7 @@
 #define USART_MASTER_STARTSEND			for(i=0;i<500;i++); GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_SET);
 
 
-#define USART_OUT2_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT2,USART_FLAG_RXNE)==RESET)&&(fTimeout)) fTimeout--;
+#define USART_OUT2_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT2,USART_FLAG_RXNE) == RESET)&&(fTimeout)) fTimeout--;
 #define USART_OUT2_TX     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT2,USART_FLAG_TC))&&(fTimeout)) fTimeout--;
 #define USART_OUT2_TXE     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT2,USART_FLAG_TXE))&&(fTimeout)) fTimeout--;
 
@@ -302,11 +302,11 @@ USART_OUT_INT_VECT
         case RSOUT_CHK:
             if (retByte!=chSumUARTOUT)
             {
-                (*GLCond)|=ERR_MODULE_CHKSUM;
+                (*GLCond) |= ERR_MODULE_CHKSUM;
                 PHASE_RS_OUT=RSOUT_INIT;
                 return;
             }
-            if (GLDir==OUT_UNIT)
+            if (GLDir == OUT_UNIT)
             {
                 chSumUARTOUT=0;
                 PHASE_RS_OUT=RSOUT_RECV;
@@ -330,19 +330,19 @@ USART_OUT_INT_VECT
             return;
         case RSOUT_RECV:
             {
-                if (ptrUARTOUT==GLSize)
+                if (ptrUARTOUT == GLSize)
                 {
-                    if (retByte==chSumUARTOUT)
+                    if (retByte == chSumUARTOUT)
                     {
                         CpyBuf(GLData,ReadBuf,GLSize);
                         //for(i=0;i<GLSize;i++)
                         //GLData[i]=0x0f;
                         if (GLF)
                             GLF();
-                        (*GLCond)&=ERR_MASK_CLEARED;
+                        (*GLCond) &= ERR_MASK_CLEARED;
                     }
                     else
-                        (*GLCond)|=ERR_MODULE_CHKSUM;
+                        (*GLCond) |= ERR_MODULE_CHKSUM;
 
                     PHASE_RS_OUT=RSOUT_INIT;
                     return;
@@ -356,10 +356,10 @@ USART_OUT_INT_VECT
         case RSOUT_SENDCHK:
             {
                 if (retByte!=55)
-                    (*GLCond)|=ERR_MODULE_CHKSUM;
+                    (*GLCond) |= ERR_MODULE_CHKSUM;
                 else
                 {
-                    (*GLCond)&=ERR_MASK_CLEARED;
+                    (*GLCond) &= ERR_MASK_CLEARED;
                     if (GLF)
                         GLF();
                 }
@@ -395,21 +395,21 @@ USART_OUT_INT_VECT
     {
         //USART_ITConfig(USART_OUT, USART_IT_TXE, DISABLE);
         USART_ClearITPendingBit(USART_OUT,USART_IT_TC);
-        //if (PHASE_RS_OUT==RSOUT_INIT) {USART_MASTER_STOPSEND; return;}
-        if ((PHASE_RS_OUT==RSOUT_START)||(PHASE_RS_OUT==RSOUT_HEAD))
+        //if (PHASE_RS_OUT == RSOUT_INIT) {USART_MASTER_STOPSEND; return;}
+        if ((PHASE_RS_OUT == RSOUT_START)||(PHASE_RS_OUT == RSOUT_HEAD))
         {
             //for (i=0;i<10;i++);
             USART_MASTER_STOPSEND;
             PHASE_RS_OUT++;
 //				return;
         }
-        if ((PHASE_RS_OUT==RSOUT_SENDCHK))
+        if ((PHASE_RS_OUT == RSOUT_SENDCHK))
         {
             //for (i=0;i<10;i++);
             USART_MASTER_STOPSEND;
 //				return;
         }
-        if ((PHASE_RS_OUT==RSOUT_SEND))
+        if ((PHASE_RS_OUT == RSOUT_SEND))
         {
             //USART_ITConfig(USART_OUT, USART_IT_TXE, ENABLE);
             PHASE_RS_OUT++;
@@ -452,7 +452,7 @@ uint8_t RS485_Master_ExchangeDataIRQ(uint8_t fNCtr, uint16_t fAdrSend, uint16_t 
     GLF=pF;
     RSOutTime=((MAX_RSOUT_TIME*GLSize)/100)+2;
     USART_MASTER_STARTSEND;
-    //(*GLCond)&=0x80;
+    //(*GLCond) &= 0x80;
     CpyBuf(ReadBuf,GLData,GLSize);
 /*	for(i=0;i<GLSize;i++)
         ReadBuf[i]=GLData[i];*/
@@ -631,12 +631,12 @@ void SetOutIPCDigit(char How, uint16_t nAddress,char* nErr)
 //TODO
     vCpM=GetIPCComMod(nAddress);
     if (!vCpM) return;
-    if (vCpM/100==6) return;
+    if (vCpM/100 == 6) return;
 
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
             bOut=1;
             bOut <<= GetIPCNum(nAddress)-1;
@@ -656,12 +656,12 @@ void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr,void
 //TODO
     vCpM=GetIPCComMod(nAddress);
     if (!vCpM) return;
-    if (vCpM/100==6) return;
+    if (vCpM/100 == 6) return;
 
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
             bOut=GetIPCNum(nAddress)-1;
             if (bOut>=MAX_OUT_REG)
@@ -681,11 +681,11 @@ char GetOutIPCDigit(uint16_t nAddress, char* nErr)
     uint32_t vCpM,bIn,i;
     vCpM=GetIPCComMod(nAddress);
     if (!vCpM) return -1;
-    if (vCpM/100==6) return 1;
+    if (vCpM/100 == 6) return 1;
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
 //		if(!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
             bIn=1;
             bIn <<= GetIPCNum(nAddress)-1;
@@ -707,7 +707,7 @@ uint16_t GetInIPC(uint16_t nAddress,char* nErr)
     {
         *nErr=-1; return 0;
     }
-    if (vCpM/100==6)
+    if (vCpM/100 == 6)
     {
         *nErr=0; return 0;
     }
@@ -719,7 +719,7 @@ uint16_t GetInIPC(uint16_t nAddress,char* nErr)
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
             *nErr=ModulData[i].Err;
             return ModulData[i].InValues[vInput-1];
@@ -739,7 +739,7 @@ uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
     {
         *nErr=-1; return 0;
     }
-    if (vCpM/100==6)
+    if (vCpM/100 == 6)
     {
         *nErr=0; return 1;
     }
@@ -751,7 +751,7 @@ uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
             *nErr=ModulData[i].Err;
             if ((ModulData[i].InValues[vInput-1]>2500)&&(ModulData[i].Err<iMODULE_MAX_ERR))
@@ -771,18 +771,18 @@ void UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
     uint16_t vCpM,i,j,k,vInput;
     vCpM=GetIPCComMod(nAddress);
     if (!vCpM) return;
-    if (vCpM/100==6) return;
+    if (vCpM/100 == 6) return;
     vInput=GetIPCNum(nAddress);
     if (!vInput) return;
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM == ModulData[i].CpM)
+        if (vCpM  ==  ModulData[i].CpM)
         {
 //			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //без калибровок
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
             {
-                ModulData[i].Cond|=NEED_MODULE_RESET;
+                ModulData[i].Cond |= NEED_MODULE_RESET;
                 memcpy(&ModulData[i].InConfig[vInput-1],ModulConf,sizeof(TIModulConf));
             }
 /*			for (j=0;j<sizeof(TIModulConf);j++)
@@ -828,7 +828,7 @@ void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t
 
 void ResMod(void)
 {
-    (*GLCond)&=~(NEED_MODULE_RESET+ERR_MODULE_RESET);
+    (*GLCond) &= ~(NEED_MODULE_RESET+ERR_MODULE_RESET);
 }
 
 uint8_t IMOD_Exchange(TModulData*   fModule)
@@ -850,7 +850,7 @@ uint8_t IMOD_Exchange(TModulData*   fModule)
     case 1:
         if (StatusByte&0x01)
         {
-            fModule->Cond|=ERR_MODULE_RESET;
+            fModule->Cond |= ERR_MODULE_RESET;
         }
         if (fModule->Cond&(NEED_MODULE_RESET+ERR_MODULE_RESET))
         {
@@ -891,7 +891,7 @@ void SendIPC(uint8_t *fErrModule)
     {
         if (!RSOutTime)
         {
-            ModulData[cModule].Cond|=ERR_MODULE_LINK;
+            ModulData[cModule].Cond |= ERR_MODULE_LINK;
             PHASE_RS_OUT=RSOUT_INIT;
         }
         else
@@ -903,15 +903,15 @@ void SendIPC(uint8_t *fErrModule)
     ncFan%=MAX_FAN_COUNT;
     cCycle%=10;
     cOperInModule%=8;
-    if ((cOperInModule==3)&&(!ModulData[cModule].MaxOut))
+    if ((cOperInModule == 3)&&(!ModulData[cModule].MaxOut))
         cOperInModule++;
-    if ((cOperInModule==4)&&(cCycle!=cModule%10))
+    if ((cOperInModule == 4)&&(cCycle!=cModule%10))
         cOperInModule++;
-    if ((cOperInModule==5)&&(!ModulData[cModule].OutReg[0].Type))
+    if ((cOperInModule == 5)&&(!ModulData[cModule].OutReg[0].Type))
         cOperInModule++;
-    if ((cOperInModule==6)&&(!ModulData[cModule].DataPtr))
+    if ((cOperInModule == 6)&&(!ModulData[cModule].DataPtr))
         cOperInModule++;
-    if (cOperInModule==7)
+    if (cOperInModule == 7)
     {
         StatusByte=0;
         cModule++;
@@ -952,7 +952,7 @@ void SendIPC(uint8_t *fErrModule)
         ModulData[cModule].Err=iMODULE_MAX_ERR;
         *fErrModule=ModulData[cModule].CpM%100;
     }
-/*	if ((ModulData[cModule].CpM/100)==6)
+/*	if ((ModulData[cModule].CpM/100) == 6)
     {
         ModulData[cModule].Err=0;
         cModule++;

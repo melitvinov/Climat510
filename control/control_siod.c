@@ -37,7 +37,7 @@ void SetUpSiod(char fnTepl)
 
 //	for (nMas=0;nMas<GD.Control.ConfSTepl;nMas++)		// !!!
 //	{
-//	  //if (nMas==fnTepl) continue;
+//	  //if (nMas == fnTepl) continue;
 //	  if (GD.TControl.Tepl[nMas].FazaSiod) return;
 //	}
 
@@ -53,11 +53,11 @@ void SetUpSiod(char fnTepl)
     numZone = 1;
     for (nCon=0; nCon<GD.Control.ConfSTepl;nCon++)
     {
-        if (GD.MechConfig[nCon].RNum[cHSmSIOPump]==0) continue;
+        if (GD.MechConfig[nCon].RNum[cHSmSIOPump] == 0) continue;
         equalConf = 0;
         for (nMas=0;nMas<GD.Control.ConfSTepl;nMas++)
         {
-            if (confGroup[nMas][0] == GD.MechConfig[nCon].RNum[cHSmSIOPump])
+            if (confGroup[nMas][0]  ==  GD.MechConfig[nCon].RNum[cHSmSIOPump])
                 equalConf = 1;
         }
         if (!equalConf)
@@ -71,11 +71,11 @@ void SetUpSiod(char fnTepl)
     {
         for (nMas=0;nMas<GD.Control.ConfSTepl;nMas++)
         {
-            if (confGroup[nMas][0] == GD.MechConfig[nCon].RNum[cHSmSIOPump])
+            if (confGroup[nMas][0]  ==  GD.MechConfig[nCon].RNum[cHSmSIOPump])
             {
                 for (nCount=0; nCount<9;nCount++)
                 {
-                    if (confGroup[nMas][nCount+1] == 9)
+                    if (confGroup[nMas][nCount+1]  ==  9)
                     {
                         confGroup[nMas][nCount+1] = nCon;
                         break;
@@ -91,7 +91,7 @@ void SetUpSiod(char fnTepl)
     numConf = GD.MechConfig[0].RNum[cHSmSIOPump];
     for (nMas=0;nMas<GD.Control.ConfSTepl;nMas++)
     {
-        if (numConf == GD.MechConfig[nMas].RNum[cHSmSIOPump])
+        if (numConf  ==  GD.MechConfig[nMas].RNum[cHSmSIOPump])
         {
             equalConf = 1;
         }
@@ -146,7 +146,6 @@ void SetUpSiod(char fnTepl)
     ctx.fnSIOpause[fnTepl] = gdp.TControl_Tepl->PauseSIO;     // out
 
     if (gdp.TControl_Tepl->PauseSIO<creg.X*60) return;        // проверка паузы между вкл
-    if (YesBit(RegLEV,cSmSIONo)) return;
 
     gdp.TControl_Tepl->FazaSiod=cSIOFazaPump;
     gdp.TControl_Tepl->TimeSIO+=gdp.Hot_Tepl->AllTask.SIO;
@@ -206,7 +205,7 @@ void DoSiod(char fnTepl)
         return;
     }
     if (--gdp.TControl_Tepl->TPauseSIO)  return;
-    if ((gdp.TControl_Tepl->FazaSiod==cSIOFazaPause)&&(gdp.TControl_Tepl->CurVal<NSIO)) gdp.TControl_Tepl->FazaSiod=cSIOFazaVal;
+    if ((gdp.TControl_Tepl->FazaSiod == cSIOFazaPause)&&(gdp.TControl_Tepl->CurVal<NSIO)) gdp.TControl_Tepl->FazaSiod=cSIOFazaVal;
     else gdp.TControl_Tepl->FazaSiod++;
 
 }

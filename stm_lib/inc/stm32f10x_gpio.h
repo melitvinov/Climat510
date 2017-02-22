@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V3.5.0
   * @date    11-March-2011
-  * @brief   This file contains all the functions prototypes for the GPIO 
+  * @brief   This file contains all the functions prototypes for the GPIO
   *          firmware library.
   ******************************************************************************
   * @attention
@@ -43,29 +43,29 @@
   * @{
   */
 
-#define IS_GPIO_ALL_PERIPH(PERIPH) (((PERIPH) == GPIOA) || \
-                                    ((PERIPH) == GPIOB) || \
-                                    ((PERIPH) == GPIOC) || \
-                                    ((PERIPH) == GPIOD) || \
-                                    ((PERIPH) == GPIOE) || \
-                                    ((PERIPH) == GPIOF) || \
-                                    ((PERIPH) == GPIOG))
-                                     
-/** 
-  * @brief  Output Maximum frequency selection  
+#define IS_GPIO_ALL_PERIPH(PERIPH) (((PERIPH)  ==  GPIOA) || \
+                                    ((PERIPH)  ==  GPIOB) || \
+                                    ((PERIPH)  ==  GPIOC) || \
+                                    ((PERIPH)  ==  GPIOD) || \
+                                    ((PERIPH)  ==  GPIOE) || \
+                                    ((PERIPH)  ==  GPIOF) || \
+                                    ((PERIPH)  ==  GPIOG))
+
+/**
+  * @brief  Output Maximum frequency selection
   */
 
 typedef enum
-{ 
+{
   GPIO_Speed_10MHz = 1,
-  GPIO_Speed_2MHz, 
+  GPIO_Speed_2MHz,
   GPIO_Speed_50MHz
 }GPIOSpeed_TypeDef;
-#define IS_GPIO_SPEED(SPEED) (((SPEED) == GPIO_Speed_10MHz) || ((SPEED) == GPIO_Speed_2MHz) || \
-                              ((SPEED) == GPIO_Speed_50MHz))
+#define IS_GPIO_SPEED(SPEED) (((SPEED)  ==  GPIO_Speed_10MHz) || ((SPEED)  ==  GPIO_Speed_2MHz) || \
+                              ((SPEED)  ==  GPIO_Speed_50MHz))
 
-/** 
-  * @brief  Configuration Mode enumeration  
+/**
+  * @brief  Configuration Mode enumeration
   */
 
 typedef enum
@@ -79,13 +79,13 @@ typedef enum
   GPIO_Mode_AF_PP = 0x18
 }GPIOMode_TypeDef;
 
-#define IS_GPIO_MODE(MODE) (((MODE) == GPIO_Mode_AIN) || ((MODE) == GPIO_Mode_IN_FLOATING) || \
-                            ((MODE) == GPIO_Mode_IPD) || ((MODE) == GPIO_Mode_IPU) || \
-                            ((MODE) == GPIO_Mode_Out_OD) || ((MODE) == GPIO_Mode_Out_PP) || \
-                            ((MODE) == GPIO_Mode_AF_OD) || ((MODE) == GPIO_Mode_AF_PP))
+#define IS_GPIO_MODE(MODE) (((MODE)  ==  GPIO_Mode_AIN) || ((MODE)  ==  GPIO_Mode_IN_FLOATING) || \
+                            ((MODE)  ==  GPIO_Mode_IPD) || ((MODE)  ==  GPIO_Mode_IPU) || \
+                            ((MODE)  ==  GPIO_Mode_Out_OD) || ((MODE)  ==  GPIO_Mode_Out_PP) || \
+                            ((MODE)  ==  GPIO_Mode_AF_OD) || ((MODE)  ==  GPIO_Mode_AF_PP))
 
-/** 
-  * @brief  GPIO Init structure definition  
+/**
+  * @brief  GPIO Init structure definition
   */
 
 typedef struct
@@ -101,8 +101,8 @@ typedef struct
 }GPIO_InitTypeDef;
 
 
-/** 
-  * @brief  Bit_SET and Bit_RESET enumeration  
+/**
+  * @brief  Bit_SET and Bit_RESET enumeration
   */
 
 typedef enum
@@ -110,7 +110,7 @@ typedef enum
   Bit_SET
 }BitAction;
 
-#define IS_GPIO_BIT_ACTION(ACTION) (((ACTION) == Bit_RESET) || ((ACTION) == Bit_SET))
+#define IS_GPIO_BIT_ACTION(ACTION) (((ACTION)  ==  Bit_RESET) || ((ACTION)  ==  Bit_SET))
 
 /**
   * @}
@@ -120,7 +120,7 @@ typedef enum
   * @{
   */
 
-/** @defgroup GPIO_pins_define 
+/** @defgroup GPIO_pins_define
   * @{
   */
 
@@ -142,30 +142,30 @@ typedef enum
 #define GPIO_Pin_15                ((uint16_t)0x8000)  /*!< Pin 15 selected */
 #define GPIO_Pin_All               ((uint16_t)0xFFFF)  /*!< All pins selected */
 
-#define IS_GPIO_PIN(PIN) ((((PIN) & (uint16_t)0x00) == 0x00) && ((PIN) != (uint16_t)0x00))
+#define IS_GPIO_PIN(PIN) ((((PIN) & (uint16_t)0x00)  ==  0x00) && ((PIN) != (uint16_t)0x00))
 
-#define IS_GET_GPIO_PIN(PIN) (((PIN) == GPIO_Pin_0) || \
-                              ((PIN) == GPIO_Pin_1) || \
-                              ((PIN) == GPIO_Pin_2) || \
-                              ((PIN) == GPIO_Pin_3) || \
-                              ((PIN) == GPIO_Pin_4) || \
-                              ((PIN) == GPIO_Pin_5) || \
-                              ((PIN) == GPIO_Pin_6) || \
-                              ((PIN) == GPIO_Pin_7) || \
-                              ((PIN) == GPIO_Pin_8) || \
-                              ((PIN) == GPIO_Pin_9) || \
-                              ((PIN) == GPIO_Pin_10) || \
-                              ((PIN) == GPIO_Pin_11) || \
-                              ((PIN) == GPIO_Pin_12) || \
-                              ((PIN) == GPIO_Pin_13) || \
-                              ((PIN) == GPIO_Pin_14) || \
-                              ((PIN) == GPIO_Pin_15))
+#define IS_GET_GPIO_PIN(PIN) (((PIN)  ==  GPIO_Pin_0) || \
+                              ((PIN)  ==  GPIO_Pin_1) || \
+                              ((PIN)  ==  GPIO_Pin_2) || \
+                              ((PIN)  ==  GPIO_Pin_3) || \
+                              ((PIN)  ==  GPIO_Pin_4) || \
+                              ((PIN)  ==  GPIO_Pin_5) || \
+                              ((PIN)  ==  GPIO_Pin_6) || \
+                              ((PIN)  ==  GPIO_Pin_7) || \
+                              ((PIN)  ==  GPIO_Pin_8) || \
+                              ((PIN)  ==  GPIO_Pin_9) || \
+                              ((PIN)  ==  GPIO_Pin_10) || \
+                              ((PIN)  ==  GPIO_Pin_11) || \
+                              ((PIN)  ==  GPIO_Pin_12) || \
+                              ((PIN)  ==  GPIO_Pin_13) || \
+                              ((PIN)  ==  GPIO_Pin_14) || \
+                              ((PIN)  ==  GPIO_Pin_15))
 
 /**
   * @}
   */
 
-/** @defgroup GPIO_Remap_define 
+/** @defgroup GPIO_Remap_define
   * @{
   */
 
@@ -217,37 +217,37 @@ typedef enum
 
 #define GPIO_Remap_TIM67_DAC_DMA    ((uint32_t)0x80000800)  /*!< TIM6/TIM7 and DAC DMA requests remapping (only for High density Value line devices) */
 #define GPIO_Remap_TIM12            ((uint32_t)0x80001000)  /*!< TIM12 Alternate Function mapping (only for High density Value line devices) */
-#define GPIO_Remap_MISC             ((uint32_t)0x80002000)  /*!< Miscellaneous Remap (DMA2 Channel5 Position and DAC Trigger remapping, 
-                                                                 only for High density Value line devices) */                                                       
+#define GPIO_Remap_MISC             ((uint32_t)0x80002000)  /*!< Miscellaneous Remap (DMA2 Channel5 Position and DAC Trigger remapping,
+                                                                 only for High density Value line devices) */
 
-#define IS_GPIO_REMAP(REMAP) (((REMAP) == GPIO_Remap_SPI1) || ((REMAP) == GPIO_Remap_I2C1) || \
-                              ((REMAP) == GPIO_Remap_USART1) || ((REMAP) == GPIO_Remap_USART2) || \
-                              ((REMAP) == GPIO_PartialRemap_USART3) || ((REMAP) == GPIO_FullRemap_USART3) || \
-                              ((REMAP) == GPIO_PartialRemap_TIM1) || ((REMAP) == GPIO_FullRemap_TIM1) || \
-                              ((REMAP) == GPIO_PartialRemap1_TIM2) || ((REMAP) == GPIO_PartialRemap2_TIM2) || \
-                              ((REMAP) == GPIO_FullRemap_TIM2) || ((REMAP) == GPIO_PartialRemap_TIM3) || \
-                              ((REMAP) == GPIO_FullRemap_TIM3) || ((REMAP) == GPIO_Remap_TIM4) || \
-                              ((REMAP) == GPIO_Remap1_CAN1) || ((REMAP) == GPIO_Remap2_CAN1) || \
-                              ((REMAP) == GPIO_Remap_PD01) || ((REMAP) == GPIO_Remap_TIM5CH4_LSI) || \
-                              ((REMAP) == GPIO_Remap_ADC1_ETRGINJ) ||((REMAP) == GPIO_Remap_ADC1_ETRGREG) || \
-                              ((REMAP) == GPIO_Remap_ADC2_ETRGINJ) ||((REMAP) == GPIO_Remap_ADC2_ETRGREG) || \
-                              ((REMAP) == GPIO_Remap_ETH) ||((REMAP) == GPIO_Remap_CAN2) || \
-                              ((REMAP) == GPIO_Remap_SWJ_NoJTRST) || ((REMAP) == GPIO_Remap_SWJ_JTAGDisable) || \
-                              ((REMAP) == GPIO_Remap_SWJ_Disable)|| ((REMAP) == GPIO_Remap_SPI3) || \
-                              ((REMAP) == GPIO_Remap_TIM2ITR1_PTP_SOF) || ((REMAP) == GPIO_Remap_PTP_PPS) || \
-                              ((REMAP) == GPIO_Remap_TIM15) || ((REMAP) == GPIO_Remap_TIM16) || \
-                              ((REMAP) == GPIO_Remap_TIM17) || ((REMAP) == GPIO_Remap_CEC) || \
-                              ((REMAP) == GPIO_Remap_TIM1_DMA) || ((REMAP) == GPIO_Remap_TIM9) || \
-                              ((REMAP) == GPIO_Remap_TIM10) || ((REMAP) == GPIO_Remap_TIM11) || \
-                              ((REMAP) == GPIO_Remap_TIM13) || ((REMAP) == GPIO_Remap_TIM14) || \
-                              ((REMAP) == GPIO_Remap_FSMC_NADV) || ((REMAP) == GPIO_Remap_TIM67_DAC_DMA) || \
-                              ((REMAP) == GPIO_Remap_TIM12) || ((REMAP) == GPIO_Remap_MISC))
-                              
+#define IS_GPIO_REMAP(REMAP) (((REMAP)  ==  GPIO_Remap_SPI1) || ((REMAP)  ==  GPIO_Remap_I2C1) || \
+                              ((REMAP)  ==  GPIO_Remap_USART1) || ((REMAP)  ==  GPIO_Remap_USART2) || \
+                              ((REMAP)  ==  GPIO_PartialRemap_USART3) || ((REMAP)  ==  GPIO_FullRemap_USART3) || \
+                              ((REMAP)  ==  GPIO_PartialRemap_TIM1) || ((REMAP)  ==  GPIO_FullRemap_TIM1) || \
+                              ((REMAP)  ==  GPIO_PartialRemap1_TIM2) || ((REMAP)  ==  GPIO_PartialRemap2_TIM2) || \
+                              ((REMAP)  ==  GPIO_FullRemap_TIM2) || ((REMAP)  ==  GPIO_PartialRemap_TIM3) || \
+                              ((REMAP)  ==  GPIO_FullRemap_TIM3) || ((REMAP)  ==  GPIO_Remap_TIM4) || \
+                              ((REMAP)  ==  GPIO_Remap1_CAN1) || ((REMAP)  ==  GPIO_Remap2_CAN1) || \
+                              ((REMAP)  ==  GPIO_Remap_PD01) || ((REMAP)  ==  GPIO_Remap_TIM5CH4_LSI) || \
+                              ((REMAP)  ==  GPIO_Remap_ADC1_ETRGINJ) ||((REMAP)  ==  GPIO_Remap_ADC1_ETRGREG) || \
+                              ((REMAP)  ==  GPIO_Remap_ADC2_ETRGINJ) ||((REMAP)  ==  GPIO_Remap_ADC2_ETRGREG) || \
+                              ((REMAP)  ==  GPIO_Remap_ETH) ||((REMAP)  ==  GPIO_Remap_CAN2) || \
+                              ((REMAP)  ==  GPIO_Remap_SWJ_NoJTRST) || ((REMAP)  ==  GPIO_Remap_SWJ_JTAGDisable) || \
+                              ((REMAP)  ==  GPIO_Remap_SWJ_Disable)|| ((REMAP)  ==  GPIO_Remap_SPI3) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM2ITR1_PTP_SOF) || ((REMAP)  ==  GPIO_Remap_PTP_PPS) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM15) || ((REMAP)  ==  GPIO_Remap_TIM16) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM17) || ((REMAP)  ==  GPIO_Remap_CEC) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM1_DMA) || ((REMAP)  ==  GPIO_Remap_TIM9) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM10) || ((REMAP)  ==  GPIO_Remap_TIM11) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM13) || ((REMAP)  ==  GPIO_Remap_TIM14) || \
+                              ((REMAP)  ==  GPIO_Remap_FSMC_NADV) || ((REMAP)  ==  GPIO_Remap_TIM67_DAC_DMA) || \
+                              ((REMAP)  ==  GPIO_Remap_TIM12) || ((REMAP)  ==  GPIO_Remap_MISC))
+
 /**
   * @}
-  */ 
+  */
 
-/** @defgroup GPIO_Port_Sources 
+/** @defgroup GPIO_Port_Sources
   * @{
   */
 
@@ -258,25 +258,25 @@ typedef enum
 #define GPIO_PortSourceGPIOE       ((uint8_t)0x04)
 #define GPIO_PortSourceGPIOF       ((uint8_t)0x05)
 #define GPIO_PortSourceGPIOG       ((uint8_t)0x06)
-#define IS_GPIO_EVENTOUT_PORT_SOURCE(PORTSOURCE) (((PORTSOURCE) == GPIO_PortSourceGPIOA) || \
-                                                  ((PORTSOURCE) == GPIO_PortSourceGPIOB) || \
-                                                  ((PORTSOURCE) == GPIO_PortSourceGPIOC) || \
-                                                  ((PORTSOURCE) == GPIO_PortSourceGPIOD) || \
-                                                  ((PORTSOURCE) == GPIO_PortSourceGPIOE))
+#define IS_GPIO_EVENTOUT_PORT_SOURCE(PORTSOURCE) (((PORTSOURCE)  ==  GPIO_PortSourceGPIOA) || \
+                                                  ((PORTSOURCE)  ==  GPIO_PortSourceGPIOB) || \
+                                                  ((PORTSOURCE)  ==  GPIO_PortSourceGPIOC) || \
+                                                  ((PORTSOURCE)  ==  GPIO_PortSourceGPIOD) || \
+                                                  ((PORTSOURCE)  ==  GPIO_PortSourceGPIOE))
 
-#define IS_GPIO_EXTI_PORT_SOURCE(PORTSOURCE) (((PORTSOURCE) == GPIO_PortSourceGPIOA) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOB) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOC) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOD) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOE) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOF) || \
-                                              ((PORTSOURCE) == GPIO_PortSourceGPIOG))
+#define IS_GPIO_EXTI_PORT_SOURCE(PORTSOURCE) (((PORTSOURCE)  ==  GPIO_PortSourceGPIOA) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOB) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOC) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOD) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOE) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOF) || \
+                                              ((PORTSOURCE)  ==  GPIO_PortSourceGPIOG))
 
 /**
   * @}
   */
 
-/** @defgroup GPIO_Pin_sources 
+/** @defgroup GPIO_Pin_sources
   * @{
   */
 
@@ -297,39 +297,39 @@ typedef enum
 #define GPIO_PinSource14           ((uint8_t)0x0E)
 #define GPIO_PinSource15           ((uint8_t)0x0F)
 
-#define IS_GPIO_PIN_SOURCE(PINSOURCE) (((PINSOURCE) == GPIO_PinSource0) || \
-                                       ((PINSOURCE) == GPIO_PinSource1) || \
-                                       ((PINSOURCE) == GPIO_PinSource2) || \
-                                       ((PINSOURCE) == GPIO_PinSource3) || \
-                                       ((PINSOURCE) == GPIO_PinSource4) || \
-                                       ((PINSOURCE) == GPIO_PinSource5) || \
-                                       ((PINSOURCE) == GPIO_PinSource6) || \
-                                       ((PINSOURCE) == GPIO_PinSource7) || \
-                                       ((PINSOURCE) == GPIO_PinSource8) || \
-                                       ((PINSOURCE) == GPIO_PinSource9) || \
-                                       ((PINSOURCE) == GPIO_PinSource10) || \
-                                       ((PINSOURCE) == GPIO_PinSource11) || \
-                                       ((PINSOURCE) == GPIO_PinSource12) || \
-                                       ((PINSOURCE) == GPIO_PinSource13) || \
-                                       ((PINSOURCE) == GPIO_PinSource14) || \
-                                       ((PINSOURCE) == GPIO_PinSource15))
+#define IS_GPIO_PIN_SOURCE(PINSOURCE) (((PINSOURCE)  ==  GPIO_PinSource0) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource1) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource2) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource3) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource4) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource5) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource6) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource7) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource8) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource9) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource10) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource11) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource12) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource13) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource14) || \
+                                       ((PINSOURCE)  ==  GPIO_PinSource15))
 
 /**
   * @}
   */
 
-/** @defgroup Ethernet_Media_Interface 
+/** @defgroup Ethernet_Media_Interface
   * @{
-  */ 
-#define GPIO_ETH_MediaInterface_MII    ((u32)0x00000000) 
-#define GPIO_ETH_MediaInterface_RMII   ((u32)0x00000001)                                       
+  */
+#define GPIO_ETH_MediaInterface_MII    ((u32)0x00000000)
+#define GPIO_ETH_MediaInterface_RMII   ((u32)0x00000001)
 
-#define IS_GPIO_ETH_MEDIA_INTERFACE(INTERFACE) (((INTERFACE) == GPIO_ETH_MediaInterface_MII) || \
-                                                ((INTERFACE) == GPIO_ETH_MediaInterface_RMII))
+#define IS_GPIO_ETH_MEDIA_INTERFACE(INTERFACE) (((INTERFACE)  ==  GPIO_ETH_MediaInterface_MII) || \
+                                                ((INTERFACE)  ==  GPIO_ETH_MediaInterface_RMII))
 
 /**
   * @}
-  */                                                
+  */
 /**
   * @}
   */

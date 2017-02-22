@@ -18,14 +18,14 @@ static uint8_t isDST( const eDateTime *t )
 
     if (t->mday - wday >= 25 && (wday || t->hour >= 2)) // after last Sunday 2:00
     {
-        if (month == 10)             // October -> Winter
+        if (month  ==  10)             // October -> Winter
         {
             return 0;
         }
     }
     else                            // before last Sunday 2:00
     {
-        if (month == 3)              // March -> Winter
+        if (month  ==  3)              // March -> Winter
         {
             return 0;
         }
@@ -47,15 +47,15 @@ static uint8_t adjustDST(eDateTime *t )
     {
         t->dst = 1;
         hour++;                             // add one hour
-        if (hour == 24)                   // next day
+        if (hour  ==  24)                   // next day
         {
             hour = 0;
             wday++;                         // next weekday
-            if (wday == 7)
+            if (wday  ==  7)
             {
                 wday = 0;
             }
-            if (day == DaysInMonth[month-1])     // next month
+            if (day  ==  DaysInMonth[month-1])     // next month
             {
                 day = 0;
                 month++;
@@ -99,10 +99,10 @@ static void counter_to_struct( uint32_t sec, eDateTime *t )
     for (;;)
     {
         dayofyear = 365;
-        if ((year & 3) == 0)
+        if ((year & 3)  ==  0)
         {
             dayofyear = 366;                    // leap year
-            if (year == 0 || year == 100 || year == 200) // 100 year exception
+            if (year  ==  0 || year  ==  100 || year  ==  200) // 100 year exception
             {
                 if (--leap400)                   // 400 year exception
                 {
@@ -163,7 +163,7 @@ static uint32_t struct_to_counter( const eDateTime *t )
     }
 
     /* Leap year? adjust February */
-    if (year%400 == 0 || (year%4 == 0 && year%100 !=0))
+    if (year%400  ==  0 || (year%4  ==  0 && year%100 !=0))
     {
         ;
     }

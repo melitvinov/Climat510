@@ -1,4 +1,4 @@
-//================= ПРОЕКТ 403 =====================
+// ==  ==  ==  ==  ==  ==  ==  == = ПРОЕКТ 403  ==  ==  ==  ==  ==  ==  ==  ==  ==  == =
 
 #include "syntax.h"
 #include "405_memory.h"
@@ -6,14 +6,14 @@
 
 eBlockEEP BlockEEP[SUM_BLOCK_EEP];
 
-//=================================================
+// ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == =
 //          Подпрограммы работы с памятью
-//=================================================
+// ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == =
 
 uint16_t CalcRAMSum(uchar* fAddr,uint32_t fSize)
 {
     uint tSum,i;
-    tSum=0x0110;
+    tSum = 0x0110;
     for (i = 0; i < fSize; i++)
     {
         tSum+=fAddr[i];
@@ -27,11 +27,11 @@ void SendBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 {
     uint16_t i,fSS;
     //I2C_Mem_Write(0,fStartAddr,AdrBlock,sizeBlock);
-    for (i=0;i<sizeBlock/2000+1;i++)
+    for (i = 0;i<sizeBlock/2000+1;i++)
     {
-        fSS=2000;
-        if (i==sizeBlock/2000)
-            fSS=sizeBlock%2000;
+        fSS = 2000;
+        if (i == sizeBlock/2000)
+            fSS = sizeBlock%2000;
         fm_Write(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
     }
 
@@ -44,11 +44,11 @@ void RecvBlockFRAM(uint16_t fStartAddr,uint8_t* AdrBlock,uint16_t sizeBlock)
 
     //I2C_Mem_Read(0,fStartAddr,AdrBlock,sizeBlock);
     //I2C_MainLoad(0xA0,0,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Receiver);
-    for (i=0;i<sizeBlock/2000+1;i++)
+    for (i = 0;i<sizeBlock/2000+1;i++)
     {
-        fSS=2000;
-        if (i==sizeBlock/2000)
-            fSS=sizeBlock%2000;
+        fSS = 2000;
+        if (i == sizeBlock/2000)
+            fSS = sizeBlock%2000;
 
         fm_Read(fStartAddr+i*2000,AdrBlock+i*2000,fSS);
     }
@@ -62,21 +62,21 @@ void SetInSaveRam(void *addr, uint SizeEEP)
     uint16_t     vVal;
     uint8_t nBlFRAM;
     if (!SizeEEP) return;
-    uint AdrEEP=1;
+    uint AdrEEP = 1;
     uchar *AdrRAM = addr;
-    for (nBlFRAM=0; nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+    for (nBlFRAM = 0; nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
     {
-        vVal=AdrRAM-BlockEEP[nBlFRAM].AdrCopyRAM;
+        vVal = AdrRAM-(u8 *)BlockEEP[nBlFRAM].AdrCopyRAM;
         if ((vVal>=0)&&(vVal<BlockEEP[nBlFRAM].Size))
         {
             AdrEEP+=vVal;  /* если в области вычисляем адрес*/
             SendBlockFRAM((uint32_t)(AdrRAM)-(uint32_t)(BlockEEP[0].AdrCopyRAM),AdrRAM,SizeEEP);
             //I2C_Mem_Write(0,);
-            cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
+            cSum = CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             //I2C_Mem_Write(0,);
             SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
-            BlockEEP[nBlFRAM].CSum=cSum;
-            BlockEEP[nBlFRAM].Erase=2; /* обнулить счетчик сбросов*/
+            BlockEEP[nBlFRAM].CSum = cSum;
+            BlockEEP[nBlFRAM].Erase = 2; /* обнулить счетчик сбросов*/
             return;
         }
         AdrEEP+=(BlockEEP[nBlFRAM].Size+2);
@@ -89,7 +89,7 @@ char TestRAM0(void)
 {
     uint16_t cSum;
     RecvBlockFRAM(ADDRESS_FRAM_SUM,&BlockEEP[0].CSum,2);
-    cSum=CalcRAMSum(BlockEEP[0].AdrCopyRAM,BlockEEP[0].Size);
+    cSum = CalcRAMSum(BlockEEP[0].AdrCopyRAM,BlockEEP[0].Size);
     if (cSum!=BlockEEP[0].CSum) return 2;
 /*если контр сумма неверна, то установить признак обнуления*/
     return 0;
@@ -99,7 +99,7 @@ char TestRAM0(void)
 char TestRAM(void)
 {
     uint8_t nBlFRAM;
-    for (nBlFRAM=0; nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
+    for (nBlFRAM = 0; nBlFRAM < SUM_BLOCK_EEP; nBlFRAM++)
     {
         /*---если неверна контр сумма установить сброс----*/
         RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
@@ -117,9 +117,9 @@ void ReWriteFRAM(int numblock)
     uint16_t cSum;
     int block_idx = numblock-1;
     SendBlockFRAM(BlockEEP[block_idx].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
-    cSum=CalcRAMSum(BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
+    cSum = CalcRAMSum(BlockEEP[block_idx].AdrCopyRAM,BlockEEP[block_idx].Size);
     SendBlockFRAM(ADDRESS_FRAM_SUM+block_idx*2,&cSum,2);
-    BlockEEP[block_idx].CSum=cSum;
+    BlockEEP[block_idx].CSum = cSum;
     //SendBlockFRAM(sizeof(GD),&BlockEEP,sizeof(BlockEEP));
 
 }

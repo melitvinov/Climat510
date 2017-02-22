@@ -14,6 +14,7 @@ typedef struct
 
 
 void SetPosScreen(char typScr);
+void SetReg(char fHSmReg,int DoValue,int MeasValue);
 void LaunchVent(char fnTepl);
 void LaunchCalorifer(char fnTepl);
 void InitScreen(char typScr, char fnTepl);

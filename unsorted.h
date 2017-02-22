@@ -3,5 +3,6 @@
 
 void InitBlockEEP(void);
 void ButtonReset(void);
+void InitAllThisThings(char fTipReset);
 
 #endif

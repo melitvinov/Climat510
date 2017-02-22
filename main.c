@@ -10,11 +10,9 @@
 static char volatile konturMax[6];
 static char volatile mecPosArray[7];
 
-static bool     B_video;
-
-uchar not=230;
-uchar ton=3;
-uchar ton_t=15;
+static uchar not=230;
+static uchar ton=3;
+static uchar ton_t=15;
 
 uchar nReset=25;
 
@@ -143,7 +141,68 @@ static void do_sound_stuff(void)
     }
 }
 
-void main(void)
+void DoBeepy(int not_, int ton_)
+{
+    not = not_;
+    ton = ton_;
+}
+
+static void periodic_task(void)
+{
+    if (wtf0.Second == 58)
+    {
+        CheckWithoutPC();
+        CheckInputConfig();
+    }
+    CheckRSTime();
+#ifndef NOTESTMEM
+
+    if (wtf0.SostRS == OUT_UNIT)
+        TestMem(0);
+#endif
+
+    // so control is firing every second
+
+    // XXX: moved here from control.c
+    LoadDiscreteInputs();
+    GetRTC(&GD.Hot.Time, &GD.Hot.Date, &GD.Hot.Year, &NowDayOfWeek);
+
+    ClrAllOutIPCDigit();
+
+    Control_pre();
+
+    #warning "so these IPC fucks are transferred from interrupts. so lame"
+
+    ResumeOutIPCDigit();
+
+
+    // xxx: sweet as a fuck
+    if (wtf0.Second == 20)
+    {
+        InitLCD();
+    }
+
+    Control_post(wtf0.Second, wtf0.SostRS == WORK_UNIT);
+
+    if (wtf0.Second >= 60)
+    {
+        wtf0.Second = 0;
+
+        WriteToFRAM();
+#ifndef NOTESTMEM
+        if ((!wtf0.Menu)&&(wtf0.SostRS == OUT_UNIT))
+            TestMem(1);
+#endif
+        DoBeepy(220, 10);
+    }
+    else
+    {
+        if (!(wtf0.Second%9))
+            Measure();
+    }
+}
+
+static void init(void)
 {
     keyboardSetBITKL(0);
 
@@ -156,89 +215,83 @@ void main(void)
     SendFirstScreen(1);
 #endif
     clear_d();
-    WTF0.Menu=0;
+    wtf0.Menu=0;
     nReset=3;
     w_txt("\252\245TO F405 (c)APL&DAL");
     Delay(1000000);
     Video();
-    GD.Hot.News|=bKlTest;
+    GD.Hot.News |= bKlTest;
 
     int byte_x=1;
-    GD.SostRS=OUT_UNIT;
+    wtf0.SostRS=OUT_UNIT;
     KeyboardProcess();
     if (keyboardGetBITKL())
         byte_x=6;
     TestMem(byte_x);
-    WTF0.Second=38;
+    wtf0.Second=38;
     ClearAllAlarms();
     siodInit();
     airHeatInit();   // airHeat
     initCheckConfig();
+}
 
-start:
-    do_sound_stuff();
+static void process_pc_input(void)
+{
+    if (wtf0.SostRS != (uchar)IN_UNIT)  /*Если приняли блок с ПК */
+        return;
 
-    if (GD.SostRS == (uchar)IN_UNIT)  /*Если приняли блок с ПК */
+    // XXX: isolation
+    stm32f10x_Rootines_reset_NMinPCOut();
+
+
+    #warning "strange logic we got here"
+    if (!wtf0.NumBlock && (GD.Hot.News & bWriEEP))
+        SetRTC();
+    /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
+
+    checkConfig();
+
+    if (wtf0.NumBlock)
+        ReWriteFRAM(wtf0.NumBlock);
+
+    wtf0.SostRS=OUT_UNIT;
+    // what ?
+    keyboardSetSIM(105);
+}
+
+void main(void)
+{
+    init();
+
+    while (1)
     {
-        /*--Если запись 0бл и признак времени то установить время */
-//            if(PlaceBuf()) {
+        do_sound_stuff();
+        process_pc_input();
 
-        // XXX: isolation
-        stm32f10x_Rootines_reset_NMinPCOut();
+        bool should_show_video = 0;
 
-
-        #warning "strange logic we got here"
-        if (!WTF0.NumBlock && (GD.Hot.News & bWriEEP))
-            SetRTC();
-        /*-- Была запись с ПК в блок NumBlock, переписать в EEPROM ------*/
-
-        checkConfig();
-
-        if (WTF0.NumBlock)
-            ReWriteFRAM(WTF0.NumBlock);
-
-        GD.SostRS=OUT_UNIT;
-        // what ?
-        keyboardSetSIM(105);
-    }
-
-    if (WTF0.bSec)
-    {
-        if (WTF0.Second==58)
+        if (wtf0.bSec)
         {
-            CheckWithoutPC();
-            CheckInputConfig();
+            wtf0.bSec=0;
+            periodic_task();
+            should_show_video = 1;
         }
-        CheckRSTime();
-#ifndef NOTESTMEM
 
-        if (GD.SostRS==OUT_UNIT) TestMem(0);
-#endif
-        WTF0.bSec=0;
+        if (keyboardGetBITKL())
+        {
+            GD.Hot.News |= bOperator;
+            if (wtf0.Menu) GD.Hot.News |= bEdit;
+            KeyBoard();
+            should_show_video = 1;
+        }
 
-        // so control is firing every second
-        Control();
+        if (should_show_video)
+        {
+            GMenu();
+            Video();
+            should_show_video = 0;
+        }
 
-        B_video=1;
-        #warning "will fire always, since Second is reset inside the control. so lame"
-        if (!(WTF0.Second%9))
-            Measure();
+        simple_servercycle();
     }
-    if (keyboardGetBITKL())
-    {
-        GD.Hot.News|=bOperator;
-        if (WTF0.Menu) GD.Hot.News|=bEdit;
-        KeyBoard();
-        B_video=1;
-    }
-    //CheckReadyMeasure();
-    if (B_video)
-    {
-        GMenu();
-        Video();
-        B_video=0;
-    }
-    simple_servercycle();
-
-    goto start;
 }

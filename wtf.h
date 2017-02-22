@@ -14,8 +14,10 @@ typedef struct
     uint16_t    PORTNUM;
     eAdrGD      AdrGD[15];
     uchar       NumBlock;
-} climdefstuff_t;
 
-extern climdefstuff_t WTF0;
+    uchar SostRS;
+} wtf0_t;
+
+extern wtf0_t wtf0;
 
 #endif

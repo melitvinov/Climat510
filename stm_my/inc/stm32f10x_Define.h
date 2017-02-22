@@ -22,9 +22,6 @@
 #define bWriEEP         0x80
 
 
-void GetRTC(void);
-void SetRTC(void);
-
 void w_int(void *bu, char frmt, int16_t param);
 void in_val (void);
 void w_txt(const char *bu);

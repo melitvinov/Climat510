@@ -34,7 +34,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t*    Adr;
+    void*    Adr;
     uint16_t    MaxSize;
 }eAdrGD;
 

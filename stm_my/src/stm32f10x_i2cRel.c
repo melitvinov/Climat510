@@ -312,7 +312,7 @@ void I2C_Mem_Read(uint8_t fAddrDev,uint16_t fAddrMem,uint8_t* fData,uint16_t fpt
     /* Test on EV6 and clear it */
     while (fptrData)
     {
-        if (fptrData==1)
+        if (fptrData == 1)
         {
             I2C_AcknowledgeConfig(I2C_Rel, DISABLE);
         }
@@ -375,7 +375,7 @@ void I2C2_EV_IRQHandler (void)
     case I2C_HEAD:
         if (I2C_GetITStatus(I2C_Rel, I2C_IT_SB))
         {
-            if (I2C_MAIN.Type==I2C_TP_MEM)
+            if (I2C_MAIN.Type == I2C_TP_MEM)
             {
                 I2C_Send7bitAddress(I2C_Rel, I2C_MAIN.AddrDev, I2C_Direction_Transmitter);
                 I2C_MAIN.Status=I2C_ADDR;
@@ -408,7 +408,7 @@ void I2C2_EV_IRQHandler (void)
         {
             I2C_SendData(I2C_Rel,I2C_MAIN.AddrMem%256);
             I2C_MAIN.Status=I2C_SENDDATA;
-            if (I2C_MAIN.Dir==I2C_Direction_Receiver)
+            if (I2C_MAIN.Dir == I2C_Direction_Receiver)
                 I2C_MAIN.Status=I2C_START;
 
         }

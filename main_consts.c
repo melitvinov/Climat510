@@ -1,7 +1,7 @@
 #include "syntax.h"
 #include "405_ConfigEnRuSr.h"
 
-const uint16_t InitSystems[cSTepl][10]={
+const uint16_t InitSystems[cSTepl][cConfSSystem]={
 //Зона1
     {5, //Отопление
         2, //Вентиляция

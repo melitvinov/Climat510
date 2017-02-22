@@ -191,14 +191,14 @@ USART_PC_INT_VECT
             Head[ptrUART]=retByte;
             chSumUART+=retByte;
             ptrUART++;
-            if (ptrUART==HEAD_SIZE)
+            if (ptrUART == HEAD_SIZE)
             {
                 USART_PC_STARTSEND;
                 fSendByte=Head[2]+Head[3]*256;
                 fAdrSend=Head[0]+Head[1]*256;
                 *pNumBlock=Head[4]&0x0f;
                 retByte=chSumUART;
-                if ((Head[4]&0xf0)==OUT_UNIT)
+                if ((Head[4]&0xf0) == OUT_UNIT)
                 {
                     chSumUART=0;
                     pDataRS=pADRGD[*pNumBlock].Adr+fAdrSend;
@@ -207,7 +207,7 @@ USART_PC_INT_VECT
                     PHASE_RS=RS_SEND;
                     *pSostRS485=OUT_UNIT;
                 }
-                else if ((Head[4]&0xf0)==IN_UNIT)
+                else if ((Head[4]&0xf0) == IN_UNIT)
                 {
                     PHASE_RS=RS_RECV;
                     ptrUART=0;
@@ -227,9 +227,9 @@ USART_PC_INT_VECT
         case RS_RECV:
             {
                 chSumUART+=retByte;
-                if (ptrUART==fSendByte)
+                if (ptrUART == fSendByte)
                 {
-                    if (chSumUART==55)
+                    if (chSumUART == 55)
                     {
                         *pSostRS485=IN_UNIT;
                     }

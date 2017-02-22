@@ -78,7 +78,7 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
         if ((YesBit(gdp.Hot_Tepl->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) creg.Z=GD.TuneClimate.sc_GlassMax;
         {
             pScr->Value=pScr->Mode*(gdp.Control_Tepl->sc_TMaxOpen-(GD.TuneClimate.sc_GlassMax-creg.Z));     // итоговое значение открытия экрана
-            //if (pScr->Mode==0) // если экран закрывается
+            //if (pScr->Mode == 0) // если экран закрывается
             //	pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
         }
 
@@ -161,7 +161,7 @@ void SetPosScreen(char typScr)
         if (YesBit(gdp.TControl_Tepl->RCS1,cbSCCorrection))
         {
             creg.X=((int)(byte_x))-creg.Z;
-            if ((!creg.Z)||(creg.Z==100)||(ABS(creg.X)>GD.TuneClimate.sc_MinDelta))
+            if ((!creg.Z)||(creg.Z == 100)||(ABS(creg.X)>GD.TuneClimate.sc_MinDelta))
                 (*pMech)=creg.Z;
             return;
         }
@@ -171,14 +171,14 @@ void SetPosScreen(char typScr)
     {
         step=GD.TuneClimate.sc_StepS2Zone;
         pScr->Pause=GD.TuneClimate.sc_StepP2Zone;
-        if ((pScr->Mode == 1) && (!typScr))
+        if ((pScr->Mode  ==  1) && (!typScr))
             step = step * GD.TuneClimate.ScreenCloseSpeed;
     }
     if (byte_x>=GD.TuneClimate.sc_StartP1Zone)
     {
         step=GD.TuneClimate.sc_StepS1Zone;
         pScr->Pause=GD.TuneClimate.sc_StepP1Zone;
-        if ((pScr->Mode == 1) && (!typScr))
+        if ((pScr->Mode  ==  1) && (!typScr))
             step = step * GD.TuneClimate.ScreenCloseSpeed;
     }
     creg.X=((int)(byte_x))-creg.Z;
@@ -279,7 +279,7 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
     }
     if ((!DoValue)||(!MeasValue))
     {
-        if (fHSmReg==cHSmCO2)
+        if (fHSmReg == cHSmCO2)
         {
             gdp.TControl_Tepl->COPosition=0;
             gdp.TControl_Tepl->COPause=GD.TuneClimate.COPause;
@@ -289,7 +289,7 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
         return;
     }
 
-    if (fHSmReg==cHSmCO2)
+    if (fHSmReg == cHSmCO2)
     {
         //if (GD.Hot.blockCO2) return;
         if (DoValue > MeasValue)
@@ -298,7 +298,7 @@ void    SetReg(char fHSmReg,int DoValue,int MeasValue)
         if (!gdp.Hot_Tepl->NextTCalc.DiffCO2)
             gdp.Hot_Tepl->NextTCalc.DiffCO2=-1;
 //		if ((pGD_Hot_Tepl->NextTCalc.DiffCO2<=0))
-//		   pGD_Hot_Tepl->NextTCalc.DiffCO2=10;
+//		   pGD_Hot_Tepl->NextTCalc.DiffCO2 = 10;
 
         if (DoValue-MeasValue+((int)GD.TuneClimate.co_Dif)<0)
         {
@@ -351,14 +351,14 @@ void RegWorkDiskr(char fHSmReg)
     fReg=&gdp.TControl_Tepl->SetupRegs[fHSmReg-cHSmCO2];
     tMech=gdp.TControl_Tepl->COPosition;
     if ((!gdp.Control_Tepl->co_model)||(fHSmReg!=cHSmCO2)) return;
-    //if (pGD_Control_Tepl->co_model==2)
+    //if (pGD_Control_Tepl->co_model == 2)
     if (gdp.Control_Tepl->co_model>=2)
         tMech-=100;
     if (tMech<0) tMech=0;
     creg.Y=0;
 
 
-    if (gdp.Control_Tepl->co_model==3)
+    if (gdp.Control_Tepl->co_model == 3)
     {
         COset = gdp.Hot_Tepl->AllTask.DoCO2;
 

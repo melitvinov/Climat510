@@ -127,7 +127,7 @@ static const uchar FirstScreen[40*64]={
 static const char ExtCG[SumExtCG*8]={
     0x3F,0x31,0x30,0x3E,0x31,0x31,0x3E,0x20,    //Б - \240
     0x3F,0x31,0x30,0x30,0x30,0x30,0x30,0x20,    //Г - \241
-    0x20,0x20,0x1F,0x20,0x1F,0x20,0x20,0x20,    //==  \242
+    0x20,0x20,0x1F,0x20,0x1F,0x20,0x20,0x20,    // ==   \242
     0x35,0x35,0x35,0x2E,0x35,0x35,0x35,0x20,    //Ж - \243
     0x3E,0x21,0x21,0x2E,0x21,0x21,0x3E,0x20,    //З - \244
     0x31,0x31,0x33,0x35,0x39,0x31,0x31,0x20,    //И - \245
@@ -333,7 +333,7 @@ uint8_t  ReadStatus (char Need)
         LCD_DATA_DIR_OUT();
 //    SETEA;
 
-        if ((res & Need) ==Need) return 1;
+        if ((res & Need)  == Need) return 1;
         TimeOut++;
         if (TimeOut > MaxTimeOut)/*not=100;ton=6;*/
         {
@@ -503,10 +503,10 @@ void TimeToBuf(void)
 //    buf[Ad_Buf++]=' ';
     w_int(&GD.Hot.Time,SSdSS, 0);
     lcdbuf[Ad_Buf++]=':';
-    lcdbuf[Ad_Buf++]=WTF0.Second/10+'0';
-    lcdbuf[Ad_Buf++]=WTF0.Second%10+'0';
+    lcdbuf[Ad_Buf++]=wtf0.Second/10+'0';
+    lcdbuf[Ad_Buf++]=wtf0.Second%10+'0';
     Ad_Buf++;
-    w_int(&GD.Hot.Data,DsMsY, 0);
+    w_int(&GD.Hot.Date,DsMsY, 0);
 }
 
 void VideoSost(void)
@@ -553,7 +553,7 @@ void Video(void)
 
     SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
     SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
-    if (WTF0.Menu) SendCmd(cmd8LineCurs);
+    if (wtf0.Menu) SendCmd(cmd8LineCurs);
     else  SendCmd(cmd3LineCurs);
 //-- установить курсор --
     CurCol=(AdinB+Mark) % DisplCols;

@@ -16,8 +16,4 @@
 #define cDefLanguage	1
 
 
-#ifndef cLightDelay
-    #define cLightDelay		40
-#endif
-
 #endif

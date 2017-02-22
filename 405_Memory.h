@@ -11,7 +11,7 @@
 
 typedef struct
 {
-    uchar*      AdrCopyRAM;
+    void*      AdrCopyRAM;
     uint16_t    Size;
     uint16_t    CSum;
     int8_t      Erase;

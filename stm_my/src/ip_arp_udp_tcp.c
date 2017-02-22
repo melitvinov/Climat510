@@ -51,17 +51,17 @@ unsigned  int checksum(unsigned char *fbuf, unsigned  int len,unsigned char type
     //      2=tcp
     unsigned long sum = 0;
 
-    //if(type==0){
+    //if(type == 0){
     //        // do not add anything
     //}
-    if (type==1)
+    if (type == 1)
     {
         sum+=IP_PROTO_UDP_V; // protocol udp
         // the length here is the length of udp (data+header len)
         // =length given to this function - (IP.scr+IP.dst length)
         sum+=len-8; // = real tcp len
     }
-    if (type==2)
+    if (type == 2)
     {
         sum+=IP_PROTO_TCP_V;
         // the length here is the length of tcp (data+header len)
@@ -259,7 +259,7 @@ void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss
         rel_ack_num=rel_ack_num>>8;
         i--;
     }
-    if (cp_seq==0)
+    if (cp_seq == 0)
     {
         // put inital seq number
         buf[TCP_SEQ_H_P+0]= 0;
@@ -278,7 +278,7 @@ void make_tcphead(unsigned char *buf,unsigned  int rel_ack_num,unsigned char mss
 
     // The tcp header length is only a 4 bit field (the upper 4 bits).
     // It is calculated in units of 4 bytes.
-    // E.g 24 bytes: 24/4=6 => 0x60=header len field
+    // E.g 24 bytes: 24/4 = 6 => 0x60=header len field
     //buf[TCP_HEADER_LEN_P]=(((TCP_HEADER_LEN_PLAIN+4)/4)) <<4; // 0x60
     if (mss)
     {
@@ -480,7 +480,7 @@ void make_tcp_ack_from_any(unsigned char *buf)
     make_eth(buf);
     // fill the header:
     buf[TCP_FLAGS_P]=TCP_FLAGS_ACK_V;
-    if (info_data_len==0)
+    if (info_data_len == 0)
     {
         // if there is no data then we must still acknoledge one packet
         make_tcphead(buf,1,0,1); // no options

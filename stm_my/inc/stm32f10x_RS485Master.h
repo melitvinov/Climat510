@@ -125,7 +125,7 @@ uint16_t GetIPCComMod(uint16_t nAddress);
 uint16_t GetIPCNum(uint16_t nAddress);
 char GetOutIPCDigit(uint16_t nAddress, char* nErr);
 void SetOutIPCDigit(char How, uint16_t nAddress,char* nErr);
-void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr,void* Ptr);
+void write_output_register(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr,void* Ptr);
 void ClrAllOutIPCDigit(void);
 void ResumeOutIPCDigit(void);
 uint16_t GetInIPC(uint16_t nAddress,char* nErr);

@@ -82,7 +82,7 @@ void BufCpy(char *pp1, char *pp2, int n) { //dest,source,number
 unsigned char analyse_get_url(char *str)
 {
     unsigned char i=0;
-    if (verify_password(str)==0)
+    if (verify_password(str) == 0)
     {
         return(-1);
     }
@@ -90,7 +90,7 @@ unsigned char analyse_get_url(char *str)
     // passw not longer than 9 char:
     while (*str && i<10 && *str >',' && *str<'{')
     {
-        if (*str=='/')
+        if (*str == '/')
         {
             str++;
             break;
@@ -164,7 +164,7 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
     case(ETH_HEADRECEIVED):*/
         fill_tcp_buf(f_buf,1,&Sockets[nSock].Header.NumDirect);
         *fbsize=1;
-        if ((Sockets[nSock].Header.NumDirect&0xF0)==OUT_UNIT)
+        if ((Sockets[nSock].Header.NumDirect&0xF0) == OUT_UNIT)
             Sockets[nSock].IP_PHASE=ETH_SENDBLOCK;
         else
             Sockets[nSock].IP_PHASE=ETH_RECVBLOCK;
@@ -182,7 +182,7 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
         }
 
         fill_tcp_buf(f_buf,Sockets[nSock].Header.Size,((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr);
-        /*if (Sockets[nSock].Header.Size == 263)
+        /*if (Sockets[nSock].Header.Size  ==  263)
         {
             volatile int16_t ii;
             ii = f_buf[62];
@@ -218,14 +218,14 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
         else plen-=54;
 //		if ((Sockets[nSock].Header.Adr<pADRGD[Sockets[nSock].NumBlock].MaxSize-plen))/*&&(Sockets[nSock].Header.Adr>=0)
 //				&&(Sockets[nSock].Header.Size<pADRGD[Sockets[nSock].NumBlock].MaxSize))*/
-//			if ((Sockets[nSock].NumBlock<12)&&((Sockets[nSock].Header.NumDirect&0xF0)==IN_UNIT))
+//			if ((Sockets[nSock].NumBlock<12)&&((Sockets[nSock].Header.NumDirect&0xF0) == IN_UNIT))
         {
 
             BufCpy(((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr,&f_buf[data_p],plen);
             Sockets[nSock].Header.Adr+=plen;
 
             // test
-            //if (Sockets[nSock].Header.Size == 263)
+            //if (Sockets[nSock].Header.Size  ==  263)
             //{
             //	CRC16(&f_buf[data_p], 0, 50);
 
@@ -260,7 +260,7 @@ int simple_servercycle(void)
     //USART_DMASendData(USART1,fbuf,plen);
 
     /*plen will ne unequal to zero if there is a valid packet (without crc error) */
-    if (plen==0)
+    if (plen == 0)
     {
         return;
     }
@@ -275,12 +275,12 @@ int simple_servercycle(void)
     }
 
     // check if ip packets are for us:
-    if (eth_type_is_ip_and_my_ip(fbuf,plen)==0)
+    if (eth_type_is_ip_and_my_ip(fbuf,plen) == 0)
     {
         return;
     }
 
-    if (fbuf[IP_PROTO_P]==IP_PROTO_ICMP_V && fbuf[ICMP_TYPE_P]==ICMP_TYPE_ECHOREQUEST_V)
+    if (fbuf[IP_PROTO_P] == IP_PROTO_ICMP_V && fbuf[ICMP_TYPE_P] == ICMP_TYPE_ECHOREQUEST_V)
     {
         // a ping packet, let's send pong
         make_echo_reply_from_request(fbuf, plen);
@@ -289,7 +289,7 @@ int simple_servercycle(void)
     }
     // tcp port www start, compare only the lower byte
 
-    if (fbuf[IP_PROTO_P]==IP_PROTO_TCP_V&&fbuf[TCP_DST_PORT_H_P]==(*PORTNUMBER)/256&&fbuf[TCP_DST_PORT_L_P]==(*PORTNUMBER)%256)
+    if (fbuf[IP_PROTO_P] == IP_PROTO_TCP_V&&fbuf[TCP_DST_PORT_H_P] == (*PORTNUMBER)/256&&fbuf[TCP_DST_PORT_L_P] == (*PORTNUMBER)%256)
     {
         nS=101;
         freeSlot=9;
@@ -326,7 +326,7 @@ int simple_servercycle(void)
             init_len_info(fbuf); // init some data structures
             // we can possibly have no data, just ack:
             dat_p=get_tcp_data_pointer();
-            if (dat_p==0)
+            if (dat_p == 0)
             {
                 if (fbuf[TCP_FLAGS_P] & TCP_FLAGS_FIN_V)
                 {
@@ -338,7 +338,7 @@ int simple_servercycle(void)
             }
             else
             {
-                //if (Sockets[nS].IP_PHASE == ETH_RECVBLOCK)
+                //if (Sockets[nS].IP_PHASE  ==  ETH_RECVBLOCK)
                 //{
                 //	fbuf[27] = 0xFF;
                 //}

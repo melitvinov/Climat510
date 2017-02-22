@@ -23,8 +23,8 @@ uint16_t Y_menu;
 uint16_t Y_menu2;
 uint16_t x_menu;
 
-uchar   Ad_Buf=0;
-uchar   AdinB=0;
+uchar   Ad_Buf = 0;
+uchar   AdinB = 0;
 
 bool     BlkW;
 
@@ -40,13 +40,13 @@ static void *AdrVal;
 
 void SetValue(int vVal)
 {
-    if (ValSize == 1)
+    if (ValSize  ==  1)
         (*(unsigned char *) AdrVal) = (unsigned char) vVal;
-    if (ValSize == 2)
+    if (ValSize  ==  2)
         (*(unsigned int *) AdrVal) = vVal;
 }
 
-/*===================================================
+/* ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == =
  Служебные подпрограммы
  -Вывод в буфер текста и чисел
  -Ввод числа в буфер и переменную
@@ -55,7 +55,7 @@ void SetValue(int vVal)
  глобальный буфер  -             buf
  текущий указатель буфера -      Ad_Buf
  адрес переменной -              bu
- ====================================================*/
+  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == */
 /*------------------------------------------------------
  Управление маркером меню от клавиатуры
  --------------------------------------------------------*/
@@ -63,7 +63,7 @@ void SetValue(int vVal)
 
 /*
 void KeyBoard(void) {
-//        GD.TControl.tAutoInf=GD.Control.AutoInf;
+//        GD.TControl.tAutoInf = GD.Control.AutoInf;
     if (GrafView)
         GrafView = 1;
     GD.TControl.tCodTime = 3;
@@ -147,7 +147,7 @@ void KeyBoard(void) {
 
 void KeyBoard(void)
 {
-//        GD.TControl.tAutoInf=GD.Control.AutoInf;
+//        GD.TControl.tAutoInf = GD.Control.AutoInf;
     if (GrafView)
         GrafView = 1;
     GD.TControl.tCodTime = 3;
@@ -155,7 +155,7 @@ void KeyBoard(void)
     #warning "disabled this beepy"
 //  not += 180;
 //  ton = 2;
-    if (WTF0.Menu && (keyboardGetSIM() < 10))
+    if (wtf0.Menu && (keyboardGetSIM() < 10))
     {
         in_val();
         B_input = 1;
@@ -168,30 +168,30 @@ void KeyBoard(void)
         switch (keyboardGetSIM())
         {
         case KEY_10 : if (!Form) break;
-            if (!WTF0.Menu)
+            if (!wtf0.Menu)
             {
-                WTF0.Menu=1;
+                wtf0.Menu = 1;
                 CopyVal=*(unsigned int *)AdrVal;
             }
             else
             {
                 (*(unsigned int *)AdrVal)=CopyVal;
-                WTF0.Menu=0;
-                Mark=0;
+                wtf0.Menu = 0;
+                Mark = 0;
             }
             break;
-        case KEY_1 : Y_menu=Y_menu2=0;x_menu=0;break;
+        case KEY_1 : Y_menu = Y_menu2 = 0;x_menu = 0;break;
         case KEY_2_UP :
         case 11:
             if (x_menu) Y_menu2--;
             else
             {
                 if (Y_menu) Y_menu--;
-                Y_menu2=0;
+                Y_menu2 = 0;
             }
             break;
         case KEY_3 : if (Y_menu) Y_menu--;
-            x_menu=0; Y_menu2=0; break;
+            x_menu = 0; Y_menu2 = 0; break;
         case KEY_4_LEFT :
         case KEY_LEFT :
             if (x_menu) x_menu--;break;
@@ -199,15 +199,15 @@ void KeyBoard(void)
         case KEY_UP :
             x_menu++;break;
 
-        case KEY_7 : Y_menu=SumYMenu;Y_menu2=0;x_menu=0;break;
+        case KEY_7 : Y_menu = SumYMenu;Y_menu2 = 0;x_menu = 0;break;
         case KEY_8_DOWN :
         case KEY_RIGHT :
             if (x_menu) Y_menu2++;
             else
             {
-                Y_menu++;Y_menu2=0;
+                Y_menu++;Y_menu2 = 0;
             } break;
-        case KEY_9 : Y_menu++; x_menu=0; Y_menu2=0; break;
+        case KEY_9 : Y_menu++; x_menu = 0; Y_menu2 = 0; break;
         }
     }
 }
@@ -220,11 +220,11 @@ void w_txt(const char *bu)
     const char *vu;
     if (GD.Control.Language)
     {
-        vu=bu;
+        vu = bu;
         while ((*vu))
         {
-            if (*vu++ =='#')
-                bu=vu;break;
+            if (*vu++  == '#')
+                bu = vu;break;
         }
     }
     while ((*bu)&&((*bu)!='#'))
@@ -345,7 +345,7 @@ void w_int(void *bu, char frmt, int16_t param)
         break;
     case SSdSS:
         vre = *(uint16_t *) bu;
-        if (WTF0.Second & 1)
+        if (wtf0.Second & 1)
             lcdbuf[Ad_Buf + 2] = ':';
         lcdbuf[Ad_Buf + 4] = vre % 10 + '0';
         vre /= 10;
@@ -367,7 +367,7 @@ void w_int(void *bu, char frmt, int16_t param)
         lcdbuf[Ad_Buf + 4] = i % 10 + '0';
         lcdbuf[Ad_Buf + 3] = i / 10 + '0';
         Ad_Buf += 5;
-        if (frmt == DsMsY)
+        if (frmt  ==  DsMsY)
         {
             lcdbuf[Ad_Buf] = '/';
             lcdbuf[Ad_Buf + 2] = GD.Hot.Year % 10 + '0';
@@ -440,18 +440,18 @@ void in_val(void)
     {
     case 0:
         return;
-//                        ValSize=0;
+//                        ValSize = 0;
 //                        break;
 
     case SRelay:
-        if (lcdbuf[AdinB] == '1')
+        if (lcdbuf[AdinB]  ==  '1')
             SetRelay(SaveInt);
         else
             ClrRelay(SaveInt);
         ValSize = 0;
         break;
     case bS:
-        if (lcdbuf[AdinB] == '1')
+        if (lcdbuf[AdinB]  ==  '1')
             (*(char *) AdrVal) |= SaveChar;
         else
             (*(char *) AdrVal) &= ~SaveChar;
@@ -564,7 +564,7 @@ void in_val(void)
     {
         EndInput = 1;
         Mark = 0;
-        WTF0.Menu = 0;
+        wtf0.Menu = 0;
         if (vre < MinimVal)
             SetValue(MinimVal);
         if (MaximVal && (vre > MaximVal))

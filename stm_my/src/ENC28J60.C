@@ -167,7 +167,7 @@ void enc28j60Init(unsigned char* macaddr)
     // ARP      BROADCAST
     // 06 08 -- ff ff ff ff ff ff -> ip checksum for theses bytes=f7f9
     // in binary these poitions are:11 0000 0011 1111
-    // This is hex 303F->EPMM0=0x3f,EPMM1=0x30
+    // This is hex 303F->EPMM0 = 0x3f,EPMM1 = 0x30
     enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_PMEN);
     enc28j60Write(EPMM0, 0x3f);
     enc28j60Write(EPMM1, 0x30);
@@ -266,7 +266,7 @@ unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet)
     // check if a packet has been received and buffered
     //if( !(enc28j60Read(EIR) & EIR_PKTIF) ){
     // The above does not work. See Rev. B4 Silicon Errata point 6.
-    if (enc28j60Read(EPKTCNT) ==0)
+    if (enc28j60Read(EPKTCNT)  == 0)
     {
         return(0);
     }
@@ -296,7 +296,7 @@ unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet)
     // check CRC and symbol errors (see datasheet page 44, table 7-3):
     // The ERXFCON.CRCEN is set by default. Normally we should not
     // need to check this.
-    if ((rxstat & 0x80)==0)
+    if ((rxstat & 0x80) == 0)
     {
         // invalid
         len=0;

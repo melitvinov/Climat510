@@ -40,8 +40,8 @@ void CheckWithoutPC(void)
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        USART_PC_Configuration(&GD.Control.NFCtr, WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,9600);
-        simple_server(WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&WTF0.PORTNUM);
+        USART_PC_Configuration(&GD.Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
+        simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,GD.Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
         GD.TControl.Tepl[0].WithoutPC++;
     }
     NMinPCOut++;
@@ -73,9 +73,9 @@ void Init_STM32(void)
 
     Keyboard_Init();
     InitRTC();
-    WTF0.PORTNUM=DEF_PORTNUM;
+    wtf0.PORTNUM=DEF_PORTNUM;
 
-    simple_server(WTF0.AdrGD,&GD.SostRS,&WTF0.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&WTF0.PORTNUM);
+    simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,GD.Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
 
 
     w1Init();
@@ -264,7 +264,7 @@ void InitRTC(void)
     // XXX: here was an unworking delay
 
 //	RCC_LSEConfig(RCC_LSE_ON);
-//	while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) { ; }
+//	while (RCC_GetFlagStatus(RCC_FLAG_LSERDY)  ==  RESET) { ; }
 //	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
 
     RCC_LSICmd(ENABLE);  // устанавливаем бит разрешения работы
@@ -287,12 +287,12 @@ void InitRTC(void)
         RCC_LSEConfig(RCC_LSE_OFF);
 
         RCC_LSICmd(ENABLE);  // устанавливаем бит разрешения работы
-        while (RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET);
+        while (RCC_GetFlagStatus(RCC_FLAG_LSIRDY)  ==  RESET);
         RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
 
 /*		// Enable LSE
         RCC_LSEConfig(RCC_LSE_ON);
-        while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET) { ; }
+        while (RCC_GetFlagStatus(RCC_FLAG_LSERDY)  ==  RESET) { ; }
         RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);*/
         /* Enable RTC Clock */
         RCC_RTCCLKCmd(ENABLE);
@@ -334,8 +334,8 @@ void RTC_IRQHandler(void)
         RTC_ClearITPendingBit(RTC_IT_SEC);
         RTC_WaitForLastTask();
         #warning "this baby should be volatile !"
-        WTF0.bSec=1;
-        WTF0.Second++;
+        wtf0.bSec=1;
+        wtf0.Second++;
         //SumAnswers=IntCount;
         //IntCount=0;
     }
@@ -387,28 +387,24 @@ static void ReadFromFRAM()
 void SetRTC(void)
 {
     eDateTime   fDateTime;
-    fDateTime.sec=WTF0.Second;
+    fDateTime.sec=wtf0.Second;
     fDateTime.min=GD.Hot.Time%60;
     fDateTime.hour=GD.Hot.Time/60;
-    fDateTime.mday=GD.Hot.Data&0xff;
-    fDateTime.month=GD.Hot.Data>>8;
+    fDateTime.mday=GD.Hot.Date&0xff;
+    fDateTime.month=GD.Hot.Date>>8;
     fDateTime.year=GD.Hot.Year+2000;
     WriteDateTime(&fDateTime);
 }
 
-void GetRTC(void)
+void GetRTC(uint16_t *time, uint16_t *date, uint16_t *year, u8 *day_of_week)
 {
     eDateTime   fDateTime;
     ReadDateTime(&fDateTime); //CtrTime=0;
 
-    //Second=DateTime.Sec&0x0F;
-    //Second+=(DateTime.Sec>>4)*10;
-    GD.Hot.Time = fDateTime.min;
-    GD.Hot.Time += fDateTime.hour*60;
-    GD.Hot.Data = fDateTime.mday;
-    GD.Hot.Data += fDateTime.month<<8;
-    GD.Hot.Year = fDateTime.year-2000;
-    NowDayOfWeek=fDateTime.wday;
+    *time = fDateTime.min + fDateTime.hour*60;
+    *date = fDateTime.mday + (fDateTime.month<<8);
+    *year = fDateTime.year-2000;
+    *day_of_week = fDateTime.wday;
 }
 
 void Init_MEAS_INPUT()
@@ -541,7 +537,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }
     if (Mes < nameS->Min)
     {
-        if ((nameS->TypeSens==cTypeSun)||(nameS->TypeSens==cTypeRain)||(nameS->TypeSens==cTypeFram)||(nameS->TypeSens==cTypeScreen))
+        if ((nameS->TypeSens == cTypeSun)||(nameS->TypeSens == cTypeRain)||(nameS->TypeSens == cTypeFram)||(nameS->TypeSens == cTypeScreen))
             Mes=nameS->Min;
         else
         {
@@ -551,7 +547,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }
     if (Mes > nameS->Max)
     {
-        if ((nameS->TypeSens==cTypeRain)||(nameS->TypeSens==cTypeRH)||(nameS->TypeSens==cTypeFram)||(nameS->TypeSens==cTypeScreen))
+        if ((nameS->TypeSens == cTypeRain)||(nameS->TypeSens == cTypeRH)||(nameS->TypeSens == cTypeFram)||(nameS->TypeSens == cTypeScreen))
             Mes=nameS->Max;
         else
         {
@@ -590,13 +586,13 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }
     if (!met)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
-    if (nameS->TypeSens==cTypeFram)
+    if (nameS->TypeSens == cTypeFram)
     {
         if (! (gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
             gdp.TControl_Tepl->MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
-    if (nameS->TypeSens==cTypeScreen)
+    if (nameS->TypeSens == cTypeScreen)
     {
         if (!YesBit(gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS,cMSBusyMech))
             gdp.TControl_Tepl->MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
@@ -686,21 +682,24 @@ void TestMem(uchar TipReset)
     ButtonReset();
 //	   TipReset=2;
 /*------ проверка контр суммы блока CONTROL ---------------------------*/
-    if (TipReset>5) InitGD(5);
-    if ((!WTF0.Menu) && TestRAM0())
+    if (TipReset>5)
+    {
+        InitAllThisThings(5);
+    }
+    if ((!wtf0.Menu) && TestRAM0())
         TipReset=2;
     if (!TipReset) return;
 /*------ проверка контр суммы ОЗУ  -------------------------------*/
 
-    if ((TipReset==1)&& TestRAM())
+    if ((TipReset == 1)&& TestRAM())
         TipReset++;
     if (TipReset<2) return;
-    WTF0.Menu=0;
+    wtf0.Menu=0;
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
     TestFRAM(TipReset);
     ButtonReset();
-    GetRTC();
+    GetRTC(&GD.Hot.Time, &GD.Hot.Date, &GD.Hot.Year, &NowDayOfWeek);
 }
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
@@ -713,9 +712,10 @@ void    TestFRAM(char EraseBl)
         RecvBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
         RecvBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&BlockEEP[nBlFRAM].CSum,2);
         cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
-        if ((CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase == 1))
+        if ((CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size)!=BlockEEP[nBlFRAM].CSum ) || ( BlockEEP[nBlFRAM].Erase  ==  1))
         {
-            InitGD(5);
+            keyboardSetSIM(100);
+            InitAllThisThings(5);
             SendBlockFRAM(BlockEEP[nBlFRAM].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             cSum=CalcRAMSum(BlockEEP[nBlFRAM].AdrCopyRAM,BlockEEP[nBlFRAM].Size);
             SendBlockFRAM(ADDRESS_FRAM_SUM+nBlFRAM*2,&cSum,2);
@@ -769,10 +769,10 @@ void CheckInputConfig()
     tTempConf.Corr=0;
     tTempConf.Output=0;
     tTempConf.Type=0;
-    tTempConf.V1=0;
-    tTempConf.V2=0;
-    tTempConf.U1=0;
-    tTempConf.U2=0;
+    tTempConf.V1 = 0;
+    tTempConf.V2 = 0;
+    tTempConf.U1 = 0;
+    tTempConf.U2 = 0;
 
     for (tTepl=0;tTepl<cSTepl;tTepl++)
         for (nSens=0;nSens<cConfSInputs;nSens++)
@@ -788,18 +788,16 @@ void CheckInputConfig()
 
 }
 
-void SetDiskrSens(void)
+void LoadDiscreteInputs(void)
 {
-    char fnTepl,nSens,nErr;
-    for (fnTepl=0;fnTepl<cSTepl;fnTepl++)
+    for (int gh_idx=0; gh_idx<cSTepl; gh_idx++)
     {
-        SetPointersOnTepl(fnTepl);
-        for (nSens=0;nSens<cConfSInputs;nSens++)
-            if (GetDiskrIPC(GetInputConfig(fnTepl,nSens),&nErr))
-                gdp.Hot_Tepl->DiskrSens[0]|=1<<nSens;
-/*		if (YesBit(RegLEV,(cSmLightLev1<<fnTepl)))
-            pGD_Hot_Tepl->DiskrSens[0] |= cSmLightDiskr;
-*/
+        eTepl *gh = &GD.Hot.Tepl[gh_idx];
+        char nErr;
+        for (int input_idx=0; input_idx < cConfSInputs; input_idx++)
+        {
+            if (GetDiskrIPC(GetInputConfig(gh_idx,input_idx),&nErr))
+                gh->discrete_inputs[0] |= 1<<input_idx;
+        }
     }
-
 }
