@@ -263,36 +263,36 @@ void CheckMidlSr(void)
     _GD.Hot.MidlSR=(int)(_GD.TControl.MidlSR/1000);
 }
 
-char CheckSeparate (int fnKontur)
+char CheckSeparate (const contour_t *ctx)
 {
     char t2;
     char t1;
-    _GDCP.TControl_Tepl_Kontur->NAndKontur=0;
-    if (! _GDP.MechConfig->RNum[fnKontur])
+    ctx->t_contour->NAndKontur=0;
+    if (! ctx->link.mech_cfg->RNum[ctx->cidx])
         return 0;
     t1 = 0;
     for (t2 = 0;t2<cSTepl;t2++)
     {
-        if (_GD.MechConfig[t2].RNum[fnKontur] == _GDP.MechConfig->RNum[fnKontur])
+        if (_GD.MechConfig[t2].RNum[ctx->cidx] == ctx->link.mech_cfg->RNum[ctx->cidx])
         {
             t1 |= (1<<t2);
-            _GDCP.TControl_Tepl_Kontur->NAndKontur++;
+            ctx->t_contour->NAndKontur++;
         }
     }
     return t1;
 }
 
-char CheckMain(int fnTepl)
+char CheckMain(const contour_t *ctr)
 {
     char tTepl;
     tTepl=0;
-    while (tTepl<cSTepl)
+    while (tTepl < ctr->link.idx)
     {
-        if ((_GDCP.TControl_Tepl_Kontur->Separate>>tTepl)&1)
+        if ( (ctr->t_contour->Separate >> tTepl) & 1)
             return tTepl;
         tTepl++;
     }
-    return fnTepl;
+    return ctr->link.idx;
 }
 
 void InitGD(void)

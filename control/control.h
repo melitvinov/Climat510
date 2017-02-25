@@ -12,6 +12,10 @@ typedef struct
 } control_regs_t;
 
 extern control_regs_t creg;
+
+const gh_t make_gh_ctx(int gh_idx);
+const contour_t make_contour_ctx(const gh_t *gh, int contour_idx);
+
 #endif
 
 

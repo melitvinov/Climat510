@@ -9,8 +9,8 @@ void WindDirect(void);
 int16_t getTempHeat(int fnTepl);
 
 void CheckMidlSr(void);
-char CheckSeparate (int fnKontur);
-char CheckMain(int fnTepl);
+char CheckSeparate (const contour_t *ctx);
+char CheckMain(const contour_t *ctr);
 
 int8_t getTempHeatAlarm(int fnTepl);
 int8_t getTempVentAlarm(int fnTepl);

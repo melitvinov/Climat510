@@ -105,6 +105,7 @@
 
 /* онстанты смещени€ ручного управлени€ и биты его*/
 #define cHSmMixVal		0
+// gap for 6 other contours (pumps ?)
 #define cHSmWinN		6
 #define cHSmWinS		7
 #define cHSmUCValve		8
@@ -125,6 +126,8 @@
 #define cHSmRez4		23
 
 #define cHSmPump		24
+// gap for 6 pumps ?
+
 #define cHSmVent		30
 #define cHSmHeat		31
 #define cHSmCool		32

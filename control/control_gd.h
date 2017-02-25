@@ -117,11 +117,22 @@ typedef struct
 typedef struct
 {
     int idx;
-    eTepl *gh;
+    eTepl *gh_base;
     eMechanic *hand;
     eTControlTepl *gh_tctrl;
+    eTeplControl *gh_ctrl;
     eTControl *tctrl;
-} gh_ctx_t;
+    eMechConfig *mech_cfg;
+} gh_t;
+
+typedef struct
+{
+    int cidx;
+    eKontur *gh_contour;
+    eTControlKontur *t_contour;
+    eMechanic *hand;
+    gh_t link;
+} contour_t;
 
 typedef struct
 {
