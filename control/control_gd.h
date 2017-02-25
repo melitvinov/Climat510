@@ -104,14 +104,6 @@ typedef struct
 
 typedef struct
 {
-    eTepl *Hot_Tepl;
-    eTControlTepl *TControl_Tepl;
-    eSensLevel *Level_Tepl;
-    eStrategy *Strategy_Tepl;
-} gdp_t;
-
-typedef struct
-{
     int idx;
     eTepl *hot;
     eMechanic *hand;
@@ -133,7 +125,6 @@ typedef struct
 
 #ifdef _FRIEND_OF_CONTROL_
 extern eGData _GD;
-extern gdp_t _GDP;
 #endif
 
 // XXX: caldata do not relate to 65 in fact

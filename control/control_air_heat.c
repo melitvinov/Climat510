@@ -94,20 +94,20 @@ void airHeatTimers(void)
     }
 }
 
-void airHeat(const gh_t *me)
+void airHeat(const gh_t *gh)
 {
-    if (me->hand[cHSmHeat].RCS & cbManMech) return;
+    if (gh->hand[cHSmHeat].RCS & cbManMech) return;
 
-    heat_rt_t *rt = &ctx.heat_rt[me->idx];
+    heat_rt_t *rt = &ctx.heat_rt[gh->idx];
 
     int tempTon = 0;
     int tempToff = 0;
 //	if ( fnTepl != 0) return;
-    int tempT = getTempHeat(me->idx);
-    if (tempT < me->hot->AllTask.TAir)
-        tempTon = me->hot->AllTask.TAir - tempT;
+    int tempT = getTempHeat(gh, gh->idx);
+    if (tempT < gh->hot->AllTask.TAir)
+        tempTon = gh->hot->AllTask.TAir - tempT;
     else
-        tempToff = tempT - me->hot->AllTask.TAir;
+        tempToff = tempT - gh->hot->AllTask.TAir;
     if (tempT > 0)
     {
         //if ((GD.TuneClimate.airHeatTemperOn >= tempTon) && (GD.TuneClimate.airHeatTemperOff > tempToff) && (airHeatGetHeatPause(fnTepl)  ==  0))  // обогреватель можно вкл и пауза между вкл прошла
@@ -116,7 +116,7 @@ void airHeat(const gh_t *me)
         if ((_GD.TuneClimate.airHeatTemperOff <= tempToff) && (rt->pause >= (_GD.TuneClimate.airHeatMinWork / 100)))  // обогреватель можно выклюсить если мин время работы прошло и максимальная температура достигнута
             airHeatOff(rt);
     }
-    me->hot->airHeatTimeWork = rt->time_work*100;
-    me->hot->airHeatOnOff = rt->is_on;
+    gh->hot->airHeatTimeWork = rt->time_work*100;
+    gh->hot->airHeatOnOff = rt->is_on;
 }
 

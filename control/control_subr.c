@@ -19,26 +19,24 @@ extern int8_t  bWaterReset[16];
 static int16_t teplTmes[8][6];
 
 
-static int16_t getTempSensor(int fnTepl, int sensor)
+static int16_t getTempSensor(const gh_t *gh, int fnTepl, int sensor)
 {
-    if (_GDP.Hot_Tepl->InTeplSens[sensor].RCS  ==  0)
+    if (gh->hot->InTeplSens[sensor].RCS  ==  0)
     {
-        teplTmes[fnTepl][sensor] = _GDP.Hot_Tepl->InTeplSens[sensor].Value;
-        return _GDP.Hot_Tepl->InTeplSens[sensor].Value;
+        teplTmes[fnTepl][sensor] = gh->hot->InTeplSens[sensor].Value;
+        return gh->hot->InTeplSens[sensor].Value;
     }
-    if (_GDP.Hot_Tepl->InTeplSens[sensor].RCS != 0)
-    {
-        if (_GDP.Hot_Tepl->InTeplSens[sensor].Value  ==  0)
-            return 0;
-        return teplTmes[fnTepl][sensor];
-    }
+
+    if (gh->hot->InTeplSens[sensor].Value  ==  0)
+        return 0;
+    return teplTmes[fnTepl][sensor];
 }
 
 /*!
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempVent(int fnTepl)
+int16_t getTempVent(const gh_t *gh, int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -57,9 +55,9 @@ int16_t getTempVent(int fnTepl)
     for (i=0;i<6;i++)
     {
         // XXX: shift has a less priority !
-        if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
+        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
         {
-            temp = getTempSensor(fnTepl, i);
+            temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -91,7 +89,8 @@ int16_t getTempVent(int fnTepl)
 \brief Температура воздуха для обогрева в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempHeat(int fnTepl)
+
+int16_t getTempHeat(const gh_t *gh, int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -109,9 +108,9 @@ int16_t getTempHeat(int fnTepl)
     error = 0;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
+        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
         {
-            temp = getTempSensor(fnTepl, i);
+            temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -139,7 +138,7 @@ int16_t getTempHeat(int fnTepl)
 /*!
 \brief Авария датчика температуры воздуха вентиляции в зависимости от выбранного значение в Параметрах управления
 */
-int8_t getTempVentAlarm(int fnTepl)
+int8_t getTempVentAlarm(const gh_t *gh, int fnTepl)
 {
     int16_t temp = 0;
     int16_t i;
@@ -153,9 +152,9 @@ int8_t getTempVentAlarm(int fnTepl)
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
+        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
         {
-            temp = getTempSensor(fnTepl, i);
+            temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -175,7 +174,8 @@ int8_t getTempVentAlarm(int fnTepl)
 /*!
 \brief Авария датчика температуры воздуха обогрева в зависимости от выбранного значение в Параметрах управления
 */
-int8_t getTempHeatAlarm(int fnTepl)
+
+int8_t getTempHeatAlarm(const gh_t *gh, int fnTepl)
 {
     int16_t temp = 0;
     int16_t i;
@@ -189,9 +189,9 @@ int8_t getTempHeatAlarm(int fnTepl)
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(fnTepl, i)))
+        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
         {
-            temp = getTempSensor(fnTepl, i);
+            temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -216,17 +216,6 @@ bool SameSign(int Val1,int Val2)
     else
         return 0;
 }
-
-void SetPointersOnTepl(int fnTepl)
-{
-    _GDP.Hot_Tepl=&_GD.Hot.Tepl[fnTepl];
-    _GDP.TControl_Tepl=&_GD.TControl.Tepl[fnTepl];
-    #warning "this was fucked. not sure if [0] is ok"
-    _GDP.Level_Tepl=&_GD.Level.InTeplSens[fnTepl][0];
-    #warning "this was fucked too. not sure if [0] is ok"
-    _GDP.Strategy_Tepl=&_GD.Strategy[fnTepl][0];
-}
-
 
 void MidlWindAndSr(void)
 {
@@ -325,12 +314,13 @@ void InitGD(void)
 
     for (int gh_idx=0;gh_idx<cSTepl;gh_idx++)
     {
-        SetPointersOnTepl(gh_idx);
+        #warning "looks like this is fucked too"
+        eStrategy * Strategy_Tepl= _GD.Strategy[gh_idx];
+
         for (int int_x=0;int_x<cSStrategy;int_x++)
         {
-            #warning "looks like this is fucked too"
             for (uint byte_y=0;byte_y<sizeof(eStrategy);byte_y++)
-                (*((&(_GDP.Strategy_Tepl[int_x].TempPower))+byte_y))=(*((&DefStrategy[int_x].TempPower)+byte_y));
+                (*((&(Strategy_Tepl[int_x].TempPower))+byte_y))=(*((&DefStrategy[int_x].TempPower)+byte_y));
         }
 
         bWaterReset[gh_idx]=1;

@@ -6,17 +6,15 @@
 int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet);
 void WindDirect(void);
 
-int16_t getTempHeat(int fnTepl);
-
 void CheckMidlSr(void);
 char CheckSeparate (const contour_t *ctx);
 char CheckMain(const contour_t *ctr);
 
-int8_t getTempHeatAlarm(int fnTepl);
-int8_t getTempVentAlarm(int fnTepl);
+int16_t getTempHeat(const gh_t *gh, int fnTepl);
+int8_t getTempHeatAlarm(const gh_t *gh, int fnTepl);
+int8_t getTempVentAlarm(const gh_t *gh, int fnTepl);
 
-int16_t getTempVent(int fnTepl);
-void SetPointersOnTepl(int fnTepl);
+int16_t getTempVent(const gh_t *gh, int fnTepl);
 
 bool SameSign(int Val1,int Val2);
 

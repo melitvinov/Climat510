@@ -2,7 +2,6 @@
 #include "control_gd.h"
 
 eGData _GD;
-gdp_t _GDP;
 
 // blobs in remote reporting
 caldata_t caldata;

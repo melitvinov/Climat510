@@ -124,13 +124,13 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 {
     int8_t nTimer,sTimerNext,sTimerPrev,sTimerMin,sTimerMax;
     int MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
-    eTimer *pGD_CurrTimer;
-    eTimer *pGD_NextTimer;
     int16_t typeStartCorrection;
     int16_t nextTimer = 0;
     int16_t prevTimer = 0;
-    _GDP.Hot_Tepl=&_GD.Hot.Tepl[fnTeplLoad];
-    _GDP.Hot_Tepl->AllTask.TAir = 0;
+
+    eTepl *hot = &_GD.Hot.Tepl[fnTeplLoad];
+    hot->AllTask.TAir = 0;
+
 
     creg.Z= _GD.Hot.Time + fsmTime;
     creg.Z%=1440;
@@ -181,9 +181,10 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     if (sTimerPrev<0)
         sTimerPrev = sTimerMax;
 
-    pGD_CurrTimer=&_GD.Timers[sTimerPrev];
-    pGD_NextTimer=&_GD.Timers[sTimerNext];
+    eTimer *pGD_CurrTimer = &_GD.Timers[sTimerPrev];
+    eTimer *pGD_NextTimer = &_GD.Timers[sTimerNext];
     eTimer *Timer = &_GD.Timers[sTimerPrev];
+
     prevTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
     Timer = &_GD.Timers[sTimerNext];
     nextTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
@@ -240,13 +241,13 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 
     if (fsmTime)
     {
-        _GDP.Hot_Tepl->AllTask.NextTAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+        hot->AllTask.NextTAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
 //Блокировка нулевой темепратуры вентиляции
         tVal = pGD_CurrTimer->TVentAir;
         if (!tVal) tVal = pGD_CurrTimer->TAir+100;
-        _GDP.Hot_Tepl->AllTask.NextTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
-        _GDP.Hot_Tepl->AllTask.Light = pGD_CurrTimer->Light;
-        _GDP.Hot_Tepl->AllTask.ModeLight = pGD_CurrTimer->ModeLight;
+        hot->AllTask.NextTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
+        hot->AllTask.Light = pGD_CurrTimer->Light;
+        hot->AllTask.ModeLight = pGD_CurrTimer->ModeLight;
 //		if (pGD_Hot_Tepl->InTeplSens[cSmRHSens])
 //		pGD_Hot_Tepl->AllTask.NextRHAir = JumpNext(pGD_CurrTimer->RHAir,pGD_NextTimer->RHAir,1);
         return;
@@ -254,7 +255,7 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 #warning temp !!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // T отопления, в зависимости что стоит в параметрах упраления, то и ставим в температуру
-    _GDP.Hot_Tepl->AllTask.TAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+    hot->AllTask.TAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
 
 
     //if (pGD_Hot_Tepl->AllTask.TAir - TempOld > 50)
@@ -266,31 +267,31 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     if (!tVal) tVal = pGD_CurrTimer->TAir+100;
 
     // T вентиляции
-    _GDP.Hot_Tepl->AllTask.DoTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
+    hot->AllTask.DoTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
 
-    _GDP.Hot_Tepl->AllTask.SIO = pGD_CurrTimer->SIO;
-    _GDP.Hot_Tepl->AllTask.RHAir = JumpNext(pGD_CurrTimer->RHAir_c,pGD_NextTimer->RHAir_c,1,100);
-    _GDP.Hot_Tepl->AllTask.CO2 = JumpNext(pGD_CurrTimer->CO2,pGD_NextTimer->CO2,1,1);
-    _GDP.Hot_Tepl->Kontur[cSmKontur1].MinTask = JumpNext(pGD_CurrTimer->MinTPipe1,pGD_NextTimer->MinTPipe1,1,10);
+    hot->AllTask.SIO = pGD_CurrTimer->SIO;
+    hot->AllTask.RHAir = JumpNext(pGD_CurrTimer->RHAir_c,pGD_NextTimer->RHAir_c,1,100);
+    hot->AllTask.CO2 = JumpNext(pGD_CurrTimer->CO2,pGD_NextTimer->CO2,1,1);
+    hot->Kontur[cSmKontur1].MinTask = JumpNext(pGD_CurrTimer->MinTPipe1,pGD_NextTimer->MinTPipe1,1,10);
 
-    _GDP.Hot_Tepl->Kontur[cSmKontur2].MinTask = JumpNext(pGD_CurrTimer->MinTPipe2,pGD_NextTimer->MinTPipe2,1,10);
+    hot->Kontur[cSmKontur2].MinTask = JumpNext(pGD_CurrTimer->MinTPipe2,pGD_NextTimer->MinTPipe2,1,10);
 
-    _GDP.Hot_Tepl->Kontur[cSmKontur3].MinTask = JumpNext(pGD_CurrTimer->MinTPipe3,pGD_NextTimer->MinTPipe3,1,10);
-    _GDP.Hot_Tepl->Kontur[cSmKontur5].MinTask = JumpNext(pGD_CurrTimer->MinTPipe5,pGD_NextTimer->MinTPipe5,1,10);
+    hot->Kontur[cSmKontur3].MinTask = JumpNext(pGD_CurrTimer->MinTPipe3,pGD_NextTimer->MinTPipe3,1,10);
+    hot->Kontur[cSmKontur5].MinTask = JumpNext(pGD_CurrTimer->MinTPipe5,pGD_NextTimer->MinTPipe5,1,10);
 
-    _GDP.Hot_Tepl->Kontur[cSmKontur1].Optimal = JumpNext(pGD_CurrTimer->TOptimal1,pGD_NextTimer->TOptimal1,1,10);
+    hot->Kontur[cSmKontur1].Optimal = JumpNext(pGD_CurrTimer->TOptimal1,pGD_NextTimer->TOptimal1,1,10);
 
-    _GDP.Hot_Tepl->Kontur[cSmKontur2].Optimal = JumpNext(pGD_CurrTimer->TOptimal2,pGD_NextTimer->TOptimal2,1,10);
+    hot->Kontur[cSmKontur2].Optimal = JumpNext(pGD_CurrTimer->TOptimal2,pGD_NextTimer->TOptimal2,1,10);
 
-    _GDP.Hot_Tepl->Kontur[cSmWindowUnW].MinTask = JumpNext(((uchar)pGD_CurrTimer->MinOpenWin),((uchar)pGD_NextTimer->MinOpenWin),0,1);
-    _GDP.Hot_Tepl->AllTask.Win = pGD_CurrTimer->Win;
-    _GDP.Hot_Tepl->AllTask.Screen[0]=pGD_CurrTimer->Screen[0];
-    _GDP.Hot_Tepl->AllTask.Screen[1]=pGD_CurrTimer->Screen[1];
-    _GDP.Hot_Tepl->AllTask.Screen[2]=pGD_CurrTimer->Screen[2];
-    _GDP.Hot_Tepl->AllTask.Vent = pGD_CurrTimer->Vent;
+    hot->Kontur[cSmWindowUnW].MinTask = JumpNext(((uchar)pGD_CurrTimer->MinOpenWin),((uchar)pGD_NextTimer->MinOpenWin),0,1);
+    hot->AllTask.Win = pGD_CurrTimer->Win;
+    hot->AllTask.Screen[0]=pGD_CurrTimer->Screen[0];
+    hot->AllTask.Screen[1]=pGD_CurrTimer->Screen[1];
+    hot->AllTask.Screen[2]=pGD_CurrTimer->Screen[2];
+    hot->AllTask.Vent = pGD_CurrTimer->Vent;
 //	pGD_Hot_Tepl->AllTask.Poise = pGD_CurrTimer->Poise;
-    _GDP.Hot_Tepl->Kontur[cSmKontur3].Do = JumpNext(pGD_CurrTimer->TPipe3,pGD_NextTimer->TPipe3,1,10);
-    _GDP.Hot_Tepl->Kontur[cSmKontur4].Do = JumpNext(pGD_CurrTimer->TPipe4,pGD_NextTimer->TPipe4,1,10);
+    hot->Kontur[cSmKontur3].Do = JumpNext(pGD_CurrTimer->TPipe3,pGD_NextTimer->TPipe3,1,10);
+    hot->Kontur[cSmKontur4].Do = JumpNext(pGD_CurrTimer->TPipe4,pGD_NextTimer->TPipe4,1,10);
 
 }
 
@@ -488,22 +489,26 @@ void __cNextTCalc(const gh_t *gh)
 // смотря по какому датчику работаем того и считаем
 // ---------------------
 // NEW
+
+    #warning "these indexes are fucked up"
+    eSensLevel *Level_Tepl=_GD.Level.InTeplSens[gh->idx];
+
     int cSmTSens = 0;
     for (cSmTSens = 0; cSmTSens<4; cSmTSens++)  // 4 датчика температуры
     {
-        _GDP.Level_Tepl[cSmTSens][cSmUpAlarmLev]=0;
-        _GDP.Level_Tepl[cSmTSens][cSmDownAlarmLev]=0;
+        Level_Tepl[cSmTSens][cSmUpAlarmLev]=0;
+        Level_Tepl[cSmTSens][cSmDownAlarmLev]=0;
         if (_GD.TuneClimate.c_MaxDifTUp)
-            _GDP.Level_Tepl[cSmTSens][cSmUpAlarmLev]=gh->hot->AllTask.DoTHeat+_GD.TuneClimate.c_MaxDifTUp;
+            Level_Tepl[cSmTSens][cSmUpAlarmLev]=gh->hot->AllTask.DoTHeat+_GD.TuneClimate.c_MaxDifTUp;
         if (_GD.TuneClimate.c_MaxDifTDown)
-            _GDP.Level_Tepl[cSmTSens][cSmDownAlarmLev]=gh->hot->AllTask.DoTHeat-_GD.TuneClimate.c_MaxDifTDown;
+            Level_Tepl[cSmTSens][cSmDownAlarmLev]=gh->hot->AllTask.DoTHeat-_GD.TuneClimate.c_MaxDifTDown;
     }
 
-    gh->hot->NextTCalc.DifTAirTDo = gh->hot->AllTask.NextTAir-getTempHeat(gh->idx);
+    gh->hot->NextTCalc.DifTAirTDo = gh->hot->AllTask.NextTAir-getTempHeat(gh, gh->idx);
     /**********************************************/
     /*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
-    gh->hot->AllTask.Rez[0]=getTempHeat(gh->idx);
-    creg.X=(gh->hot->AllTask.DoTHeat-getTempHeat(gh->idx));
+    gh->hot->AllTask.Rez[0]=getTempHeat(gh, gh->idx);
+    creg.X=(gh->hot->AllTask.DoTHeat-getTempHeat(gh, gh->idx));
 
 /**********************************************/
 /*Вычиляем увеличение от солнечной радиации*/
@@ -675,8 +680,8 @@ void __cNextTCalc(const gh_t *gh)
 /******************************************************************
         Далее расчет критерия для фрамуг
 *******************************************************************/
-    if (getTempVent(gh->idx))
-        creg.Y = getTempVent(gh->idx)-gh->hot->AllTask.DoTVent;
+    if (getTempVent(gh, gh->idx))
+        creg.Y = getTempVent(gh, gh->idx)-gh->hot->AllTask.DoTVent;
     else creg.Y = 0;
 
     gh->hot->NextTCalc.PCorrectionVent=((int)((((long)(creg.Y))*((long)gh->gh_ctrl->f_PFactor))/100));
@@ -879,48 +884,51 @@ void ClearAllAlarms(void)
 
 void SetAlarm(void)
 {
-    char fnTepl;
-    for (fnTepl = 0;fnTepl<_GD.Control.ConfSTepl;fnTepl++)
-        write_output_bit(fnTepl,cHSmAlarm,1,0);
-    for (fnTepl = 0;fnTepl<_GD.Control.ConfSTepl;fnTepl++)
+    for (int gh_idx = 0;gh_idx<_GD.Control.ConfSTepl;gh_idx++)
+        write_output_bit(gh_idx,cHSmAlarm,1,0);
+
+    for (int gh_idx = 0;gh_idx<_GD.Control.ConfSTepl;gh_idx++)
     {
-        SetPointersOnTepl(fnTepl);
-        _GDP.TControl_Tepl->bAlarm = 0;
-        if ((YesBit(_GDP.Hot_Tepl->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
+        gh_t gh = make_gh_ctx(gh_idx);
+
+        gh.tcontrol_tepl->bAlarm = 0;
+        if ((YesBit(gh.hot->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
             //	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-            ||(YesBit(_GDP.Hot_Tepl->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+            ||(YesBit(gh.hot->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
         {
-            write_output_bit(fnTepl,cHSmAlarm,0,0);
-            _GDP.TControl_Tepl->bAlarm = 100;
+            write_output_bit(gh_idx,cHSmAlarm,0,0);
+            gh.tcontrol_tepl->bAlarm = 100;
         }
 
-        if (getTempHeatAlarm(fnTepl)  ==  0)
+        if (getTempHeatAlarm(&gh, gh_idx)  ==  0)
         {
-            write_output_bit(fnTepl,cHSmAlarm,0,0);
-            _GDP.TControl_Tepl->bAlarm = 100;
+            write_output_bit(gh_idx,cHSmAlarm,0,0);
+            gh.tcontrol_tepl->bAlarm = 100;
         }
 
-        if (getTempVentAlarm(fnTepl)  ==  0)
+        if (getTempVentAlarm(&gh, gh_idx)  ==  0)
         {
-            write_output_bit(fnTepl,cHSmAlarm,0,0);
-            _GDP.TControl_Tepl->bAlarm = 100;
+            write_output_bit(gh_idx,cHSmAlarm,0,0);
+            gh.tcontrol_tepl->bAlarm = 100;
         }
 
         for (int i = 0;i<cConfSSens;i++)
         {
-            if (YesBit(_GDP.Hot_Tepl->InTeplSens[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+            if (YesBit(gh.hot->InTeplSens[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
             {
-                write_output_bit(fnTepl,cHSmAlarm,0,0);
-                _GDP.TControl_Tepl->bAlarm = 100;
+                write_output_bit(gh_idx,cHSmAlarm,0,0);
+                gh.tcontrol_tepl->bAlarm = 100;
             }
         }
     }
     for (int i = 0;i<cConfSMetSens;i++)
+    {
         if (YesBit(_GD.Hot.MeteoSensing[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
         {
             write_output_bit(cSmZone1,cHSmAlarm,0,0);
             _GD.TControl.Tepl[cSmZone1].bAlarm = 100;
         }
+    }
 
 }
 
@@ -1598,8 +1606,6 @@ void control_pre(void)
 
     for (int gh_idx = 0;gh_idx<cSTepl;gh_idx++)
     {
-        SetPointersOnTepl(gh_idx);
-
         gh_t ctx = make_gh_ctx(gh_idx);
 
         SetSensOnMech(&ctx);
@@ -1628,7 +1634,6 @@ void control_post(int second, bool is_transfer_in_progress)
 {
     for (int gh_idx = 0;gh_idx<cSTepl;gh_idx++)
     {
-        SetPointersOnTepl(gh_idx);
         gh_t gh = make_gh_ctx(gh_idx);
         SetMixValvePosition(&gh);
     }
@@ -1665,7 +1670,6 @@ void control_post(int second, bool is_transfer_in_progress)
                 creg.Z = _GD.Hot.Time;
                 loadSettings(gh_idx, shadow);
                 TaskTimer(0,ttTepl,gh_idx);
-                SetPointersOnTepl(gh_idx);
 
                 gh_t ctx = make_gh_ctx(gh_idx);
 

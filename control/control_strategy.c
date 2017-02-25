@@ -55,7 +55,9 @@ void __sMinMaxWater(const contour_t *ctr)
 //------------------------------------------------------------------------
 //ќграничиваем минимум
 //------------------------------------------------------------------------
-    ctr->hot->MinCalc = MAX(ctr->hot->MinCalc, cMinAllKontur);
+    ///минимум всех контуров выше задани€ на 5 градусов
+    int min_all_contour = ctr->link.hot->AllTask.DoTHeat/10 + 20;
+    ctr->hot->MinCalc = MAX(ctr->hot->MinCalc, min_all_contour);
 //------------------------------------------------------------------------
 //¬ виду особенностей работы 5 контура дл€ него отдельные установки
 //------------------------------------------------------------------------
@@ -682,7 +684,7 @@ void __WorkableKontur(const contour_t *ctr)
             && (gh->hot->AllTask.NextTAir
                 - _GD.TControl.MeteoSensing[cSmOutTSens]
                 > _GD.TuneClimate.f_DeltaOut)
-            || ((getTempHeat(ctr->link.idx) - gh->hot->AllTask.DoTHeat) < 0)
+            || ((getTempHeat(gh, gh->idx) - gh->hot->AllTask.DoTHeat) < 0)
             && (((gh->gh_ctrl->c_PFactor % 100) < 90)
                 || (gh->tcontrol_tepl->StopVentI > 0)))
         {
@@ -968,10 +970,10 @@ void __sLastCheckWindow(const gh_t *gh)
 
 
     creg.Y = 0;
-    if (! getTempVent(gh->idx))
+    if (! getTempVent(gh, gh->idx))
         creg.Y = 0;
     else
-        creg.Y = getTempVent(gh->idx) - gh->hot->AllTask.DoTVent;
+        creg.Y = getTempVent(gh, gh->idx) - gh->hot->AllTask.DoTVent;
 
     if (((DoUn  ==  MaxUn) && (DoOn  ==  MaxOn) && (creg.Y > 0))
         || ((DoUn  ==  MinUn) && (DoOn  ==  MinOn) && (creg.Y < 0)))
@@ -1157,7 +1159,6 @@ void __sCalcKonturs(void)
     for (int gh_idx = 0; gh_idx < cSTepl; gh_idx++)
     {
         gh_t gh = make_gh_ctx(gh_idx);
-        SetPointersOnTepl(gh_idx);
 
         gh.tcontrol_tepl->nMaxKontur = -1;
         gh.tcontrol_tepl->NOwnKonturs = 0;
@@ -1252,7 +1253,6 @@ void __sCalcKonturs(void)
     for (gh_idx = 0; gh_idx < cSTepl; gh_idx++)
     {
         gh_t gh = make_gh_ctx(gh_idx);
-        SetPointersOnTepl(gh_idx);
 
 //		if (!pGD_TControl_Tepl->qMaxOwnKonturs)
 //			pGD_TControl_Tepl->StopI=2;
@@ -1313,8 +1313,6 @@ void __sCalcKonturs(void)
         {
             gh_t gh = make_gh_ctx(gh_idx);
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-
-            SetPointersOnTepl(gh_idx);
             const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             gh.tcontrol_tepl->RealPower = 0;
@@ -1335,8 +1333,6 @@ void __sCalcKonturs(void)
         {
             gh_t gh = make_gh_ctx(gh_idx);
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-
-            SetPointersOnTepl(gh_idx);
             const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             if (YesBit(ctr.hot->RCS, cbNoWorkKontur))
@@ -1368,7 +1364,6 @@ void __sCalcKonturs(void)
     for (gh_idx = 0; gh_idx < cSTepl; gh_idx++)
     {
         gh_t gh = make_gh_ctx(gh_idx);
-        SetPointersOnTepl(gh_idx);
 
         for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
         {
@@ -1434,7 +1429,6 @@ void __sMechWindows(void)
     {
         gh_t gh = make_gh_ctx(gh_idx);
 
-        SetPointersOnTepl(gh_idx);
         for (int i = cSWaterKontur; i < cSWaterKontur + 2; i++)
         {
             #warning "there may be out of bounds access, no ?"

@@ -9,27 +9,27 @@
 
 extern uchar       bNight;
 
-void CheckModeScreen(const gh_t *me, char typScr,char chType)
+void CheckModeScreen(const gh_t *gh, char typScr,char chType)
 {
 //Оптимицация на typScr
     char ttyp,bZad;
     eScreen *pScr;
     int SunZClose;
-    pScr= &me->tcontrol_tepl->Screen[typScr];
+    pScr= &gh->tcontrol_tepl->Screen[typScr];
     ttyp=typScr;
     if (ttyp>cHSmScrV_S1) ttyp=cHSmScrV_S1;
     bZad=0;
     if (pScr->PauseMode) bZad=1;
 
-    if ((me->hot->AllTask.Screen[ttyp]<2)&&(!bZad))
+    if ((gh->hot->AllTask.Screen[ttyp]<2)&&(!bZad))
     {
-        pScr->Mode=me->hot->AllTask.Screen[ttyp];
+        pScr->Mode=gh->hot->AllTask.Screen[ttyp];
         bZad=1;
     }
 
 #warning CHECK THIS
     // NEW
-    creg.Y=getTempHeat(me->idx)-me->hot->AllTask.DoTHeat;
+    creg.Y=getTempHeat(gh, gh->idx)-gh->hot->AllTask.DoTHeat;
     CorrectionRule(_GD.TuneClimate.sc_dTStart,_GD.TuneClimate.sc_dTEnd,_GD.TuneClimate.sc_dTSunFactor,0);
     SunZClose=_GD.TuneClimate.sc_ZSRClose-creg.Z;
     creg.Z=_GD.TControl.MeteoSensing[cSmOutTSens];
@@ -52,7 +52,7 @@ void CheckModeScreen(const gh_t *me, char typScr,char chType)
                 if (!bNight) pScr->Mode=0;
 
 #warning CHECK THIS
-            if (YesBit(me->hot->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
+            if (YesBit(gh->hot->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
                 pScr->Mode=1;
 
 
@@ -62,23 +62,23 @@ void CheckModeScreen(const gh_t *me, char typScr,char chType)
         }
         if (pScr->Mode!=pScr->OldMode)
         {
-            ClrBit(me->tcontrol_tepl->RCS1,cbSCCorrection);
+            ClrBit(gh->tcontrol_tepl->RCS1,cbSCCorrection);
             pScr->PauseMode=_GD.TuneClimate.sc_PauseMode;
             if (!pScr->Mode)
             {
                 //pGD_TControl_Tepl->TempStart5=pGD_TControl_Tepl->Kontur[cSmKontur5].DoT;
-                me->tcontrol_tepl->ScrExtraHeat=_GD.TuneClimate.c_5ExtrHeat;
+                gh->tcontrol_tepl->ScrExtraHeat=_GD.TuneClimate.c_5ExtrHeat;
             }
         }
         pScr->OldMode=pScr->Mode;
-        me->tcontrol_tepl->ScrExtraHeat--;
-        if (me->tcontrol_tepl->ScrExtraHeat>0) return;
-        me->tcontrol_tepl->ScrExtraHeat=0;
-        creg.Y=me->hot->InTeplSens[cSmGlassSens].Value;
+        gh->tcontrol_tepl->ScrExtraHeat--;
+        if (gh->tcontrol_tepl->ScrExtraHeat>0) return;
+        gh->tcontrol_tepl->ScrExtraHeat=0;
+        creg.Y=gh->hot->InTeplSens[cSmGlassSens].Value;
         CorrectionRule(_GD.TuneClimate.sc_GlassStart,_GD.TuneClimate.sc_GlassEnd,_GD.TuneClimate.sc_GlassMax,0);
-        if ((YesBit(me->hot->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) creg.Z=_GD.TuneClimate.sc_GlassMax;
+        if ((YesBit(gh->hot->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens))) creg.Z=_GD.TuneClimate.sc_GlassMax;
         {
-            pScr->Value=pScr->Mode * (me->gh_ctrl->sc_TMaxOpen-(_GD.TuneClimate.sc_GlassMax-creg.Z));     // итоговое значение открытия экрана
+            pScr->Value=pScr->Mode * (gh->gh_ctrl->sc_TMaxOpen-(_GD.TuneClimate.sc_GlassMax-creg.Z));     // итоговое значение открытия экрана
             //if (pScr->Mode == 0) // если экран закрывается
             //	pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
         }
@@ -95,7 +95,7 @@ void CheckModeScreen(const gh_t *me, char typScr,char chType)
         {
             if (creg.Z<_GD.TuneClimate.sc_ZOutClose)
                 pScr->Mode=1;
-            if ((!me->tcontrol_tepl->Screen[0].Mode)||(creg.Z>_GD.TuneClimate.sc_ZOutClose+200)||(!_GD.TuneClimate.sc_ZOutClose))
+            if ((!gh->tcontrol_tepl->Screen[0].Mode)||(creg.Z>_GD.TuneClimate.sc_ZOutClose+200)||(!_GD.TuneClimate.sc_ZOutClose))
                 pScr->Mode=0;
             if ((_GD.TuneClimate.sc_ZSRClose)&&(_GD.Hot.MidlSR>SunZClose))
                 pScr->Mode=1;
@@ -103,7 +103,7 @@ void CheckModeScreen(const gh_t *me, char typScr,char chType)
         if (pScr->Mode!=pScr->OldMode)
             pScr->PauseMode=_GD.TuneClimate.sc_PauseMode;
         pScr->OldMode=pScr->Mode;
-        pScr->Value=pScr->Mode * me->gh_ctrl->sc_ZMaxOpen;
+        pScr->Value=pScr->Mode * gh->gh_ctrl->sc_ZMaxOpen;
         break;
     default:
         if (!bZad)
@@ -251,25 +251,25 @@ void LaunchVent(const gh_t *me)
     me->tcontrol_tepl->PauseVent = _GD.TuneClimate.vt_WorkTime;
 }
 
-void LaunchCalorifer(const gh_t *me)
+void LaunchCalorifer(const gh_t *gh)
 {
 //		if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
 
 #warning CHECK THIS
     // NEW
-    if (getTempHeat(me->idx)<(me->hot->AllTask.DoTHeat - _GD.TuneClimate.vt_StartCalorifer))
-        SetBit(me->tcontrol_tepl->Calorifer, 0x01);
+    if (getTempHeat(gh, gh->idx)<(gh->hot->AllTask.DoTHeat - _GD.TuneClimate.vt_StartCalorifer))
+        SetBit(gh->tcontrol_tepl->Calorifer, 0x01);
 
-    if ((getTempHeat(me->idx)>(me->hot->AllTask.DoTHeat +_GD.TuneClimate.vt_EndCalorifer))
+    if ((getTempHeat(gh, gh->idx)>(gh->hot->AllTask.DoTHeat +_GD.TuneClimate.vt_EndCalorifer))
         ||(!_GD.TuneClimate.vt_StartCalorifer))
     {
-        ClrBit(me->tcontrol_tepl->Calorifer,0x01);
+        ClrBit(gh->tcontrol_tepl->Calorifer,0x01);
     }
 //		pGD_TControl_Tepl->Calorifer=0;
-    if ((me->tctrl->MeteoSensing[cSmOutTSens] > me->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
-        SetBit(me->tcontrol_tepl->Calorifer,0x02);
-    if (((me->tctrl->MeteoSensing[cSmOutTSens] < me->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
-        ClrBit(me->tcontrol_tepl->Calorifer,0x02);
+    if ((gh->tctrl->MeteoSensing[cSmOutTSens] > gh->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
+        SetBit(gh->tcontrol_tepl->Calorifer,0x02);
+    if (((gh->tctrl->MeteoSensing[cSmOutTSens] < gh->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
+        ClrBit(gh->tcontrol_tepl->Calorifer,0x02);
 }
 
 void SetReg(const gh_t *me, char fHSmReg, int DoValue, int MeasValue)
