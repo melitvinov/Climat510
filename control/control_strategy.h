@@ -6,6 +6,6 @@ int __sCalcTempKonturs(const gh_t *gh);
 void __sCalcKonturs(void);
 void __sMechWindows(void);
 void __sMechScreen(void);
-void DecPumpPause(const gh_t *me);
+void DecPumpPause(const gh_t *gh);
 
 #endif

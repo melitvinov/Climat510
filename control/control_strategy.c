@@ -1475,23 +1475,23 @@ void __sMechWindows(void)
 }
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 
-void DecPumpPause(const gh_t *me)
+void DecPumpPause(const gh_t *gh)
 {
     for (int i = 0; i < cSWaterKontur; i++)
     {
-        if ((me->hand[cHSmMixVal + i].Position < 100)
-            && (me->hand[cHSmMixVal + i].Position > 0))
+        if ((gh->hand[cHSmMixVal + i].Position < 100)
+            && (gh->hand[cHSmMixVal + i].Position > 0))
         {
-            me->tcontrol_tepl->Kontur[i].PumpPause = cPausePump;
-            if (me->tcontrol_tepl->Kontur[i].DoT > 4000)
-                me->tcontrol_tepl->Kontur[i].PumpPause += cPausePump;
+            gh->tcontrol_tepl->Kontur[i].PumpPause = cPausePump;
+            if (gh->tcontrol_tepl->Kontur[i].DoT > 4000)
+                gh->tcontrol_tepl->Kontur[i].PumpPause += cPausePump;
         }
-        if (me->tcontrol_tepl->Kontur[i].PumpPause > 0)
+        if (gh->tcontrol_tepl->Kontur[i].PumpPause > 0)
         {
-            me->tcontrol_tepl->Kontur[i].PumpPause--;
+            gh->tcontrol_tepl->Kontur[i].PumpPause--;
         }
         else
-            me->tcontrol_tepl->Kontur[i].PumpPause = 0;
+            gh->tcontrol_tepl->Kontur[i].PumpPause = 0;
     }
 
 }

@@ -788,27 +788,27 @@ void SetMixValvePosition(const gh_t *gh)
     }
 }
 
-void DoPumps(const gh_t *me)
+void DoPumps(const gh_t *gh)
 {
     for (int i = 0; i < cSWaterKontur; i++)
     {
         #warning "WTF: are these are pumps ?"
-        if (! YesBit(me->hand[cHSmPump + i].RCS, cbManMech))
-            me->hand[cHSmPump + i].Position = me->tcontrol_tepl->Kontur[i].PumpStatus;
+        if (! YesBit(gh->hand[cHSmPump + i].RCS, cbManMech))
+            gh->hand[cHSmPump + i].Position = gh->tcontrol_tepl->Kontur[i].PumpStatus;
     }
 }
 
 //#warning вкл воздушного обогревател€ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void DoVentCalorifer(const gh_t *me)
+void DoVentCalorifer(const gh_t *gh)
 {
 
 //	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
 //		(*(pGD_Hot_Hand+cHSmHeat)).Position = pGD_TControl_Tepl->Calorifer;
 //
 //
-    if (! YesBit( me->hand[cHSmVent].RCS, cbManMech))   // было так
+    if (! YesBit( gh->hand[cHSmVent].RCS, cbManMech))   // было так
     {
-        me->hand[cHSmVent].Position = me->tcontrol_tepl->Vent + (me->tcontrol_tepl->OutFan<<1);
+        gh->hand[cHSmVent].Position = gh->tcontrol_tepl->Vent + (gh->tcontrol_tepl->OutFan<<1);
     }
 //	if (!(YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,(/*cbNoMech+*/cbManMech))))
 //	{
@@ -819,11 +819,11 @@ void DoVentCalorifer(const gh_t *me)
 
 
 //#warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void DoLights(const gh_t *me)
+void DoLights(const gh_t *gh)
 {
-    if (YesBit( me->hand[cHSmLight].RCS, cbManMech)) return;
+    if (YesBit( gh->hand[cHSmLight].RCS, cbManMech)) return;
 //	pGD_Hot_Hand[cHSmLight].Position = 0;
-    me->hand[cHSmLight].Position = me->tcontrol_tepl->LightValue;
+    gh->hand[cHSmLight].Position = gh->tcontrol_tepl->LightValue;
 }
 
 /*void	DoPoisen(void)
@@ -834,14 +834,14 @@ void DoLights(const gh_t *me)
             pGD_Hot_Hand[cHSmPoise].Position = 1;
 } */
 
-void SetSensOnMech(const gh_t *me)
+void SetSensOnMech(const gh_t *gh)
 {
     for (int i = 0;i<cSRegCtrl;i++)
-        me->tcontrol_tepl->MechBusy[i].Sens = 0;
+        gh->tcontrol_tepl->MechBusy[i].Sens = 0;
 
-    me->tcontrol_tepl->MechBusy[cHSmWinN].Sens=&me->hot->InTeplSens[cSmWinNSens];
-    me->tcontrol_tepl->MechBusy[cHSmWinS].Sens=&me->hot->InTeplSens[cSmWinSSens];
-    me->tcontrol_tepl->MechBusy[cHSmScrTH].Sens=&me->hot->InTeplSens[cSmScreenSens];
+    gh->tcontrol_tepl->MechBusy[cHSmWinN].Sens=&gh->hot->InTeplSens[cSmWinNSens];
+    gh->tcontrol_tepl->MechBusy[cHSmWinS].Sens=&gh->hot->InTeplSens[cSmWinSSens];
+    gh->tcontrol_tepl->MechBusy[cHSmScrTH].Sens=&gh->hot->InTeplSens[cSmScreenSens];
 /*	if ((YesBit((*(pGD_Hot_Hand+cHSmWinS)).RCS,(cbManMech))))
     {
     if 	((pGD_TControl_Tepl->FramUpdate[1])&&(abs((char)(pGD_Hot_Tepl->InTeplSens[cSmWinSSens].Value)-(*(pGD_Hot_Hand+cHSmWinS)).Position)>GD.TuneClimate.f_MaxAngle))
@@ -932,46 +932,46 @@ void SetAlarm(void)
 
 }
 
-void SetDiskr(const gh_t *me)
+void SetDiskr(const gh_t *gh)
 {
     int nLight;
     char tMaxLight;
 
-    if (! YesBit(me->hand[cHSmAHUSpeed1].RCS, cbManMech))
-        me->hand[cHSmAHUSpeed1].Position = me->hot->Kontur[cSmKontur4].Do/10;
-    if (! YesBit(me->hand[cHSmAHUSpeed2].RCS, cbManMech))
-        me->hand[cHSmAHUSpeed2].Position = me->hot->Kontur[cSmKontur4].Do/10;
+    if (! YesBit(gh->hand[cHSmAHUSpeed1].RCS, cbManMech))
+        gh->hand[cHSmAHUSpeed1].Position = gh->hot->Kontur[cSmKontur4].Do/10;
+    if (! YesBit(gh->hand[cHSmAHUSpeed2].RCS, cbManMech))
+        gh->hand[cHSmAHUSpeed2].Position = gh->hot->Kontur[cSmKontur4].Do/10;
 
     for (int i = cHSmPump;i<cHSmRegs;i++)
     {
         //if ((ByteX == cHSmSIOVals)||(ByteX == cHSmLight)) continue;
         if ((i == cHSmSIOPump)||(i == cHSmSIOVals)||(i == cHSmLight)) continue;
 
-        write_output_bit(me->idx, i, 1, 0);
+        write_output_bit(gh->idx, i, 1, 0);
 
-        if (YesBit(me->hand[i].Position,0x01))
-            write_output_bit(me->idx, i, 0,0);
-        if (((i == cHSmHeat)||(i == cHSmVent)) && YesBit(me->hand[i].Position,0x02))
-            write_output_bit(me->idx, i, 0,1);
+        if (YesBit(gh->hand[i].Position,0x01))
+            write_output_bit(gh->idx, i, 0,0);
+        if (((i == cHSmHeat)||(i == cHSmVent)) && YesBit(gh->hand[i].Position,0x02))
+            write_output_bit(gh->idx, i, 0,1);
     }
     nLight = 0;
-    if ((uchar) me->hand[cHSmLight].Position > 100)
-        me->hand[cHSmLight].Position = 100;
-    if ((me->hot->AllTask.DoTHeat)||YesBit(me->hand[cHSmLight].RCS,cbManMech))
+    if ((uchar) gh->hand[cHSmLight].Position > 100)
+        gh->hand[cHSmLight].Position = 100;
+    if ((gh->hot->AllTask.DoTHeat)||YesBit(gh->hand[cHSmLight].RCS,cbManMech))
     {
-        nLight=(me->hand[cHSmLight].Position-50)/10+2;
+        nLight=(gh->hand[cHSmLight].Position-50)/10+2;
         if (nLight<1)
             nLight = 1;
     }
     bool is_light_on = 0;
     if (nLight>1)
     {
-        write_output_bit(me->idx, cHSmLight, 0, 0);
+        write_output_bit(gh->idx, cHSmLight, 0, 0);
         is_light_on = 1;
     }
     tMaxLight = 8;
 
-    switch (me->gh_ctrl->sLight)
+    switch (gh->gh_ctrl->sLight)
     {
     case 2:
         if (nLight == 7) nLight = 0x04;
@@ -996,7 +996,7 @@ void SetDiskr(const gh_t *me)
     case 16:
     case 17:
     case 18:
-        tMaxLight = me->gh_ctrl->sLight-10;
+        tMaxLight = gh->gh_ctrl->sLight-10;
         if (ctx.fLightPause>CONTROL_LIGHT_DELAY*8) ctx.fLightPause = CONTROL_LIGHT_DELAY*8;
         if (ctx.fLightPause<0) ctx.fLightPause = 0;
         if (is_light_on)
@@ -1020,7 +1020,7 @@ void SetDiskr(const gh_t *me)
     for (int i = 0;i<tMaxLight;i++)
     {
         if (YesBit(nLight,(0x01<<i)))
-            write_output_bit(me->idx, cHSmLight, 0, i+1);
+            write_output_bit(gh->idx, cHSmLight, 0, i+1);
 
     }
 
@@ -1029,45 +1029,45 @@ void SetDiskr(const gh_t *me)
     if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).Position,0x01))
         __SetBitOutReg(fnTepl,cHSmHeat,0,0);*/
     int i = 1;
-    if (me->gh_ctrl->co_model>=2) i = 2;
+    if (gh->gh_ctrl->co_model>=2) i = 2;
 
-    if (me->tcontrol_tepl->SetupRegs[0].On && me->gh_ctrl->co_model)
-        write_output_bit(me->idx, cHSmCO2, 0, i);
+    if (gh->tcontrol_tepl->SetupRegs[0].On && gh->gh_ctrl->co_model)
+        write_output_bit(gh->idx, cHSmCO2, 0, i);
 
     // насос
     //__SetBitOutReg(fnTepl,cHSmSIOPump,1,0);
-    if (YesBit(me->hand[cHSmSIOPump].Position,0x01))
-        write_output_bit(me->idx, cHSmSIOPump, 0, 0);
+    if (YesBit(gh->hand[cHSmSIOPump].Position,0x01))
+        write_output_bit(gh->idx, cHSmSIOPump, 0, 0);
 
     for (int i = 0;i<4;i++)
     {
         creg.X = 1;
         creg.X<<=i;
-        if (YesBit(me->hand[cHSmSIOVals].Position, creg.X))
-            write_output_bit(me->idx, cHSmSIOVals, 0, i);
+        if (YesBit(gh->hand[cHSmSIOVals].Position, creg.X))
+            write_output_bit(gh->idx, cHSmSIOVals, 0, i);
     }
 
 #ifdef AGAPOVSKIY_DOUBLE_VALVE
-    if (YesBit( me->hand[cHSmSIOVals].Position,0x02))
-        write_output_bit(me->idx, cHSmAHUVals, 0, 0);
+    if (YesBit( gh->hand[cHSmSIOVals].Position,0x02))
+        write_output_bit(gh->idx, cHSmAHUVals, 0, 0);
 #endif
     for (int i = 0;i<5;i++)
     {
         if (_GD.Hot.Regs[i])
-            write_output_bit(me->idx, i+cHSmRegs, 0, 0);
+            write_output_bit(gh->idx, i+cHSmRegs, 0, 0);
     }
 }
 
-static void do_contour_mechanics(const gh_t *me, int mech_idx)
+static void do_contour_mechanics(const gh_t *gh, int mech_idx)
 {
-    eMechanic *mech = &me->hand[mech_idx];
+    eMechanic *mech = &gh->hand[mech_idx];
 
-    const eConstMixVal *ConstMechanic_Mech = &_GD.ConstMechanic[me->idx].ConstMixVal[mech_idx];
+    const eConstMixVal *ConstMechanic_Mech = &_GD.ConstMechanic[gh->idx].ConstMixVal[mech_idx];
 
     char fErr;
 
 //		pGD_Hot_Hand_Kontur = pGD_Hot_Hand+ByteX;
-    eMechBusy *mechbusy=&(me->tcontrol_tepl->MechBusy[mech_idx]);
+    eMechBusy *mechbusy=&(gh->tcontrol_tepl->MechBusy[mech_idx]);
 
     if (mech->Position>100)
         mech->Position = 100;
@@ -1076,7 +1076,7 @@ static void do_contour_mechanics(const gh_t *me, int mech_idx)
 
     if ((mech_idx == cHSmAHUSpeed1))
     {
-        write_output_register(mech->Position, mtRS485, _GD.MechConfig[me->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[me->idx][0].FanData[0]);
+        write_output_register(mech->Position, mtRS485, _GD.MechConfig[gh->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[gh->idx][0].FanData[0]);
         return;
     }
 /*		GD.FanBlock[fnTepl][0].FanData[0].ActualSpeed = fnTepl*5;
@@ -1087,16 +1087,16 @@ static void do_contour_mechanics(const gh_t *me, int mech_idx)
     if ((mech_idx == cHSmAHUSpeed2))
     {
 //			Sound;
-        write_output_register(mech->Position, mtRS485, _GD.MechConfig[me->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[me->idx][1].FanData[0]);
+        write_output_register(mech->Position, mtRS485, _GD.MechConfig[gh->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[gh->idx][1].FanData[0]);
         return;
     }
 
 
-    if ((mech_idx == cHSmCO2)&&(me->gh_ctrl->co_model == 1))
+    if ((mech_idx == cHSmCO2)&&(gh->gh_ctrl->co_model == 1))
         return;
 
-    write_output_bit(me->idx, mech_idx,1,0);
-    write_output_bit(me->idx, mech_idx,1,1);
+    write_output_bit(gh->idx, mech_idx,1,0);
+    write_output_bit(gh->idx, mech_idx,1,1);
 
     ClrBit(mechbusy->RCS,cMSBusyMech);
     int byte_y = 0;
@@ -1198,7 +1198,7 @@ static void do_contour_mechanics(const gh_t *me, int mech_idx)
     if (mechbusy->TimeSetMech>mechbusy->TimeRealMech)
     {
         mechbusy->TimeRealMech++;
-        write_output_bit(me->idx, mech_idx, 0, 1);
+        write_output_bit(gh->idx, mech_idx, 0, 1);
         SetBit(mechbusy->RCS,cMSBusyMech);
         //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
         byte_y++;
@@ -1206,7 +1206,7 @@ static void do_contour_mechanics(const gh_t *me, int mech_idx)
     if (mechbusy->TimeSetMech<mechbusy->TimeRealMech)
     {
         mechbusy->TimeRealMech--;
-        write_output_bit(me->idx, mech_idx, 0, 0);
+        write_output_bit(gh->idx, mech_idx, 0, 0);
         SetBit(mechbusy->RCS,cMSBusyMech);
         //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
         byte_y++;
@@ -1235,11 +1235,11 @@ static void do_contour_mechanics(const gh_t *me, int mech_idx)
     mechbusy->PauseMech = MAX(mechbusy->PauseMech, 0);// MBusy->PauseMech = 0;
 }
 
-void DoMechanics(const gh_t *me)
+void DoMechanics(const gh_t *gh)
 {
     for (int i = cHSmMixVal;i<cHSmPump;i++)
     {
-        do_contour_mechanics(me, i);
+        do_contour_mechanics(gh, i);
     }
 }
 
@@ -1358,24 +1358,24 @@ void SetCO2(void)
 
 
 //#warning light ƒосветка !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void SetLighting(const gh_t *me)
+void SetLighting(const gh_t *gh)
 {
     char bZad;
 
-    if (!(_GD.MechConfig[me->idx].RNum[cHSmLight])) return;  // if hand mode exit
+    if (!(_GD.MechConfig[gh->idx].RNum[cHSmLight])) return;  // if hand mode exit
     creg.Z = 0;
 
 //	if(SameSign(IntY,IntZ)) pGD_TControl_Tepl->LightExtraPause = 0;
 
-    me->tcontrol_tepl->LightPauseMode--;
+    gh->tcontrol_tepl->LightPauseMode--;
 
-    if (    (me->tcontrol_tepl->LightPauseMode < 0)
-         || (me->tcontrol_tepl->LightPauseMode > _GD.TuneClimate.l_PauseMode))
-        me->tcontrol_tepl->LightPauseMode = 0;
+    if (    (gh->tcontrol_tepl->LightPauseMode < 0)
+         || (gh->tcontrol_tepl->LightPauseMode > _GD.TuneClimate.l_PauseMode))
+        gh->tcontrol_tepl->LightPauseMode = 0;
 
     bZad = 0;     // if bZab = 0 calc sun sensor
 
-    if (me->tcontrol_tepl->LightPauseMode)
+    if (gh->tcontrol_tepl->LightPauseMode)
         bZad = 1;  // if bZad = 1 don't calc sun senasor
 
 // old
@@ -1385,124 +1385,124 @@ void SetLighting(const gh_t *me)
 //		bZad = 1;
 //	}
 
-    if (me->hot->AllTask.ModeLight < 2)
+    if (gh->hot->AllTask.ModeLight < 2)
     {
-        me->tcontrol_tepl->LightMode = me->hot->AllTask.ModeLight * me->hot->AllTask.Light;
+        gh->tcontrol_tepl->LightMode = gh->hot->AllTask.ModeLight * gh->hot->AllTask.Light;
         bZad = 1;
     }
 
     if (!bZad)
     {
         if (_GD.Hot.Zax-60>_GD.Hot.Time)
-            me->tcontrol_tepl->LightMode = 0;
+            gh->tcontrol_tepl->LightMode = 0;
 
         // XXX: using greenhouse 0 ?
         if (_GD.TControl.Tepl[0].SensHalfHourAgo > _GD.TuneClimate.l_SunOn50)  // sun > 50% then off light
-            me->tcontrol_tepl->LightMode = 0;
+            gh->tcontrol_tepl->LightMode = 0;
 
         if (_GD.TControl.Tepl[0].SensHalfHourAgo < _GD.TuneClimate.l_SunOn50)
         {
 //			pGD_TControl_Tepl->LightMode = 50;
             creg.Y = _GD.Hot.MidlSR;
             CorrectionRule(_GD.TuneClimate.l_SunOn100,_GD.TuneClimate.l_SunOn50,50,0);
-            me->tcontrol_tepl->LightMode = 100-creg.Z;
+            gh->tcontrol_tepl->LightMode = 100-creg.Z;
         }
 
 //		if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn100)
 //			pGD_TControl_Tepl->LightMode = 100;
     }
-    if (me->tcontrol_tepl->LightMode != me->tcontrol_tepl->OldLightMode)
+    if (gh->tcontrol_tepl->LightMode != gh->tcontrol_tepl->OldLightMode)
     {
-        if (! (((int)me->tcontrol_tepl->LightMode)*((int)me->tcontrol_tepl->OldLightMode)))
+        if (! (((int)gh->tcontrol_tepl->LightMode)*((int)gh->tcontrol_tepl->OldLightMode)))
         {
-            me->tcontrol_tepl->DifLightMode = me->tcontrol_tepl->LightMode - me->tcontrol_tepl->OldLightMode;
-            me->tcontrol_tepl->LightPauseMode = _GD.TuneClimate.l_PauseMode;
+            gh->tcontrol_tepl->DifLightMode = gh->tcontrol_tepl->LightMode - gh->tcontrol_tepl->OldLightMode;
+            gh->tcontrol_tepl->LightPauseMode = _GD.TuneClimate.l_PauseMode;
 //			pGD_TControl_Tepl->LightExtraPause = o_DeltaTime;
         }
         else
         {
-            me->tcontrol_tepl->LightPauseMode = _GD.TuneClimate.l_SoftPauseMode;
+            gh->tcontrol_tepl->LightPauseMode = _GD.TuneClimate.l_SoftPauseMode;
         }
     }
-    me->tcontrol_tepl->OldLightMode = me->tcontrol_tepl->LightMode;
+    gh->tcontrol_tepl->OldLightMode = gh->tcontrol_tepl->LightMode;
 
 //	pGD_TControl_Tepl->LightExtraPause--;
 //	if (pGD_TControl_Tepl->LightExtraPause>0) return;
 //	pGD_TControl_Tepl->LightExtraPause = 0;
 
     // new
-    if (me->hot->AllTask.ModeLight  ==  2)           // авто досветка
+    if (gh->hot->AllTask.ModeLight  ==  2)           // авто досветка
     {
-        if (me->hot->AllTask.Light < me->tcontrol_tepl->LightMode)
-            me->tcontrol_tepl->LightValue = me->hot->AllTask.Light;
+        if (gh->hot->AllTask.Light < gh->tcontrol_tepl->LightMode)
+            gh->tcontrol_tepl->LightValue = gh->hot->AllTask.Light;
         else
-            me->tcontrol_tepl->LightValue = me->tcontrol_tepl->LightMode;
+            gh->tcontrol_tepl->LightValue = gh->tcontrol_tepl->LightMode;
     }
     else
-        me->tcontrol_tepl->LightValue = me->tcontrol_tepl->LightMode;
+        gh->tcontrol_tepl->LightValue = gh->tcontrol_tepl->LightMode;
     // new
 
-    if (me->tcontrol_tepl->LightValue > 100)
-        me->tcontrol_tepl->LightValue = 100;
+    if (gh->tcontrol_tepl->LightValue > 100)
+        gh->tcontrol_tepl->LightValue = 100;
 
     //old
     //pGD_TControl_Tepl->LightValue = pGD_TControl_Tepl->LightMode;		// значение досветки
 
 }
 
-void SetTepl(const gh_t *me)
+void SetTepl(const gh_t *gh)
 {
 /***********************************************************************
 --------------¬ычисление изменени€ показаний датчика температуры-------
 ************************************************************************/
 
 /***********************************************************************/
-    if (! me->hot->AllTask.NextTAir)
-        me->hot->RCS |= cbNoTaskForTepl;
+    if (! gh->hot->AllTask.NextTAir)
+        gh->hot->RCS |= cbNoTaskForTepl;
 
 //	if(!pGD_Hot_Tepl->InTeplSens[cSmTSens].Value)
 //		SetBit(pGD_Hot_Tepl->RCS,cbNoSensingTemp);
 // NEW
-    if (! me->hot->InTeplSens[cSmTSens1].Value)
-        me->hot->RCS |= cbNoSensingTemp;
-    if (! me->hot->InTeplSens[cSmTSens2].Value)
-        me->hot->RCS |= cbNoSensingTemp;
-    if (! me->hot->InTeplSens[cSmTSens3].Value)
-        me->hot->RCS |= cbNoSensingTemp;
-    if (! me->hot->InTeplSens[cSmTSens4].Value)
-        me->hot->RCS |= cbNoSensingTemp;
+    if (! gh->hot->InTeplSens[cSmTSens1].Value)
+        gh->hot->RCS |= cbNoSensingTemp;
+    if (! gh->hot->InTeplSens[cSmTSens2].Value)
+        gh->hot->RCS |= cbNoSensingTemp;
+    if (! gh->hot->InTeplSens[cSmTSens3].Value)
+        gh->hot->RCS |= cbNoSensingTemp;
+    if (! gh->hot->InTeplSens[cSmTSens4].Value)
+        gh->hot->RCS |= cbNoSensingTemp;
 
 //	if(!pGD_Hot_Tepl->RCS)
     {
-        AllTaskAndCorrection(me);
-        LaunchCalorifer(me);
+        AllTaskAndCorrection(gh);
+        LaunchCalorifer(gh);
 
-        __cNextTCalc(me);
+        __cNextTCalc(gh);
 
-        DecPumpPause(me);
+        DecPumpPause(gh);
 
         //SetUpSiod(fnTepl);
 
 
-        InitScreen(me, cTermHorzScr);
-        InitScreen(me, cSunHorzScr);
-        InitScreen(me, cTermVertScr1);
-        InitScreen(me, cTermVertScr2);
-        InitScreen(me, cTermVertScr3);
-        InitScreen(me, cTermVertScr4);
+        InitScreen(gh, cTermHorzScr);
+        InitScreen(gh, cSunHorzScr);
+        InitScreen(gh, cTermVertScr1);
+        InitScreen(gh, cTermVertScr2);
+        InitScreen(gh, cTermVertScr3);
+        InitScreen(gh, cTermVertScr4);
 
-        SetReg(me, cHSmCO2, me->hot->AllTask.DoCO2, me->hot->InTeplSens[cSmCOSens].Value);
+        SetReg(gh, cHSmCO2, gh->hot->AllTask.DoCO2, gh->hot->InTeplSens[cSmCOSens].Value);
 
-        me->hot->OtherCalc.MeasDifPress = _GD.TControl.MeteoSensing[cSmPresureSens]-_GD.TControl.MeteoSensing[cSmPresureSens+1];
+        gh->hot->OtherCalc.MeasDifPress = _GD.TControl.MeteoSensing[cSmPresureSens]-_GD.TControl.MeteoSensing[cSmPresureSens+1];
 
-        if (! me->hot->OtherCalc.MeasDifPress)
-            me->hot->OtherCalc.MeasDifPress = 1;
-        if ((! me->tctrl->MeteoSensing[cSmPresureSens]) || (! me->tctrl->MeteoSensing[cSmPresureSens+1]))
-            me->hot->OtherCalc.MeasDifPress = 0;
+        if (! gh->hot->OtherCalc.MeasDifPress)
+            gh->hot->OtherCalc.MeasDifPress = 1;
+        if ((! gh->tctrl->MeteoSensing[cSmPresureSens]) || (! gh->tctrl->MeteoSensing[cSmPresureSens+1]))
+            gh->hot->OtherCalc.MeasDifPress = 0;
 
-        SetReg(me, cHSmPressReg, me->hot->AllTask.DoPressure, me->hot->OtherCalc.MeasDifPress);
-        LaunchVent(me);
-        SetLighting(me);
+        SetReg(gh, cHSmPressReg, gh->hot->AllTask.DoPressure, gh->hot->OtherCalc.MeasDifPress);
+        LaunchVent(gh);
+        SetLighting(gh);
         SetCO2();               // CO2
     }
 }

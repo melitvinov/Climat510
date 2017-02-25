@@ -164,65 +164,65 @@ void SetUpSiod(const gh_t *gh)
     gh->tcontrol_tepl->CurVal=0;
 }
 
-void DoSiod(const gh_t *me)
+void DoSiod(const gh_t *gh)
 {
     char NSIO;
 
     //if (!(YesBit((*(pGD_Hot_Hand+cHSmSIOPump)).RCS,cbManMech))) (*(pGD_Hot_Hand+cHSmSIOPump)).Position=0;
     //else return;
 
-    if (! YesBit(me->hand[cHSmSIOVals].RCS,cbManMech))
-        me->hand[cHSmSIOVals].Position=0;
+    if (! YesBit(gh->hand[cHSmSIOVals].RCS,cbManMech))
+        gh->hand[cHSmSIOVals].Position=0;
     else
         return;
 
-    NSIO = me->gh_ctrl->sio_SVal;
+    NSIO = gh->gh_ctrl->sio_SVal;
     if (NSIO > cNumValSiodMax)
         NSIO = cNumValSiodMax;
 
 
-    ctx.fnSIOfaza[me->idx] = me->tcontrol_tepl->FazaSiod;  // out
+    ctx.fnSIOfaza[gh->idx] = gh->tcontrol_tepl->FazaSiod;  // out
 
-    switch (me->tcontrol_tepl->FazaSiod)
+    switch (gh->tcontrol_tepl->FazaSiod)
     {
     case cSIOFazaVal:
         creg.X=1;
-        creg.X<<=(me->tcontrol_tepl->CurVal%4);
+        creg.X<<=(gh->tcontrol_tepl->CurVal%4);
 
         //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
 
-        SetBit(me->hand[cHSmSIOVals].Position, creg.X);
-        if (!me->tcontrol_tepl->TPauseSIO)  me->tcontrol_tepl->TPauseSIO = me->hot->AllTask.SIO;
+        SetBit(gh->hand[cHSmSIOVals].Position, creg.X);
+        if (!gh->tcontrol_tepl->TPauseSIO)  gh->tcontrol_tepl->TPauseSIO = gh->hot->AllTask.SIO;
         #warning "falling thru. is it ok ?"
     case cSIOFazaPause:
-        if (!me->tcontrol_tepl->TPauseSIO)
+        if (!gh->tcontrol_tepl->TPauseSIO)
         {
-            me->tcontrol_tepl->TPauseSIO=sio_ValPause;
-            me->tcontrol_tepl->CurVal++;
+            gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
+            gh->tcontrol_tepl->CurVal++;
 
-            ctx.fnSIOvelvOut[me->idx] = me->tcontrol_tepl->CurVal;           // out
+            ctx.fnSIOvelvOut[gh->idx] = gh->tcontrol_tepl->CurVal;           // out
         }
     case cSIOFazaPump:
-        me->hand[cHSmSIOPump].Position = 1;
-        if (!me->tcontrol_tepl->TPauseSIO)  me->tcontrol_tepl->TPauseSIO=sio_ValPause;
+        gh->hand[cHSmSIOPump].Position = 1;
+        if (!gh->tcontrol_tepl->TPauseSIO)  gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
 
-        ctx.fnSIOpumpOut[me->idx] = me->tcontrol_tepl->TPauseSIO;            // out
+        ctx.fnSIOpumpOut[gh->idx] = gh->tcontrol_tepl->TPauseSIO;            // out
 
         break;
 
     case cSIOFazaEnd:
-        me->tcontrol_tepl->FazaSiod=0;
-        me->hand[cHSmSIOPump].Position = 0;       // new
+        gh->tcontrol_tepl->FazaSiod=0;
+        gh->hand[cHSmSIOPump].Position = 0;       // new
         return;
 
     default:
         return;
     }
-    if (--me->tcontrol_tepl->TPauseSIO)  return;
+    if (--gh->tcontrol_tepl->TPauseSIO)  return;
 
-    if ((me->tcontrol_tepl->FazaSiod == cSIOFazaPause)&&(me->tcontrol_tepl->CurVal<NSIO))
-        me->tcontrol_tepl->FazaSiod=cSIOFazaVal;
+    if ((gh->tcontrol_tepl->FazaSiod == cSIOFazaPause)&&(gh->tcontrol_tepl->CurVal<NSIO))
+        gh->tcontrol_tepl->FazaSiod=cSIOFazaVal;
     else
-        me->tcontrol_tepl->FazaSiod++;
+        gh->tcontrol_tepl->FazaSiod++;
 
 }
