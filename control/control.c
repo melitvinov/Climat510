@@ -37,8 +37,6 @@ typedef struct
     int TecPerRas;
 } control_ctx_t;
 
-// XXX: these 3 'registers' are used in control wide and wild
-control_regs_t creg;
 
 int8_t  bWaterReset[16];
 
@@ -104,17 +102,15 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
 /*----------------------------------------------------
                 Ќаходим нужную программу
 ------------------------------------------------------*/
-int JumpNext(int Now,int Next,char Check, char Mull)
+int JumpNext(int Now,int Next,char Check, char Mull, int creg_x, int creg_y)
 {
-    long int var;
     if ((Check)&&((!Next)||(!Now)))
         return Now*Mull;
-    creg.Z = Next-Now;
-    var = creg.Z;
-    var*=creg.X;
-    if (!creg.Y)
+    int var = Next-Now;
+    var*=creg_x;
+    if (!creg_y)
         return Now*Mull;
-    var/=creg.Y;
+    var/=creg_y;
     return(Now+var)*Mull;
 }
 
@@ -132,8 +128,8 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     hot->AllTask.TAir = 0;
 
 
-    creg.Z= _GD.Hot.Time + fsmTime;
-    creg.Z%=1440;
+    int creg_z = _GD.Hot.Time + fsmTime;
+    creg_z %= 1440;
     MaxTimeStart = 0;
     PrevTimeStart = 0;
     NextTimeStart = 1440;
@@ -162,12 +158,12 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
             MaxTimeStart = typeStartCorrection;
             sTimerMax = nTimer;
         }
-        if ((typeStartCorrection>=creg.Z)&&(NextTimeStart>typeStartCorrection))
+        if ((typeStartCorrection >= creg_z )&&(NextTimeStart>typeStartCorrection))
         {
             NextTimeStart = typeStartCorrection;
             sTimerNext = nTimer;
         }
-        if ((typeStartCorrection<creg.Z)&&(PrevTimeStart<typeStartCorrection))
+        if ((typeStartCorrection < creg_z)&&(PrevTimeStart<typeStartCorrection))
         {
             PrevTimeStart = typeStartCorrection;
             sTimerPrev = nTimer;
@@ -188,64 +184,27 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     prevTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
     Timer = &_GD.Timers[sTimerNext];
     nextTimer = controlTypeStartCorrection(Timer->TypeStart, Timer->TimeStart, ctx.settingsVosx, ctx.settingsZax);
-    creg.X= _GD.Hot.Time - prevTimer;
-    creg.Y= nextTimer - prevTimer;
-//        if (!GD.Timer[nTimer].TimeStart)
-//            continue;
-//        if (GD.Timer[nTimer].Zone[0]!=fnTeplTimer+1)
-//            continue;
-//
-//        if (GD.Timer[nTimer].TimeStart<MinTimeStart)
-//        {
-//            MinTimeStart = GD.Timer[nTimer].TimeStart;
-//            sTimerMin = nTimer;
-//        }
-//        if (GD.Timer[nTimer].TimeStart>MaxTimeStart)
-//        {
-//            MaxTimeStart = GD.Timer[nTimer].TimeStart;
-//            sTimerMax = nTimer;
-//        }
-//        if ((GD.Timer[nTimer].TimeStart>=IntZ)&&(NextTimeStart>GD.Timer[nTimer].TimeStart))
-//        {
-//            NextTimeStart = GD.Timer[nTimer].TimeStart;
-//            sTimerNext = nTimer;
-//        }
-//        if ((GD.Timer[nTimer].TimeStart<IntZ)&&(PrevTimeStart<GD.Timer[nTimer].TimeStart))
-//        {
-//            PrevTimeStart = GD.Timer[nTimer].TimeStart;
-//            sTimerPrev = nTimer;
-//        }
-//    }
-//    if (MinTimeStart == 1440) return;
-//
-//    if (sTimerNext<0)
-//        sTimerNext = sTimerMin;
-//
-//    if (sTimerPrev<0)
-//        sTimerPrev = sTimerMax;
-//
-//    pGD_CurrTimer=&GD.Timer[sTimerPrev];
-//    pGD_NextTimer=&GD.Timer[sTimerNext];
-//
-//    IntX = CtrTime-GD.Timer[sTimerPrev].TimeStart;
-//    IntY = GD.Timer[sTimerNext].TimeStart-GD.Timer[sTimerPrev].TimeStart;
-    if (creg.Y<0)
+
+    int creg_x = _GD.Hot.Time - prevTimer;
+    int creg_y = nextTimer - prevTimer;
+
+    if (creg_y < 0)
     {
-        creg.Y+=1440;
+        creg_y += 1440;
     }
 
-    if (creg.X<0)
+    if (creg_x <0)
     {
-        creg.X+=1440;
+        creg_x += 1440;
     }
 
     if (fsmTime)
     {
-        hot->AllTask.NextTAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+        hot->AllTask.NextTAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1, creg_x, creg_y);
 //Ѕлокировка нулевой темепратуры вентил€ции
         tVal = pGD_CurrTimer->TVentAir;
         if (!tVal) tVal = pGD_CurrTimer->TAir+100;
-        hot->AllTask.NextTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
+        hot->AllTask.NextTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1, creg_x, creg_y);
         hot->AllTask.Light = pGD_CurrTimer->Light;
         hot->AllTask.ModeLight = pGD_CurrTimer->ModeLight;
 //		if (pGD_Hot_Tepl->InTeplSens[cSmRHSens])
@@ -255,7 +214,7 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 #warning temp !!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // T отоплени€, в зависимости что стоит в параметрах упралени€, то и ставим в температуру
-    hot->AllTask.TAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1);
+    hot->AllTask.TAir = JumpNext(pGD_CurrTimer->TAir,pGD_NextTimer->TAir,1,1, creg_x, creg_y);
 
 
     //if (pGD_Hot_Tepl->AllTask.TAir - TempOld > 50)
@@ -267,31 +226,31 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
     if (!tVal) tVal = pGD_CurrTimer->TAir+100;
 
     // T вентил€ции
-    hot->AllTask.DoTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1);
+    hot->AllTask.DoTVent = JumpNext(tVal,pGD_NextTimer->TVentAir,1,1, creg_x, creg_y);
 
     hot->AllTask.SIO = pGD_CurrTimer->SIO;
-    hot->AllTask.RHAir = JumpNext(pGD_CurrTimer->RHAir_c,pGD_NextTimer->RHAir_c,1,100);
-    hot->AllTask.CO2 = JumpNext(pGD_CurrTimer->CO2,pGD_NextTimer->CO2,1,1);
-    hot->Kontur[cSmKontur1].MinTask = JumpNext(pGD_CurrTimer->MinTPipe1,pGD_NextTimer->MinTPipe1,1,10);
+    hot->AllTask.RHAir = JumpNext(pGD_CurrTimer->RHAir_c,pGD_NextTimer->RHAir_c,1,100, creg_x, creg_y);
+    hot->AllTask.CO2 = JumpNext(pGD_CurrTimer->CO2,pGD_NextTimer->CO2,1,1, creg_x, creg_y);
+    hot->Kontur[cSmKontur1].MinTask = JumpNext(pGD_CurrTimer->MinTPipe1,pGD_NextTimer->MinTPipe1,1,10, creg_x, creg_y);
 
-    hot->Kontur[cSmKontur2].MinTask = JumpNext(pGD_CurrTimer->MinTPipe2,pGD_NextTimer->MinTPipe2,1,10);
+    hot->Kontur[cSmKontur2].MinTask = JumpNext(pGD_CurrTimer->MinTPipe2,pGD_NextTimer->MinTPipe2,1,10, creg_x, creg_y);
 
-    hot->Kontur[cSmKontur3].MinTask = JumpNext(pGD_CurrTimer->MinTPipe3,pGD_NextTimer->MinTPipe3,1,10);
-    hot->Kontur[cSmKontur5].MinTask = JumpNext(pGD_CurrTimer->MinTPipe5,pGD_NextTimer->MinTPipe5,1,10);
+    hot->Kontur[cSmKontur3].MinTask = JumpNext(pGD_CurrTimer->MinTPipe3,pGD_NextTimer->MinTPipe3,1,10, creg_x, creg_y);
+    hot->Kontur[cSmKontur5].MinTask = JumpNext(pGD_CurrTimer->MinTPipe5,pGD_NextTimer->MinTPipe5,1,10, creg_x, creg_y);
 
-    hot->Kontur[cSmKontur1].Optimal = JumpNext(pGD_CurrTimer->TOptimal1,pGD_NextTimer->TOptimal1,1,10);
+    hot->Kontur[cSmKontur1].Optimal = JumpNext(pGD_CurrTimer->TOptimal1,pGD_NextTimer->TOptimal1,1,10, creg_x, creg_y);
 
-    hot->Kontur[cSmKontur2].Optimal = JumpNext(pGD_CurrTimer->TOptimal2,pGD_NextTimer->TOptimal2,1,10);
+    hot->Kontur[cSmKontur2].Optimal = JumpNext(pGD_CurrTimer->TOptimal2,pGD_NextTimer->TOptimal2,1,10, creg_x, creg_y);
 
-    hot->Kontur[cSmWindowUnW].MinTask = JumpNext(((uchar)pGD_CurrTimer->MinOpenWin),((uchar)pGD_NextTimer->MinOpenWin),0,1);
+    hot->Kontur[cSmWindowUnW].MinTask = JumpNext(((uchar)pGD_CurrTimer->MinOpenWin),((uchar)pGD_NextTimer->MinOpenWin),0,1, creg_x, creg_y);
     hot->AllTask.Win = pGD_CurrTimer->Win;
     hot->AllTask.Screen[0]=pGD_CurrTimer->Screen[0];
     hot->AllTask.Screen[1]=pGD_CurrTimer->Screen[1];
     hot->AllTask.Screen[2]=pGD_CurrTimer->Screen[2];
     hot->AllTask.Vent = pGD_CurrTimer->Vent;
 //	pGD_Hot_Tepl->AllTask.Poise = pGD_CurrTimer->Poise;
-    hot->Kontur[cSmKontur3].Do = JumpNext(pGD_CurrTimer->TPipe3,pGD_NextTimer->TPipe3,1,10);
-    hot->Kontur[cSmKontur4].Do = JumpNext(pGD_CurrTimer->TPipe4,pGD_NextTimer->TPipe4,1,10);
+    hot->Kontur[cSmKontur3].Do = JumpNext(pGD_CurrTimer->TPipe3,pGD_NextTimer->TPipe3,1,10, creg_x, creg_y);
+    hot->Kontur[cSmKontur4].Do = JumpNext(pGD_CurrTimer->TPipe4,pGD_NextTimer->TPipe4,1,10, creg_x, creg_y);
 
 }
 
@@ -1753,14 +1712,12 @@ void control_post(int second, bool is_transfer_in_progress)
                 memclr(&_GD.Hot.Tepl[gh_idx].ExtRCS,(
                                                    sizeof(char)*2+sizeof(eClimTask)+sizeof(eOtherCalc)+
                                                    sizeof(eNextTCalc)+sizeof(eKontur)*cSKontur+20));
-                creg.Z=((_GD.Hot.Time+o_DeltaTime)%(24*60));
                 TaskTimer(1,gh_idx,gh_idx);
                 int ttTepl = gh_idx;
                 while ((!_GD.Hot.Tepl[gh_idx].AllTask.NextTAir)&&(ttTepl))
                 {
                     TaskTimer(1,--ttTepl,gh_idx);
                 }
-                creg.Z = _GD.Hot.Time;
                 loadSettings(gh_idx, shadow);
                 TaskTimer(0,ttTepl,gh_idx);
 

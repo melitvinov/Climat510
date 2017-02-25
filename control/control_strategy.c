@@ -1390,7 +1390,6 @@ void __sCalcKonturs(void)
                 gh.tcontrol_tepl->Critery = 0;
             ctr.tcontrol->CalcT = long_y;
             __sLastCheckKontur(&ctr, strategy);
-            creg.Y = 0;
 
             if ((gh.hot->MaxReqWater < ctr.hot->Do)
                 && (contour_idx < cSWaterKontur))
@@ -1416,7 +1415,6 @@ void __sCalcKonturs(void)
                 continue;
             ctr.tcontrol->CalcT = __sRaspOwnKontur(&ctr, strategy);
             __sLastCheckKontur(&ctr, strategy);
-            creg.Y = 0;
 //			if ((((long)IntY)*pGD_TControl_Tepl->Critery)<0) IntY=0;
             if ((gh.hot->MaxReqWater < ctr.hot->Do)
                 && (contour_idx < cSWaterKontur))
