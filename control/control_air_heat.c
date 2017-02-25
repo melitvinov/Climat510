@@ -77,14 +77,14 @@ void airHeatTimers(void)
     {
         heat_rt_t *rt = &ctx.heat_rt[tCTepl];
 
-        if (rt->is_on == 1)
+        if (rt->is_on)
         {
             if (rt->time_work >= (_GD.TuneClimate.airHeatMaxWork / 100)) // если обогреватель включен проверяем макс время работы
                 airHeatOff(rt);
             else
                 airHeatSetTimeWork(1, rt);   // если обогреватель включен увеличиваем его время на 1 мин
         }
-        if (rt->is_on  ==  0)
+        if (! rt->is_on)
         {
             if (rt->pause >= (_GD.TuneClimate.airHeatPauseWork / 100))
                 airHeatSetHeatPause(0, rt); // 0 означает что обогреватель может быть включен

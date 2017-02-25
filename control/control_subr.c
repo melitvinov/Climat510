@@ -54,8 +54,7 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
     error = 0;
     for (i=0;i<6;i++)
     {
-        // XXX: shift has a less priority !
-        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
         {
             temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
@@ -69,7 +68,7 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
         }
         else
         {
-            maskN = (maskN >> 1);
+            maskN = maskN >> 1;
         }
     }
     average = average / averageCount;
@@ -79,7 +78,7 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
         _GD.Hot.Tepl[fnTepl].tempVent = average;
         if (calcType & 1)
             _GD.Hot.Tepl[fnTepl].tempVent = min;
-        if (calcType >> 1 & 1)
+        if ((calcType >> 1) & 1)
             _GD.Hot.Tepl[fnTepl].tempVent = max;
         return _GD.Hot.Tepl[fnTepl].tempVent;
     }
@@ -108,7 +107,7 @@ int16_t getTempHeat(const gh_t *gh, int fnTepl)
     error = 0;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
         {
             temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
@@ -129,7 +128,7 @@ int16_t getTempHeat(const gh_t *gh, int fnTepl)
         _GD.Hot.Tepl[fnTepl].tempHeat = average;
         if (calcType & 1)
             _GD.Hot.Tepl[fnTepl].tempHeat = min;
-        if (calcType >> 1 & 1)
+        if ((calcType >> 1) & 1)
             _GD.Hot.Tepl[fnTepl].tempHeat = max;
         return _GD.Hot.Tepl[fnTepl].tempHeat;
     }
@@ -152,7 +151,7 @@ int8_t getTempVentAlarm(const gh_t *gh, int fnTepl)
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
         {
             temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
@@ -189,7 +188,7 @@ int8_t getTempHeatAlarm(const gh_t *gh, int fnTepl)
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if ((mask >> i & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
         {
             temp = getTempSensor(gh, fnTepl, i);
             if (min > temp)
@@ -261,13 +260,12 @@ char CheckSeparate (const contour_t *ctx)
 
 char CheckMain(const contour_t *ctr)
 {
-    char tTepl;
-    tTepl=0;
-    while (tTepl < ctr->link.idx)
+    int gh_idx = 0;
+    while (gh_idx < ctr->link.idx)
     {
-        if ( (ctr->tcontrol->Separate >> tTepl) & 1)
-            return tTepl;
-        tTepl++;
+        if ( (ctr->tcontrol->Separate >> gh_idx) & 1)
+            return gh_idx;
+        gh_idx++;
     }
     return ctr->link.idx;
 }

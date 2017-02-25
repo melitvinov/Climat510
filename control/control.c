@@ -1014,18 +1014,22 @@ void SetDiscreteOutputs(const gh_t *gh)
     switch (gh->gh_ctrl->sLight)
     {
     case 2:
-        if (nLight == 7) nLight = 0x04;
-        else
-            if (nLight>1) nLight = 0x02;
-        else
-            if (nLight == 1) nLight = 0x01;
+        if (nLight == 7)
+            nLight = 0x04;
+        else if (nLight>1)
+            nLight = 0x02;
+        else if (nLight == 1)
+            nLight = 0x01;
         break;
     case 1:
-        if (nLight == 7) nLight = 1;
-        else nLight = 0;
+        if (nLight == 7)
+            nLight = 1;
+        else
+            nLight = 0;
         break;
     case 8:
-        if (nLight!=1) nLight = 0;
+        if (nLight!=1)
+            nLight = 0;
         break;
     case 6:
         break;
@@ -1037,8 +1041,10 @@ void SetDiscreteOutputs(const gh_t *gh)
     case 17:
     case 18:
         tMaxLight = gh->gh_ctrl->sLight-10;
-        if (ctx.fLightPause>CONTROL_LIGHT_DELAY*8) ctx.fLightPause = CONTROL_LIGHT_DELAY*8;
-        if (ctx.fLightPause<0) ctx.fLightPause = 0;
+        if (ctx.fLightPause>CONTROL_LIGHT_DELAY*8)
+            ctx.fLightPause = CONTROL_LIGHT_DELAY*8;
+        if (ctx.fLightPause<0)
+            ctx.fLightPause = 0;
         if (is_light_on)
         {
             nLight=~(0xff<<(ctx.fLightPause/CONTROL_LIGHT_DELAY));
@@ -1049,7 +1055,6 @@ void SetDiscreteOutputs(const gh_t *gh)
             nLight=~(0xff>>(ctx.fLightPause/CONTROL_LIGHT_DELAY));
             ctx.fLightPause--;
         }
-
         break;
     default:
         nLight = 0;
@@ -1069,7 +1074,8 @@ void SetDiscreteOutputs(const gh_t *gh)
     if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).Position,0x01))
         __SetBitOutReg(fnTepl,cHSmHeat,0,0);*/
     int i = 1;
-    if (gh->gh_ctrl->co_model>=2) i = 2;
+    if (gh->gh_ctrl->co_model>=2)
+        i = 2;
 
     if (gh->tcontrol_tepl->SetupRegs[0].On && gh->gh_ctrl->co_model)
         write_output_bit(gh->idx, cHSmCO2, 0, i);
@@ -1415,8 +1421,8 @@ void SetLighting(const gh_t *gh)
 
     gh->tcontrol_tepl->LightPauseMode--;
 
-    if (    (gh->tcontrol_tepl->LightPauseMode < 0)
-         || (gh->tcontrol_tepl->LightPauseMode > _GD.TuneClimate.l_PauseMode))
+    if ((gh->tcontrol_tepl->LightPauseMode < 0)
+        || (gh->tcontrol_tepl->LightPauseMode > _GD.TuneClimate.l_PauseMode))
         gh->tcontrol_tepl->LightPauseMode = 0;
 
     bZad = 0;     // if bZab = 0 calc sun sensor
@@ -1726,8 +1732,8 @@ void control_post(int second, bool is_transfer_in_progress)
                 int shadow[8];
                 saveSettings(gh_idx, shadow);
                 memclr(&_GD.Hot.Tepl[gh_idx].ExtRCS,(
-                                                   sizeof(char)*2+sizeof(eClimTask)+sizeof(eOtherCalc)+
-                                                   sizeof(eNextTCalc)+sizeof(eKontur)*cSKontur+20));
+                                                    sizeof(char)*2+sizeof(eClimTask)+sizeof(eOtherCalc)+
+                                                    sizeof(eNextTCalc)+sizeof(eKontur)*cSKontur+20));
                 TaskTimer(1,gh_idx,gh_idx);
                 int ttTepl = gh_idx;
                 while ((!_GD.Hot.Tepl[gh_idx].AllTask.NextTAir)&&(ttTepl))

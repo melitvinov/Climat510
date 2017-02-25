@@ -17,9 +17,14 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
     int SunZClose;
     pScr= &gh->tcontrol_tepl->Screen[typScr];
     ttyp=typScr;
-    if (ttyp>cHSmScrV_S1) ttyp=cHSmScrV_S1;
+
+    if (ttyp>cHSmScrV_S1)
+        ttyp=cHSmScrV_S1;
+
     bZad=0;
-    if (pScr->PauseMode) bZad=1;
+
+    if (pScr->PauseMode)
+        bZad=1;
 
     if ((gh->hot->AllTask.Screen[ttyp]<2)&&(!bZad))
     {
@@ -55,17 +60,20 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
                     pScr->Mode=0;
             }
             else
-                if (!bNight) pScr->Mode=0;
+            {
+                if (!bNight)
+                    pScr->Mode=0;
+            }
 
 #warning CHECK THIS
-            if (YesBit(gh->hot->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
+            if (YesBit(gh->hot->InTeplSens[cSmTSens1].RCS, cbDownAlarmSens))
                 pScr->Mode=1;
-
 
 
             if ((_GD.TuneClimate.sc_ZSRClose)&&(_GD.Hot.MidlSR>SunZClose))
                 pScr->Mode=1;
         }
+
         if (pScr->Mode!=pScr->OldMode)
         {
             ClrBit(gh->tcontrol_tepl->RCS1,cbSCCorrection);
@@ -78,7 +86,10 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
         }
         pScr->OldMode=pScr->Mode;
         gh->tcontrol_tepl->ScrExtraHeat--;
-        if (gh->tcontrol_tepl->ScrExtraHeat>0) return;
+
+        if (gh->tcontrol_tepl->ScrExtraHeat > 0)
+            return;
+
         gh->tcontrol_tepl->ScrExtraHeat=0;
         creg_y = gh->hot->InTeplSens[cSmGlassSens].Value;
         CorrectionRule(_GD.TuneClimate.sc_GlassStart,
@@ -145,8 +156,7 @@ void InitScreen(const gh_t *gh, char screen_type)
     if (! gh->mech_cfg->RNum[cHSmScrTH+screen_type])
         return;
     pScr->PauseMode--;
-    if ((pScr->PauseMode<0)||
-        (pScr->PauseMode>_GD.TuneClimate.sc_PauseMode))
+    if ((pScr->PauseMode<0) || (pScr->PauseMode>_GD.TuneClimate.sc_PauseMode))
         pScr->PauseMode=0;
     CheckModeScreen(gh, screen_type, screen_type);
 }
@@ -158,12 +168,16 @@ void SetPosScreen(const gh_t *gh, char screen_type)
 
     char step;
 
-    if (YesBit(gh->hand[cHSmScrTH+screen_type].RCS,/*(cbNoMech+*/cbManMech)) return;
+    if (YesBit(gh->hand[cHSmScrTH+screen_type].RCS,/*(cbNoMech+*/cbManMech))
+        return;
 
-    if (pScr->Pause<0) pScr->Pause=0;
+    if (pScr->Pause<0)
+        pScr->Pause=0;
+
     if (pScr->Pause)
     {
-        pScr->Pause--;return;
+        pScr->Pause--;
+        return;
     }
 
     int byte_x=(*pMech);    //  текущее положение экрана
@@ -420,7 +434,8 @@ void RegWorkDiskr(const gh_t *gh, char fHSmReg)
     fReg->Stop=_GD.TuneClimate.co_MaxTime-(((int)tMech)*(_GD.TuneClimate.co_MaxTime-_GD.TuneClimate.co_MinTime))/100;
     if (fReg->Pause)
     {
-        fReg->Pause--;return;
+        fReg->Pause--;
+        return;
     }
     if ((fReg->On)&&(fReg->Stop))
     {
@@ -428,7 +443,9 @@ void RegWorkDiskr(const gh_t *gh, char fHSmReg)
         fReg->Pause=fReg->Stop-1;
         return;
     }
-    if (!fReg->Work) return;
+    if (!fReg->Work)
+        return;
+
     fReg->On=1;
     fReg->Pause=fReg->Work-1;
 }

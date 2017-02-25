@@ -824,12 +824,12 @@ void __sRealPosibilityKonturs(const contour_t *ctr, long* fMinMax)
         fMinMax[0] = ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower];
         gh->tcontrol_tepl->nMaxKontur = ctr->cidx;
     }
-    if (   (fMinMax[1] < ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower])
+    if ((fMinMax[1] < ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower])
         && (!YesBit(ctr->hot->ExtRCS, cbReadyPumpKontur)))
     {
         fMinMax[1] = ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower];
     }
-    if (   (fMinMax[2] < ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower])
+    if ((fMinMax[2] < ctr->tcontrol->RealPower[gh->tcontrol_tepl->CurrPower])
         && (ctr->tcontrol->NAndKontur  ==  1)
         && (!YesBit(ctr->hot->ExtRCS, cbReadyPumpKontur)))
     {
@@ -1115,22 +1115,18 @@ void __sLastCheckKontur(const contour_t *ctr)
         ctr->tcontrol->DoT = TempDo;
         return;
     }
-    if ((!ctr->tcontrol->DoT)
-        && (ctr->tcontrol->LastDoT < 5000))
+    if ((!ctr->tcontrol->DoT) && (ctr->tcontrol->LastDoT < 5000))
         ctr->tcontrol->DoT = ctr->tcontrol->LastDoT;
-    ctr->tcontrol->DoT = ctr->tcontrol->DoT
-                                    + (int) (ctr->tcontrol->CalcT);
-    ctr->hot->Do = (ctr->tcontrol->DoT / 10);
+    ctr->tcontrol->DoT += ctr->tcontrol->CalcT;
+    ctr->hot->Do = ctr->tcontrol->DoT / 10;
 
     if (ctr->hot->Do <= ctr->hot->MinCalc)
     {
-        ctr->tcontrol->DoT = (((ctr->hot->MinCalc)))
-                                        * 10;
+        ctr->tcontrol->DoT = ctr->hot->MinCalc * 10;
     }
     if (ctr->hot->Do >= ctr->hot->MaxCalc)
     {
-        ctr->tcontrol->DoT = (((ctr->hot->MaxCalc)))
-                                        * 10;
+        ctr->tcontrol->DoT = ctr->hot->MaxCalc * 10;
     }
 //	if (pGD_Hot_Tepl_Kontur->Do<pGD_Hot_Tepl->AllTask.DoTHeat/10)
 //		pGD_Hot_Tepl_Kontur->Do=pGD_Hot_Tepl_Kontur->MinCalc;//GD.Hot.Tepl[fnTepl].AllTask.DoTHeat/10;
@@ -1156,7 +1152,7 @@ int __sCalcTempKonturs(const gh_t *gh)
         {
             SumTemp += __sThisToFirst(&ctr, ctr.tcontrol->DoT) - gh->hot->AllTask.DoTHeat;
         }
-        else if (   (ctr.tcontrol->LastDoT < 5000)
+        else if ((ctr.tcontrol->LastDoT < 5000)
                  && (ctr.tcontrol->LastDoT > gh->hot->AllTask.DoTHeat))
         {
             SumTemp += __sThisToFirst(&ctr, ctr.tcontrol->LastDoT) - gh->hot->AllTask.DoTHeat;
@@ -1236,11 +1232,9 @@ void __sCalcKonturs(void)
 
             __WorkableKontur(&ctr);
 
-            #warning "argument power is always zero"
             __sRealPosibilityKonturs(&ctr, MinMaxPowerReg);
             ctr.hot->Priority = ctr.tcontrol->RealPower[gh.tcontrol_tepl->CurrPower];
 
-            #warning "resulting power is always zero"
             gh.tcontrol_tepl->PowMaxKonturs = MinMaxPowerReg[1];
             gh.tcontrol_tepl->PowOwnMaxKonturs = MinMaxPowerReg[2];
         }
@@ -1273,7 +1267,7 @@ void __sCalcKonturs(void)
 
             if (YesBit(ctr.hot->RCS, cbNoWorkKontur))
                 continue;
-            if (   (ctr.tcontrol->RealPower[gh.tcontrol_tepl->CurrPower] >= gh.tcontrol_tepl->PowMaxKonturs)
+            if ((ctr.tcontrol->RealPower[gh.tcontrol_tepl->CurrPower] >= gh.tcontrol_tepl->PowMaxKonturs)
                 && (gh.tcontrol_tepl->PowMaxKonturs))
             {
                 SetBit(ctr.hot->RCS, cbGoMax);
@@ -1393,7 +1387,7 @@ void __sCalcKonturs(void)
             OldCrit = gh.tcontrol_tepl->Critery;
             if (gh.tcontrol_tepl->NOwnKonturs)
                 gh.tcontrol_tepl->Critery = gh.tcontrol_tepl->Critery
-                                             - __sThisToFirst(&ctr, long_y);
+                                            - __sThisToFirst(&ctr, long_y);
             if (!SameSign(OldCrit, gh.tcontrol_tepl->Critery))
                 gh.tcontrol_tepl->Critery = 0;
             ctr.tcontrol->CalcT = long_y;
@@ -1415,7 +1409,6 @@ void __sCalcKonturs(void)
         {
             gh_t gh = make_gh_ctx(gh_idx);
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-            const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             if (YesBit(ctr.hot->RCS, cbNoWorkKontur))
                 continue;
@@ -1444,9 +1437,9 @@ void __sCalcKonturs(void)
 /*************************************************************************/
 void __sMechScreen(void)
 {
-    for (int fnTepl = 0; fnTepl < cSTepl; fnTepl++)
+    for (int gh_idx = 0; gh_idx < cSTepl; gh_idx++)
     {
-        gh_t gh = make_gh_ctx(fnTepl);
+        gh_t gh = make_gh_ctx(gh_idx);
 
         if (gh.tcontrol_tepl->Screen[0].Value)
         {
@@ -1536,7 +1529,9 @@ void DecPumpPause(const gh_t *gh)
             gh->tcontrol_tepl->Kontur[i].PumpPause--;
         }
         else
+        {
             gh->tcontrol_tepl->Kontur[i].PumpPause = 0;
+        }
     }
 
 }

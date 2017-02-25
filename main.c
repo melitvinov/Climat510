@@ -8,8 +8,8 @@
 
 #include "wtf.h"
 
-static char volatile konturMax[6];
-static char volatile mecPosArray[7];
+static int16_t konturMax[6];
+static int8_t mecPosArray[7];
 
 static uchar not=230;
 static uchar ton=3;
@@ -26,26 +26,6 @@ void saveMech(char tCTepl)
     mecPosArray[4] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position;
     mecPosArray[5] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position;
     mecPosArray[6] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
-}
-
-void loadKontur(char tCTepl)
-{
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
-}
-
-void saveKontur(char tCTepl)
-{
-    konturMax[0] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
-    konturMax[1] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
-    konturMax[2] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
-    konturMax[3] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
-    konturMax[4] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
-    konturMax[5] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
 }
 
 void loadMech(char tCTepl)
@@ -67,6 +47,27 @@ void loadMech(char tCTepl)
     gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
 }
 
+void loadKontur(char tCTepl)
+{
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0];
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1];
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2];
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3];
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4];
+    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5];
+}
+
+void saveKontur(char tCTepl)
+{
+    konturMax[0] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[0];
+    konturMax[1] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[1];
+    konturMax[2] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[2];
+    konturMax[3] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[3];
+    konturMax[4] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[4];
+    konturMax[5] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[5];
+}
+
+
 static char repeatNews[8];
 
 void initCheckConfig()
@@ -76,51 +77,49 @@ void initCheckConfig()
         repeatNews[i] = 0;
 }
 
-void checkConfig()
+void checkConfig(void)
 {
-    char volatile tCTepl,sys;
-    char volatile checkMech, checkKontur;
-    for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
+    for (int gh_idx=0; gh_idx<cSTepl; gh_idx++)
     {
-        checkMech = 0;
-        checkKontur = 0;
-        for (sys=0;sys<6;sys++)
+        bool checkKontur = 0;
+        bool checkMech = 0;
+        for (int sys=0;sys<6;sys++)
         {
-            if (gd()->Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
+            if (gd()->Control.Tepl[gh_idx].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
                 checkKontur = 1;
         }
-        for (sys=0;sys<6;sys++)
+        for (int sys=0;sys<6;sys++)
         {
-            if (gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH+sys].RCS == 0)
+            if (gd()->Hot.Tepl[gh_idx].HandCtrl[cHSmScrTH+sys].RCS == 0)
                 checkMech = 1;
         }
-        if (gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS == 0)
+        if (gd()->Hot.Tepl[gh_idx].HandCtrl[cHSmLight].RCS == 0)
             checkMech = 1;
 
         if (checkMech == 1)
         {
-            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0x0A;
-            loadMech(tCTepl);
-            repeatNews[tCTepl] = 4;
+            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0x0A;
+            loadMech(gh_idx);
+            repeatNews[gh_idx] = 4;
         }
         else
         {
-            saveMech(tCTepl);
+            saveMech(gh_idx);
         }
         if (checkKontur == 1)
         {
-            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0x0F;
-            loadKontur(tCTepl);
-            repeatNews[tCTepl] = 4;
+            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0x0F;
+            loadKontur(gh_idx);
+            repeatNews[gh_idx] = 4;
         }
         else
         {
-            saveKontur(tCTepl);
+            saveKontur(gh_idx);
         }
-        if (repeatNews[tCTepl])
-            repeatNews[tCTepl]--;
-        if (repeatNews[tCTepl] <= 0)
-            gd_rw()->Hot.Tepl[tCTepl].newsZone = 0;
+        if (repeatNews[gh_idx])
+            repeatNews[gh_idx]--;
+        if (repeatNews[gh_idx] <= 0)
+            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0;
     }
 
 }

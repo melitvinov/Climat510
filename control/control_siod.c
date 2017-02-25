@@ -21,11 +21,13 @@ const siod_ctx_t *siod_view(void)
     return &ctx;
 }
 
-void siodInit()
+void siodInit(void)
 {
-    char tepl;
-    for (tepl=0;tepl<_GD.Control.ConfSTepl;tepl++)
-        _GD.TControl.Tepl[tepl].PauseSIO = 0;
+    for (int gh_idx=0; gh_idx<_GD.Control.ConfSTepl; gh_idx++)
+    {
+        gh_t gh = make_gh_ctx(gh_idx);
+        gh.tcontrol_tepl->PauseSIO = 0;
+    }
 }
 
 void SetUpSiod(const gh_t *gh)
@@ -49,8 +51,10 @@ void SetUpSiod(const gh_t *gh)
     {
         if (nCon != gh->idx)
         {
-            if (   (gh->mech_cfg->RNum[cHSmSIOPump] == _GD.MechConfig[nCon].RNum[cHSmSIOPump])
-                && (_GD.TControl.Tepl[nCon].FazaSiod))
+            gh_t other_gh = make_gh_ctx(nCon);
+
+            if ((gh->mech_cfg->RNum[cHSmSIOPump] == other_gh.mech_cfg->RNum[cHSmSIOPump])
+                && (other_gh.tcontrol_tepl->FazaSiod))
                 return;
         }
     }
@@ -119,7 +123,8 @@ void SetUpSiod(const gh_t *gh)
 
     //if (GD.TControl.Tepl[fnTepl].FazaSiod) return;
 
-    if (! gh->hot->AllTask.SIO) return;   // нет задания
+    if (! gh->hot->AllTask.SIO)
+        return;   // нет задания
     //if (pGD_TControl_Tepl->PauseSIO<1440)
     //	pGD_TControl_Tepl->PauseSIO++;
     if (gh->tcontrol_tepl->PauseSIO < 1440*60)
@@ -204,7 +209,8 @@ void DoSiod(const gh_t *gh)
             //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
             SetBit(gh->hand[cHSmSIOVals].Position, creg_x);
         }
-        if (!gh->tcontrol_tepl->TPauseSIO)  gh->tcontrol_tepl->TPauseSIO = gh->hot->AllTask.SIO;
+        if (!gh->tcontrol_tepl->TPauseSIO)
+            gh->tcontrol_tepl->TPauseSIO = gh->hot->AllTask.SIO;
         #warning "falling thru. is it ok ?"
     case cSIOFazaPause:
         if (!gh->tcontrol_tepl->TPauseSIO)
@@ -216,10 +222,10 @@ void DoSiod(const gh_t *gh)
         }
     case cSIOFazaPump:
         gh->hand[cHSmSIOPump].Position = 1;
-        if (!gh->tcontrol_tepl->TPauseSIO)  gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
+        if (!gh->tcontrol_tepl->TPauseSIO)
+            gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
 
         ctx.fnSIOpumpOut[gh->idx] = gh->tcontrol_tepl->TPauseSIO;            // out
-
         break;
 
     case cSIOFazaEnd:
@@ -230,7 +236,8 @@ void DoSiod(const gh_t *gh)
     default:
         return;
     }
-    if (--gh->tcontrol_tepl->TPauseSIO)  return;
+    if (--gh->tcontrol_tepl->TPauseSIO)
+        return;
 
     if ((gh->tcontrol_tepl->FazaSiod == cSIOFazaPause)&&(gh->tcontrol_tepl->CurVal<NSIO))
         gh->tcontrol_tepl->FazaSiod=cSIOFazaVal;
