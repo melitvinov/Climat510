@@ -142,7 +142,8 @@ void InitScreen(const gh_t *gh, char screen_type)
 {
     eScreen *pScr = &gh->tcontrol_tepl->Screen[screen_type];
 
-    if (!(_GD.MechConfig[gh->idx].RNum[cHSmScrTH+screen_type])) return;
+    if (! gh->mech_cfg->RNum[cHSmScrTH+screen_type])
+        return;
     pScr->PauseMode--;
     if ((pScr->PauseMode<0)||
         (pScr->PauseMode>_GD.TuneClimate.sc_PauseMode))
@@ -280,9 +281,9 @@ void LaunchCalorifer(const gh_t *gh)
         ClrBit(gh->tcontrol_tepl->Calorifer,0x01);
     }
 //		pGD_TControl_Tepl->Calorifer=0;
-    if ((gh->tctrl->MeteoSensing[cSmOutTSens] > gh->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
+    if ((_GD.TControl.MeteoSensing[cSmOutTSens] > gh->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
         SetBit(gh->tcontrol_tepl->Calorifer,0x02);
-    if (((gh->tctrl->MeteoSensing[cSmOutTSens] < gh->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
+    if (((_GD.TControl.MeteoSensing[cSmOutTSens] < gh->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
         ClrBit(gh->tcontrol_tepl->Calorifer,0x02);
 }
 
@@ -290,7 +291,9 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
 {
     eRegsSettings* fReg = &gh->tcontrol_tepl->SetupRegs[fHSmReg-cHSmCO2];
 
-    if (!(_GD.MechConfig[gh->idx].RNum[fHSmReg])) return;
+    if (! gh->mech_cfg->RNum[fHSmReg])
+        return;
+
     if (YesBit(gh->hand[fHSmReg].RCS,cbManMech))
     {
         fReg->IntVal=0;
@@ -334,7 +337,7 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
     }
 
 
-    int creg_x=(((long)DoValue-MeasValue)*_GD.ConstMechanic[gh->idx].ConstMixVal[fHSmReg].v_PFactor/*GD.TuneClimate.reg_PFactor[fHSmReg-cHSmCO2]*/)/1000;
+    int creg_x=(((long)DoValue-MeasValue) * gh->const_mech->ConstMixVal[fHSmReg].v_PFactor/*GD.TuneClimate.reg_PFactor[fHSmReg-cHSmCO2]*/)/1000;
     int creg_y = fReg->IntVal / 100;
     int creg_z = 100;
     if (gh->gh_ctrl->co_model>=2)
@@ -351,7 +354,7 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
 //	   fReg->IntVal=IntY*100;
     }
     else
-        fReg->IntVal=fReg->IntVal+(int)((((long)DoValue-MeasValue)*_GD.ConstMechanic[gh->idx].ConstMixVal[fHSmReg].v_IFactor)/1000);
+        fReg->IntVal=fReg->IntVal+(int)((((long)DoValue-MeasValue) * gh->const_mech->ConstMixVal[fHSmReg].v_IFactor)/1000);
     gh->tcontrol_tepl->COPosition=creg_x + creg_y;
     if (gh->tcontrol_tepl->COPosition>100)
         gh->hand[fHSmReg].Position=100;

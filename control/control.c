@@ -796,7 +796,7 @@ void SetMixValvePosition(const gh_t *gh)
 
         int creg_x = ctr.hot->Do - ctr.tcontrol->SensValue;
         //(*IntVal)=(*IntVal)+IntX;
-        long long_y = _GD.ConstMechanic[gh->idx].ConstMixVal[contour_idx].v_PFactor;
+        long long_y = gh->const_mech->ConstMixVal[contour_idx].v_PFactor;
         long_y = long_y * creg_x;//(*IntVal);
         int creg_y = (int16_t)(long_y/10000);
         //if (!IntY) continue;
@@ -815,7 +815,7 @@ void SetMixValvePosition(const gh_t *gh)
         }
         else
         {
-            (*IntVal)+=(int16_t)((((long)creg_x) * _GD.ConstMechanic[gh->idx].ConstMixVal[contour_idx].v_IFactor)/100);
+            (*IntVal)+=(int16_t)((((long)creg_x) * gh->const_mech->ConstMixVal[contour_idx].v_IFactor)/100);
         }
 
         //ogrMax(&IntZ,100);//if (IntZ>100) IntZ = 100;
@@ -902,20 +902,22 @@ void SetSensOnMech(const gh_t *gh)
 //!!!Оптимизация
 void ClearAllAlarms(void)
 {
-    char fnAlr;
-    char fnTepl;
-    for (fnTepl = 0;fnTepl<cSTepl;fnTepl++)
+    char alarm_idx;
+    char gh_idx;
+    for (gh_idx = 0;gh_idx<cSTepl;gh_idx++)
     {
-        for (fnAlr = 0;fnAlr<cSRegCtrl;fnAlr++)
+        const gh_t gh = make_gh_ctx(gh_idx);
+
+        for (alarm_idx = 0; alarm_idx < cSRegCtrl; alarm_idx++)
         {
-            ClrBit(_GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].RCS,cMSAlarm);
-            _GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].TryMove = 0;
-            _GD.TControl.Tepl[fnTepl].MechBusy[fnAlr].TryMes = 0;
+            ClrBit(gh.tcontrol_tepl->MechBusy[alarm_idx].RCS, cMSAlarm);
+            gh.tcontrol_tepl->MechBusy[alarm_idx].TryMove = 0;
+            gh.tcontrol_tepl->MechBusy[alarm_idx].TryMes = 0;
         }
     }
-    #warning "statement with no effect"
-    for (fnAlr = 0;fnAlr<MAX_ALARMS;fnAlr++)
-        _GD.TControl.Tepl[fnTepl].Alarms[fnAlr];
+    #warning "here was a statement with no effect - disabled"
+//  for (alarm_idx = 0;alarm_idx<MAX_ALARMS;alarm_idx++)
+//      _GD.TControl.Tepl[gh_idx].Alarms[alarm_idx];
 }
 
 void SetAlarm(void)
@@ -968,7 +970,7 @@ void SetAlarm(void)
 
 }
 
-void SetDiskr(const gh_t *gh)
+void SetDiscreteOutputs(const gh_t *gh)
 {
     int nLight;
     char tMaxLight;
@@ -990,6 +992,8 @@ void SetDiskr(const gh_t *gh)
         if (((i == cHSmHeat)||(i == cHSmVent)) && YesBit(gh->hand[i].Position,0x02))
             write_output_bit(gh->idx, i, 0,1);
     }
+
+
     nLight = 0;
     if ((uchar) gh->hand[cHSmLight].Position > 100)
         gh->hand[cHSmLight].Position = 100;
@@ -1110,7 +1114,7 @@ static void do_contour_mechanics(const gh_t *gh, int mech_idx)
 
     if ((mech_idx == cHSmAHUSpeed1))
     {
-        write_output_register(mech->Position, mtRS485, _GD.MechConfig[gh->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[gh->idx][0].FanData[0]);
+        write_output_register(mech->Position, mtRS485, gh->mech_cfg->RNum[mech_idx], &fErr, &gh->fanblock[0].FanData);
         return;
     }
 /*		GD.FanBlock[fnTepl][0].FanData[0].ActualSpeed = fnTepl*5;
@@ -1121,7 +1125,7 @@ static void do_contour_mechanics(const gh_t *gh, int mech_idx)
     if ((mech_idx == cHSmAHUSpeed2))
     {
 //			Sound;
-        write_output_register(mech->Position, mtRS485, _GD.MechConfig[gh->idx].RNum[mech_idx], &fErr, &_GD.FanBlock[gh->idx][1].FanData[0]);
+        write_output_register(mech->Position, mtRS485, gh->mech_cfg->RNum[mech_idx], &fErr, &gh->fanblock[1].FanData);
         return;
     }
 
@@ -1288,29 +1292,37 @@ void SetMeteo(void)
             _GD.TControl.TimeMeteoSensing[i]=0;
             _GD.TControl.MeteoSensing[i]=tMes;
         }
-        else if (_GD.TControl.TimeMeteoSensing[i]<30) _GD.TControl.TimeMeteoSensing[i]++;
+        else if (_GD.TControl.TimeMeteoSensing[i]<30)
+        {
+            _GD.TControl.TimeMeteoSensing[i]++;
+        }
     }
-    if (_GD.TControl.Tepl[0].SnowTime>=_GD.TuneClimate.MinRainTime)
+
+    const gh_t first_gh = make_gh_ctx(0);
+
+    if (first_gh.tcontrol_tepl->SnowTime >= _GD.TuneClimate.MinRainTime)
         _GD.TControl.bSnow=!_GD.TControl.bSnow;
     if (((_GD.TControl.MeteoSensing[cSmRainSens]<cMinRain)&&(_GD.TControl.bSnow))
         ||((_GD.TControl.MeteoSensing[cSmRainSens]>cMinRain)&&(!_GD.TControl.bSnow)))
     {
-        _GD.TControl.Tepl[0].SnowTime++;
+        first_gh.tcontrol_tepl->SnowTime++;
 //		GD.TControl.Tepl[0].SnowTime = 10;
     }
     else
-        _GD.TControl.Tepl[0].SnowTime = 0;
+    {
+        first_gh.tcontrol_tepl->SnowTime = 0;
+    }
 
     if ((_GD.TControl.MeteoSensing[cSmOutTSens]<c_SnowIfOut)&&(_GD.TControl.bSnow))
         SetBit(_GD.TControl.bSnow,0x02);
-    _GD.TControl.Tepl[0].SumSens+=_GD.TControl.MeteoSensing[cSmFARSens];//GD.Hot.MeteoSens[cSmFARSens].Value;
-    _GD.TControl.Tepl[0].TimeSumSens++;
-    if (_GD.TControl.Tepl[0].TimeSumSens>=15)
+    first_gh.tcontrol_tepl->SumSens+=_GD.TControl.MeteoSensing[cSmFARSens];//GD.Hot.MeteoSens[cSmFARSens].Value;
+    first_gh.tcontrol_tepl->TimeSumSens++;
+    if (first_gh.tcontrol_tepl->TimeSumSens>=15)
     {
-        _GD.TControl.Tepl[0].SensHourAgo = _GD.TControl.Tepl[0].SensHalfHourAgo;
-        _GD.TControl.Tepl[0].SensHalfHourAgo = _GD.TControl.Tepl[0].SumSens/_GD.TControl.Tepl[0].TimeSumSens;
-        _GD.TControl.Tepl[0].SumSens = 0;
-        _GD.TControl.Tepl[0].TimeSumSens = 0;
+        first_gh.tcontrol_tepl->SensHourAgo = first_gh.tcontrol_tepl->SensHalfHourAgo;
+        first_gh.tcontrol_tepl->SensHalfHourAgo = first_gh.tcontrol_tepl->SumSens/first_gh.tcontrol_tepl->TimeSumSens;
+        first_gh.tcontrol_tepl->SumSens = 0;
+        first_gh.tcontrol_tepl->TimeSumSens = 0;
     }
 }
 
@@ -1396,7 +1408,7 @@ void SetLighting(const gh_t *gh)
 {
     char bZad;
 
-    if (!(_GD.MechConfig[gh->idx].RNum[cHSmLight])) return;  // if hand mode exit
+    if (! gh->mech_cfg->RNum[cHSmLight]) return;  // if hand mode exit
     int creg_z = 0;
 
 //	if(SameSign(IntY,IntZ)) pGD_TControl_Tepl->LightExtraPause = 0;
@@ -1537,7 +1549,7 @@ void SetTepl(const gh_t *gh)
 
         if (! gh->hot->OtherCalc.MeasDifPress)
             gh->hot->OtherCalc.MeasDifPress = 1;
-        if ((! gh->tctrl->MeteoSensing[cSmPresureSens]) || (! gh->tctrl->MeteoSensing[cSmPresureSens+1]))
+        if ((! _GD.TControl.MeteoSensing[cSmPresureSens]) || (! _GD.TControl.MeteoSensing[cSmPresureSens+1]))
             gh->hot->OtherCalc.MeasDifPress = 0;
 
         SetReg(gh, cHSmPressReg, gh->hot->AllTask.DoPressure, gh->hot->OtherCalc.MeasDifPress);
@@ -1559,14 +1571,18 @@ static void SubConfig(const gh_t *gh)
         {
             ctr.tcontrol->Separate = CheckSeparate(&ctr);
             ctr.tcontrol->MainTepl = CheckMain(&ctr);
-            *ctr.hand = _GD.Hot.Tepl[ctr.tcontrol->MainTepl].HandCtrl[i];
+
+            gh_t main_gh = make_gh_ctx(ctr.tcontrol->MainTepl);
+            contour_t main_contour = make_contour_ctx(&main_gh, i);
+
+            *ctr.hand = *main_contour.hand;
 
             if (i<cSWaterKontur)
             {
                 ctr.tcontrol->SensValue = gh->hot->InTeplSens[i+cSmWaterSens].Value;
 
-                gh->hand[i+cHSmPump] = _GD.Hot.Tepl[ctr.tcontrol->MainTepl].HandCtrl[i+cHSmPump];
-                ctr.tcontrol->SensValue = _GD.TControl.Tepl[ctr.tcontrol->MainTepl].Kontur[i].SensValue;
+                gh->hand[i+cHSmPump] = main_gh.hand[i+cHSmPump];
+                ctr.tcontrol->SensValue = main_contour.tcontrol->SensValue;
             }
         }
 
@@ -1664,7 +1680,7 @@ void control_pre(void)
         DoMechanics(&ctx);
 
 
-        SetDiskr(&ctx);
+        SetDiscreteOutputs(&ctx);
 
         SetUpSiod(&ctx);
         DoSiod(&ctx);
@@ -1803,6 +1819,9 @@ const gh_t make_gh_ctx(int gh_idx)
         .gh_ctrl = &_GD.Control.Tepl[gh_idx],
         .tctrl = &_GD.TControl,
         .mech_cfg = &_GD.MechConfig[gh_idx],
+        .const_mech = &_GD.ConstMechanic[gh_idx],
+        .strategies = _GD.Strategy[gh_idx],
+        .fanblock = _GD.FanBlock[gh_idx],
     };
 
     return ctx;
@@ -1817,6 +1836,7 @@ const contour_t make_contour_ctx(const gh_t *gh, int contour_idx)
         .cidx = contour_idx,
         .tcontrol = &gh->tcontrol_tepl->Kontur[contour_idx],
         .hand = &gh->hand[contour_idx],
+        .strategy = &gh->strategies[contour_idx],
     };
 
     return ctx;

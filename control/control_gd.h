@@ -110,7 +110,10 @@ typedef struct
     eTControlTepl *tcontrol_tepl;
     eTeplControl *gh_ctrl;
     eTControl *tctrl;
-    eMechConfig *mech_cfg;
+    const eMechConfig *mech_cfg;
+    const eConstMech *const_mech;
+    const eStrategy *strategies;
+    const eFanBlock *fanblock;
 } gh_t;
 
 typedef struct
@@ -119,9 +122,9 @@ typedef struct
     eKontur *hot;
     eTControlKontur *tcontrol;
     eMechanic *hand;
+    const eStrategy *strategy;
     gh_t link;
 } contour_t;
-
 
 #ifdef _FRIEND_OF_CONTROL_
 extern eGData _GD;

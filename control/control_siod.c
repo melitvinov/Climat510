@@ -49,7 +49,8 @@ void SetUpSiod(const gh_t *gh)
     {
         if (nCon != gh->idx)
         {
-            if ((_GD.MechConfig[gh->idx].RNum[cHSmSIOPump] == _GD.MechConfig[nCon].RNum[cHSmSIOPump]) && (_GD.TControl.Tepl[nCon].FazaSiod))
+            if (   (gh->mech_cfg->RNum[cHSmSIOPump] == _GD.MechConfig[nCon].RNum[cHSmSIOPump])
+                && (_GD.TControl.Tepl[nCon].FazaSiod))
                 return;
         }
     }

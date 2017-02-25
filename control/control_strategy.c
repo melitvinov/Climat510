@@ -449,18 +449,22 @@ void __sInitKontur(const contour_t *ctr)
     }
     __sMinMaxWater(ctr);
 
-    #warning "something is wrong here ..."
-    for (byte_y = 0; byte_y < 8; byte_y++)
-        ((char*) (&(ctr->hot->Optimal)))[byte_y] =
-        ((char*) (&(_GD.Hot.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].Optimal)))[byte_y];
+    gh_t main_gh = make_gh_ctx(ctr->tcontrol->MainTepl);
+    contour_t main_contour = make_contour_ctx(&main_gh, ctr->cidx);
 
-    ctr->tcontrol->DoT = _GD.TControl.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].DoT;
-    ctr->tcontrol->PumpStatus = _GD.TControl.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].PumpStatus;
+    ctr->hot->Optimal = main_contour.hot->Optimal;
+    ctr->hot->MaxCalc = main_contour.hot->MaxCalc;
+    ctr->hot->MinTask = main_contour.hot->MinTask;
+    ctr->hot->MinCalc = main_contour.hot->MinCalc;
+
+    ctr->tcontrol->DoT = main_contour.tcontrol->DoT;
+    ctr->tcontrol->PumpStatus = main_contour.tcontrol->PumpStatus;
+
     //GD.TControl.Tepl[cSmTeplB].Kontur[fnKontur].SErr=GD.TControl.Tepl[cSmTeplA].Kontur[fnKontur].SErr;
     if (ctr->tcontrol->DoT)
         ctr->hot->Status = cSOn;
 
-    if (YesBit(_GD.Hot.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].ExtRCS, cbBlockPumpKontur))
+    if (YesBit(main_gh.hot->Kontur[ctr->cidx].ExtRCS, cbBlockPumpKontur))
     {
         ctr->hot->Status = cSBlPump;
         SetBit(ctr->hot->ExtRCS, cbBlockPumpKontur);
@@ -528,8 +532,9 @@ void __sRegulKontur(const contour_t *ctr)
 //Если общий, то взять нерегулируемость из теплицы А
 //------------------------------------------------------------------------
 //	if (YesBit(pGD_Hot_Tepl_Kontur->RCS,cbAndKontur))
-    if ((&(ctr->tcontrol->SErr)) != (&_GD.TControl.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].SErr))
-        ;
+    #warning "next line likely was wrong - condition is has no effect"
+//  if ((&(ctr->tcontrol->SErr)) != (&_GD.TControl.Tepl[ctr->tcontrol->MainTepl].Kontur[ctr->cidx].SErr))
+//      ;
 
     ctr->tcontrol->SErr = 0;
 //------------------------------------------------------------------------
@@ -648,7 +653,7 @@ void __sRegulKontur(const contour_t *ctr)
 /*************************************************************************/
 /*-*-*-*-*-*-*-*-*--Потенциальный приоритет для контура--*-*-*-*-*-*-*-*-*/
 /*************************************************************************/
-void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv, const eStrategy *strategy)
+void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv)
 {
     int16_t *pRealPower = &(ctr->tcontrol->RealPower[fInv]);
 //------------------------------------------------------------------------
@@ -658,7 +663,7 @@ void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv, const eStrate
 //------------------------------------------------------------------------
 //Приоритет по влажности воздуха в теплице
 //------------------------------------------------------------------------
-    int creg_y = strategy->RHPower;
+    int creg_y = ctr->strategy->RHPower;
     int creg_x = -DefRH(&ctr->link);
 
     int creg_z = (int) (((long) creg_y) * creg_x / 1000);
@@ -672,7 +677,7 @@ void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv, const eStrate
 //------------------------------------------------------------------------
 //Если контур выключен то оптимальня температура сравнивается с минимумом контура
 //------------------------------------------------------------------------
-        creg_y = strategy->OptimalPower;
+        creg_y = ctr->strategy->OptimalPower;
         creg_x = (int) (((long) creg_y * creg_x / 100));
     }
 
@@ -680,12 +685,12 @@ void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv, const eStrate
 //Приоритет с экономичностью
 //------------------------------------------------------------------------
 
-    *pRealPower = strategy->TempPower + creg_x + creg_z;
+    *pRealPower = ctr->strategy->TempPower + creg_x + creg_z;
     if ((*pRealPower) < 1)
         (*pRealPower) = 1;
     if (!fInv)
     {
-        (*pRealPower) = 100 - strategy->TempPower - creg_x - creg_z;
+        (*pRealPower) = 100 - ctr->strategy->TempPower - creg_x - creg_z;
         if ((*pRealPower) < 1)
             (*pRealPower) = 1;
     }
@@ -702,7 +707,9 @@ void __WorkableKontur(const contour_t *ctr)
     if (YesBit(ctr->hand[cHSmMixVal].RCS, cbManMech))
         SetBit(ctr->hot->ExtRCS, cbAlarmErrKontur);
 
-    int creg_y = _GD.Hot.Tepl[ctr->tcontrol->MainTepl].HandCtrl[cHSmMixVal + ctr->cidx].Position;
+    gh_t main_gh = make_gh_ctx(ctr->tcontrol->MainTepl);
+
+    int creg_y = main_gh.hand[cHSmMixVal + ctr->cidx].Position;
     //------------------------------------------------------------------------
 //Установить возможности регулирования
 //------------------------------------------------------------------------
@@ -842,7 +849,7 @@ void __sRealPosibilityKonturs(const contour_t *ctr, long* fMinMax)
 /*************************************************************************/
 /*-*-*-*-*--Процедура распределения критерия на данный контур--*-*-*-*-*-*/
 /*************************************************************************/
-long __sRaspKontur(const contour_t *ctr, const eStrategy *strategy)
+long __sRaspKontur(const contour_t *ctr)
 {
     const gh_t *gh = &ctr->link;
 
@@ -856,12 +863,12 @@ long __sRaspKontur(const contour_t *ctr, const eStrategy *strategy)
     long_y = long_y / gh->tcontrol_tepl->qMaxKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / strategy->Powers;
+    long_y = long_y / ctr->strategy->Powers;
 
     return long_y;
 }
 
-long __sRaspOwnKontur(const contour_t *ctr, const eStrategy *strategy)
+long __sRaspOwnKontur(const contour_t *ctr)
 {
     const gh_t *gh = &ctr->link;
 
@@ -871,7 +878,7 @@ long __sRaspOwnKontur(const contour_t *ctr, const eStrategy *strategy)
     long_y = long_y / gh->tcontrol_tepl->qMaxOwnKonturs;
 
     long_y = long_y * 50; //((long)pGD_ConstMechanic->ConstMixVal[cSmKontur1].Power);
-    long_y = long_y / strategy->Powers;
+    long_y = long_y / ctr->strategy->Powers;
 
     return long_y;
 }
@@ -1056,10 +1063,10 @@ void __sLastCheckWindow(const gh_t *gh)
 /*****************************************************************************/
 /*Процедура преобразования значений температуры в температуру первого контура*/
 /*****************************************************************************/
-long __sThisToFirst(int in, const eStrategy *strategy)
+long __sThisToFirst(const contour_t *ctr, int in)
 {
 //	if (YesBit(pGD_Hot_Tepl_Kontur->RCS,cbScreenKontur)) return 0;
-    return in * strategy->Powers / 50;
+    return in * ctr->strategy->Powers / 50;
     /********************************************************************
      -----------Работа автонастройки временно приостановлена--------------
      *********************************************************************
@@ -1070,7 +1077,7 @@ long __sThisToFirst(int in, const eStrategy *strategy)
 /**************************************************************************/
 /*-*-*-*-*-*-*-*-*--Процедура завершающей проверки контура--*-*-*-*-*-*-*-*/
 /**************************************************************************/
-void __sLastCheckKontur(const contour_t *ctr, const eStrategy *strategy)
+void __sLastCheckKontur(const contour_t *ctr)
 {
     const gh_t *gh = &ctr->link;
 
@@ -1102,7 +1109,7 @@ void __sLastCheckKontur(const contour_t *ctr, const eStrategy *strategy)
         ctr->hot->Do = CLAMP(ctr->hot->MinCalc, ctr->hot->Do, ctr->hot->MaxCalc);
         TempDo = ctr->hot->Do * 10;
         ctr->tcontrol->SErr = 0;
-        gh->tcontrol_tepl->Integral -= __sThisToFirst((int) ((OldDoT - TempDo)), strategy)
+        gh->tcontrol_tepl->Integral -= __sThisToFirst(ctr, OldDoT - TempDo)
                                        * 100;
         //	pGD_TControl_Tepl->SaveIntegral-=__sThisToFirst((int)((OldDoT-TempDo)))*100;
         ctr->tcontrol->DoT = TempDo;
@@ -1144,16 +1151,15 @@ int __sCalcTempKonturs(const gh_t *gh)
     for (int contour_idx = 0; contour_idx < cSWaterKontur - 2; contour_idx++)
     {
         const contour_t ctr = make_contour_ctx(gh, contour_idx);
-        const eStrategy *strategy = &_GD.Strategy[gh->idx][contour_idx];
 
         if (ctr.tcontrol->DoT)
         {
-            SumTemp += __sThisToFirst(ctr.tcontrol->DoT, strategy) - gh->hot->AllTask.DoTHeat;
+            SumTemp += __sThisToFirst(&ctr, ctr.tcontrol->DoT) - gh->hot->AllTask.DoTHeat;
         }
         else if (   (ctr.tcontrol->LastDoT < 5000)
                  && (ctr.tcontrol->LastDoT > gh->hot->AllTask.DoTHeat))
         {
-            SumTemp += __sThisToFirst(ctr.tcontrol->LastDoT, strategy) - gh->hot->AllTask.DoTHeat;
+            SumTemp += __sThisToFirst(&ctr, ctr.tcontrol->LastDoT) - gh->hot->AllTask.DoTHeat;
         }
     }
     return SumTemp;
@@ -1209,7 +1215,6 @@ void __sCalcKonturs(void)
         for (int contour_idx = 0; contour_idx < cSWaterKontur; contour_idx++)
         {
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-            const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             __sRegulKontur(&ctr);
 
@@ -1226,8 +1231,8 @@ void __sCalcKonturs(void)
             }
 
             ctr.hot->Do = (ctr.tcontrol->DoT / 10);
-            __sPotentialPosibilityKontur(&ctr, 0, strategy); //Приоритет в случае охлаждения
-            __sPotentialPosibilityKontur(&ctr, 1, strategy); //Приоритет в случае нагрева
+            __sPotentialPosibilityKontur(&ctr, 0); //Приоритет в случае охлаждения
+            __sPotentialPosibilityKontur(&ctr, 1); //Приоритет в случае нагрева
 
             __WorkableKontur(&ctr);
 
@@ -1352,15 +1357,16 @@ void __sCalcKonturs(void)
         {
             gh_t gh = make_gh_ctx(gh_idx);
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-            const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             gh.tcontrol_tepl->RealPower = 0;
             if (YesBit(ctr.hot->RCS, cbNoWorkKontur))
                 continue;
             gh.tcontrol_tepl->NAndKontur =
             ctr.tcontrol->NAndKontur;
-            _GD.TControl.Tepl[ctr.tcontrol->MainTepl].RealPower +=
-            __sRaspKontur(&ctr, strategy);
+
+            gh_t main_gh = make_gh_ctx(ctr.tcontrol->MainTepl);
+            main_gh.tcontrol_tepl->RealPower += __sRaspKontur(&ctr);
+
 //			if ((!pGD_TControl_Tepl->NOwnKonturs)&&(pGD_TControl_Tepl_Kontur->RealPower))
 //			{
 //				pGD_TControl_Tepl->NAndKontur=1;
@@ -1372,24 +1378,26 @@ void __sCalcKonturs(void)
         {
             gh_t gh = make_gh_ctx(gh_idx);
             contour_t ctr = make_contour_ctx(&gh, contour_idx);
-            const eStrategy *strategy = &_GD.Strategy[gh_idx][contour_idx];
 
             if (YesBit(ctr.hot->RCS, cbNoWorkKontur))
                 continue;
             if (ctr.tcontrol->NAndKontur  ==  1)
                 continue;
-            long long_y = _GD.TControl.Tepl[ctr.tcontrol->MainTepl].RealPower;
-            int8_t byte_w = _GD.TControl.Tepl[ctr.tcontrol->MainTepl].NAndKontur;
+
+            gh_t main_gh = make_gh_ctx(ctr.tcontrol->MainTepl);
+
+            int long_y = main_gh.tcontrol_tepl->RealPower;
+            int byte_w = main_gh.tcontrol_tepl->NAndKontur;
             long_y /= byte_w;
 
             OldCrit = gh.tcontrol_tepl->Critery;
             if (gh.tcontrol_tepl->NOwnKonturs)
                 gh.tcontrol_tepl->Critery = gh.tcontrol_tepl->Critery
-                                             - __sThisToFirst((int) ((long_y)), strategy);
+                                             - __sThisToFirst(&ctr, long_y);
             if (!SameSign(OldCrit, gh.tcontrol_tepl->Critery))
                 gh.tcontrol_tepl->Critery = 0;
             ctr.tcontrol->CalcT = long_y;
-            __sLastCheckKontur(&ctr, strategy);
+            __sLastCheckKontur(&ctr);
 
             if ((gh.hot->MaxReqWater < ctr.hot->Do)
                 && (contour_idx < cSWaterKontur))
@@ -1413,8 +1421,8 @@ void __sCalcKonturs(void)
                 continue;
             if (ctr.tcontrol->NAndKontur != 1)
                 continue;
-            ctr.tcontrol->CalcT = __sRaspOwnKontur(&ctr, strategy);
-            __sLastCheckKontur(&ctr, strategy);
+            ctr.tcontrol->CalcT = __sRaspOwnKontur(&ctr);
+            __sLastCheckKontur(&ctr);
 //			if ((((long)IntY)*pGD_TControl_Tepl->Critery)<0) IntY=0;
             if ((gh.hot->MaxReqWater < ctr.hot->Do)
                 && (contour_idx < cSWaterKontur))

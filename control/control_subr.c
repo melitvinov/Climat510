@@ -402,24 +402,27 @@ void WindDirect(void)
     if (_GD.Hot.MidlWind<_GD.TuneClimate.f_WindStart) return;
     int creg_z = _GD.TControl.MeteoSensing[cSmDWindSens]+_GD.TuneClimate.o_TeplPosition;
     creg_z %= 360;
-    _GD.TControl.Tepl[0].CurrPozFluger=_GD.Hot.PozFluger;
+
+    const gh_t first_gh = make_gh_ctx(0);
+
+    first_gh.tcontrol_tepl->CurrPozFluger = _GD.Hot.PozFluger;
     if (   (!_GD.Hot.PozFluger)
         && (creg_z >(90+f_DeadWindDirect))
         && (creg_z<(270-f_DeadWindDirect)))
     {
-        _GD.TControl.Tepl[0].CurrPozFluger=1;
+        first_gh.tcontrol_tepl->CurrPozFluger=1;
     }
 
     if (   (_GD.Hot.PozFluger)
         && ((creg_z <(90-f_DeadWindDirect)) ||(creg_z>(270+f_DeadWindDirect))))
-        _GD.TControl.Tepl[0].CurrPozFluger=0;
+        first_gh.tcontrol_tepl->CurrPozFluger=0;
 
-    if (_GD.Hot.PozFluger!=_GD.TControl.Tepl[0].CurrPozFluger)
+    if (_GD.Hot.PozFluger != first_gh.tcontrol_tepl->CurrPozFluger)
     {
-        _GD.TControl.Tepl[0].CurrPozFlugerTime++;
-        if (_GD.TControl.Tepl[0].CurrPozFlugerTime<5)
+        first_gh.tcontrol_tepl->CurrPozFlugerTime++;
+        if (first_gh.tcontrol_tepl->CurrPozFlugerTime < 5)
             return;
-        _GD.Hot.PozFluger=_GD.TControl.Tepl[0].CurrPozFluger;
+        _GD.Hot.PozFluger = first_gh.tcontrol_tepl->CurrPozFluger;
     }
-    _GD.TControl.Tepl[0].CurrPozFlugerTime=0;
+    first_gh.tcontrol_tepl->CurrPozFlugerTime = 0;
 }
