@@ -221,24 +221,12 @@ void SetPointersOnTepl(int fnTepl)
 {
     _GDP.Hot_Tepl=&_GD.Hot.Tepl[fnTepl];
     _GDP.TControl_Tepl=&_GD.TControl.Tepl[fnTepl];
-    _GDP.Control_Tepl=&_GD.Control.Tepl[fnTepl];
-    _GDP.Hot_Hand=&_GD.Hot.Tepl[fnTepl].HandCtrl[0];
-    _GDP.ConstMechanic=&_GD.ConstMechanic[fnTepl];
-    _GDP.MechConfig=&_GD.MechConfig[fnTepl];
     #warning "this was fucked. not sure if [0] is ok"
     _GDP.Level_Tepl=&_GD.Level.InTeplSens[fnTepl][0];
     #warning "this was fucked too. not sure if [0] is ok"
     _GDP.Strategy_Tepl=&_GD.Strategy[fnTepl][0];
 }
 
-
-
-void SetPointersOnKontur(int fnKontur)
-{
-    _GDCP.Hot_Tepl_Kontur=&_GDP.Hot_Tepl->Kontur[fnKontur];
-    _GDCP.TControl_Tepl_Kontur=&_GDP.TControl_Tepl->Kontur[fnKontur];
-    _GDCP.Hot_Hand_Kontur=&_GDP.Hot_Hand[fnKontur];
-}
 
 void MidlWindAndSr(void)
 {
@@ -267,7 +255,7 @@ char CheckSeparate (const contour_t *ctx)
 {
     char t2;
     char t1;
-    ctx->t_contour->NAndKontur=0;
+    ctx->tcontrol->NAndKontur=0;
     if (! ctx->link.mech_cfg->RNum[ctx->cidx])
         return 0;
     t1 = 0;
@@ -276,7 +264,7 @@ char CheckSeparate (const contour_t *ctx)
         if (_GD.MechConfig[t2].RNum[ctx->cidx] == ctx->link.mech_cfg->RNum[ctx->cidx])
         {
             t1 |= (1<<t2);
-            ctx->t_contour->NAndKontur++;
+            ctx->tcontrol->NAndKontur++;
         }
     }
     return t1;
@@ -288,7 +276,7 @@ char CheckMain(const contour_t *ctr)
     tTepl=0;
     while (tTepl < ctr->link.idx)
     {
-        if ( (ctr->t_contour->Separate >> tTepl) & 1)
+        if ( (ctr->tcontrol->Separate >> tTepl) & 1)
             return tTepl;
         tTepl++;
     }

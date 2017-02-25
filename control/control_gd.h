@@ -105,11 +105,7 @@ typedef struct
 typedef struct
 {
     eTepl *Hot_Tepl;
-    eMechanic *Hot_Hand;
     eTControlTepl *TControl_Tepl;
-    eTeplControl *Control_Tepl;
-    eConstMech *ConstMechanic;
-    eMechConfig *MechConfig;
     eSensLevel *Level_Tepl;
     eStrategy *Strategy_Tepl;
 } gdp_t;
@@ -117,9 +113,9 @@ typedef struct
 typedef struct
 {
     int idx;
-    eTepl *gh_base;
+    eTepl *hot;
     eMechanic *hand;
-    eTControlTepl *gh_tctrl;
+    eTControlTepl *tcontrol_tepl;
     eTeplControl *gh_ctrl;
     eTControl *tctrl;
     eMechConfig *mech_cfg;
@@ -128,23 +124,16 @@ typedef struct
 typedef struct
 {
     int cidx;
-    eKontur *gh_contour;
-    eTControlKontur *t_contour;
+    eKontur *hot;
+    eTControlKontur *tcontrol;
     eMechanic *hand;
     gh_t link;
 } contour_t;
 
-typedef struct
-{
-    eKontur *Hot_Tepl_Kontur;
-    eTControlKontur *TControl_Tepl_Kontur;
-    eMechanic *Hot_Hand_Kontur;
-} gdcp_t;
 
 #ifdef _FRIEND_OF_CONTROL_
 extern eGData _GD;
 extern gdp_t _GDP;
-extern gdcp_t _GDCP;
 #endif
 
 // XXX: caldata do not relate to 65 in fact

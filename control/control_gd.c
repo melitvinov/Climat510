@@ -3,7 +3,6 @@
 
 eGData _GD;
 gdp_t _GDP;
-gdcp_t _GDCP;
 
 // blobs in remote reporting
 caldata_t caldata;

@@ -16,7 +16,6 @@ int8_t getTempHeatAlarm(int fnTepl);
 int8_t getTempVentAlarm(int fnTepl);
 
 int16_t getTempVent(int fnTepl);
-void SetPointersOnKontur(int fnKontur);
 void SetPointersOnTepl(int fnTepl);
 
 bool SameSign(int Val1,int Val2);
