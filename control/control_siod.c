@@ -121,17 +121,13 @@ void SetUpSiod(const gh_t *gh)
     if (! gh->hot->AllTask.SIO) return;   // нет задания
     //if (pGD_TControl_Tepl->PauseSIO<1440)
     //	pGD_TControl_Tepl->PauseSIO++;
-    if ( gh->tcontrol_tepl->PauseSIO < 1440*60)
+    if (gh->tcontrol_tepl->PauseSIO < 1440*60)
         gh->tcontrol_tepl->PauseSIO++;
 
 
-    creg.X=0;
-    if (
-         (
-              ((gh->hot->InTeplSens[cSmRHSens].Value - gh->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
-            ||(gh->hot->InTeplSens[cSmRHSens].Value > 9600)
-         )
-         &&  gh->hot->AllTask.DoRHAir)
+    if ((   ((gh->hot->InTeplSens[cSmRHSens].Value - gh->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
+            ||(gh->hot->InTeplSens[cSmRHSens].Value > 9600))
+        &&  gh->hot->AllTask.DoRHAir)
         return;              // если достигнута заданная влажность влажность + коэфицент
 
 
@@ -143,20 +139,36 @@ void SetUpSiod(const gh_t *gh)
         &&(((gh->hot->AllTask.DoRHAir-gh->hot->InTeplSens[cSmRHSens].Value)<_GD.TuneClimate.sio_RHStart)
            ||(!gh->hot->InTeplSens[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
 
-    creg.Y=getTempHeat(gh, gh->idx)-gh->hot->AllTask.DoTHeat;
-    CorrectionRule(_GD.TuneClimate.sio_TStart,_GD.TuneClimate.sio_TEnd,_GD.TuneClimate.sio_TStartFactor-_GD.TuneClimate.sio_TEndFactor,0);
-    creg.X=(int)(_GD.TuneClimate.sio_TStartFactor-creg.Z);
+    int creg_y = getTempHeat(gh, gh->idx)-gh->hot->AllTask.DoTHeat;
+    int creg_z;
 
-    creg.Y=gh->hot->AllTask.DoRHAir-gh->hot->InTeplSens[cSmRHSens].Value;
-    CorrectionRule(_GD.TuneClimate.sio_RHStart,_GD.TuneClimate.sio_RHEnd,_GD.TuneClimate.sio_RHStartFactor-_GD.TuneClimate.sio_RHEndFactor,0);
-    creg.Z=_GD.TuneClimate.sio_RHStartFactor-creg.Z;
+    CorrectionRule(_GD.TuneClimate.sio_TStart,
+                   _GD.TuneClimate.sio_TEnd,
+                   _GD.TuneClimate.sio_TStartFactor-_GD.TuneClimate.sio_TEndFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    int creg_x = (int)(_GD.TuneClimate.sio_TStartFactor-creg_z);
+
+    creg_y = gh->hot->AllTask.DoRHAir-gh->hot->InTeplSens[cSmRHSens].Value;
+    CorrectionRule(_GD.TuneClimate.sio_RHStart,
+                   _GD.TuneClimate.sio_RHEnd,
+                   _GD.TuneClimate.sio_RHStartFactor-_GD.TuneClimate.sio_RHEndFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    creg_z=_GD.TuneClimate.sio_RHStartFactor - creg_z;
+
     if ((gh->hot->InTeplSens[cSmRHSens].Value)&&(gh->hot->AllTask.DoRHAir))
-        if (creg.X>creg.Z)
-            creg.X=creg.Z;
+    {
+        if (creg_x > creg_z)
+            creg_x = creg_z;
+    }
 
     ctx.fnSIOpause[gh->idx] = gh->tcontrol_tepl->PauseSIO;     // out
 
-    if (gh->tcontrol_tepl->PauseSIO<creg.X*60) return;        // проверка паузы между вкл
+    if (gh->tcontrol_tepl->PauseSIO < creg_x*60)
+        return;        // проверка паузы между вкл
 
     gh->tcontrol_tepl->FazaSiod=cSIOFazaPump;
     gh->tcontrol_tepl->TimeSIO+=gh->hot->AllTask.SIO;
@@ -186,12 +198,11 @@ void DoSiod(const gh_t *gh)
     switch (gh->tcontrol_tepl->FazaSiod)
     {
     case cSIOFazaVal:
-        creg.X=1;
-        creg.X<<=(gh->tcontrol_tepl->CurVal%4);
-
-        //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
-
-        SetBit(gh->hand[cHSmSIOVals].Position, creg.X);
+        {
+            int creg_x = 1 << (gh->tcontrol_tepl->CurVal%4);
+            //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
+            SetBit(gh->hand[cHSmSIOVals].Position, creg_x);
+        }
         if (!gh->tcontrol_tepl->TPauseSIO)  gh->tcontrol_tepl->TPauseSIO = gh->hot->AllTask.SIO;
         #warning "falling thru. is it ok ?"
     case cSIOFazaPause:

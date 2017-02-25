@@ -377,17 +377,17 @@ void InitGD(void)
 }
 
 
-int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet)
+int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet, int creg_y, int *reg_z)
 {
-    if ((creg.Y<=fStartCorr)||(fStartCorr == fEndCorr))
+    if (creg_y <= fStartCorr ||fStartCorr == fEndCorr)
     {
-        creg.Z=0;
+        *reg_z = 0;
         return 0;
     }
-    if (creg.Y>fEndCorr)
-        creg.Z=fCorrectOnEnd;
+    if (creg_y > fEndCorr)
+        *reg_z = fCorrectOnEnd;
     else
-        creg.Z=(int)((((long)(creg.Y-fStartCorr))*fCorrectOnEnd)/(fEndCorr-fStartCorr));
+        *reg_z = (int)((((long)(creg_y - fStartCorr))*fCorrectOnEnd)/(fEndCorr-fStartCorr));
     return fbSet;
 }
 
@@ -400,17 +400,20 @@ void WindDirect(void)
         return;
     }
     if (_GD.Hot.MidlWind<_GD.TuneClimate.f_WindStart) return;
-    creg.Z=_GD.TControl.MeteoSensing[cSmDWindSens]+_GD.TuneClimate.o_TeplPosition;
-    creg.Z%=360;
+    int creg_z = _GD.TControl.MeteoSensing[cSmDWindSens]+_GD.TuneClimate.o_TeplPosition;
+    creg_z %= 360;
     _GD.TControl.Tepl[0].CurrPozFluger=_GD.Hot.PozFluger;
-    if ((!_GD.Hot.PozFluger)&&(creg.Z
-                              >(90+f_DeadWindDirect))
-        &&(creg.Z<(270-f_DeadWindDirect)))
+    if (   (!_GD.Hot.PozFluger)
+        && (creg_z >(90+f_DeadWindDirect))
+        && (creg_z<(270-f_DeadWindDirect)))
+    {
         _GD.TControl.Tepl[0].CurrPozFluger=1;
-    if ((_GD.Hot.PozFluger)&&((creg.Z
-                              <(90-f_DeadWindDirect))
-                             ||(creg.Z>(270+f_DeadWindDirect))))
+    }
+
+    if (   (_GD.Hot.PozFluger)
+        && ((creg_z <(90-f_DeadWindDirect)) ||(creg_z>(270+f_DeadWindDirect))))
         _GD.TControl.Tepl[0].CurrPozFluger=0;
+
     if (_GD.Hot.PozFluger!=_GD.TControl.Tepl[0].CurrPozFluger)
     {
         _GD.TControl.Tepl[0].CurrPozFlugerTime++;

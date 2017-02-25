@@ -3,7 +3,7 @@
 
 #ifdef _FRIEND_OF_CONTROL_
 
-int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet);
+int CorrectionRule(int fStartCorr,int fEndCorr, int fCorrectOnEnd, int fbSet, int creg_y, int *reg_z);
 void WindDirect(void);
 
 void CheckMidlSr(void);

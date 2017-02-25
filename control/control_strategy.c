@@ -72,21 +72,29 @@ void __sMinMaxWater(const contour_t *ctr)
             && ((ctr->link.hot->InTeplSens[cSmGlassSens].Value
                  < _GD.TuneClimate.c_DoMinIfGlass)))
         {
-            creg.Y = ctr->link.hot->InTeplSens[cSmGlassSens].Value;
+            int creg_y = ctr->link.hot->InTeplSens[cSmGlassSens].Value;
+            int creg_z;
             CorrectionRule(_GD.TuneClimate.c_DoMaxIfGlass,
                            _GD.TuneClimate.c_DoMinIfGlass,
-                           ctr->hot->MaxCalc - cMin5Kontur, 0);
-            ctr->hot->Do = ctr->hot->MaxCalc - creg.Z;
+                           ctr->hot->MaxCalc - cMin5Kontur,
+                           0,
+                           creg_y,
+                           &creg_z);
+            ctr->hot->Do = ctr->hot->MaxCalc - creg_z;
             SetBit(ctr->hot->ExtRCS, cbBlockPumpKontur);
 
         }
         if (YesBit(_GD.TControl.bSnow, 0x02))
         {
-            creg.Y = _GD.TControl.MeteoSensing[cSmOutTSens];
-            CorrectionRule(_GD.TuneClimate.c_CriticalSnowOut, c_SnowIfOut,
+            int creg_y = _GD.TControl.MeteoSensing[cSmOutTSens];
+            int creg_z;
+            CorrectionRule(_GD.TuneClimate.c_CriticalSnowOut,
+                           c_SnowIfOut,
                            ctr->hot->MaxCalc - _GD.TuneClimate.c_MinIfSnow,
-                           0);
-            ctr->hot->Do = ctr->hot->MaxCalc - creg.Z;
+                           0,
+                           creg_y,
+                           &creg_z);
+            ctr->hot->Do = ctr->hot->MaxCalc - creg_z;
             SetBit(ctr->hot->ExtRCS, cbBlockPumpKontur);
         }
 
@@ -184,15 +192,24 @@ void __sMinMaxWindows(const gh_t *gh)
     gh->hot->Kontur[cSmWindowOnW].Status = cSOn;
     gh->hot->Kontur[cSmWindowUnW].Status = cSOn;
 
-    creg.Y = DefRH(gh);
-    CorrectionRule(_GD.TuneClimate.f_min_RHStart, _GD.TuneClimate.f_min_RHEnd,
-                   ((int) _GD.TuneClimate.f_min_Cor), 0);
-    gh->hot->Kontur[cSmWindowUnW].MinCalc = MAX(gh->hot->Kontur[cSmWindowUnW].MinCalc, creg.Z);
+    int creg_y = DefRH(gh);
+    int creg_z;
+    CorrectionRule(_GD.TuneClimate.f_min_RHStart,
+                   _GD.TuneClimate.f_min_RHEnd,
+                   (int) _GD.TuneClimate.f_min_Cor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->Kontur[cSmWindowUnW].MinCalc = MAX(gh->hot->Kontur[cSmWindowUnW].MinCalc, creg_z);
 
-    creg.Y = _GD.TControl.MeteoSensing[cSmOutTSens];
-    CorrectionRule(_GD.TuneClimate.f_StartCorrPow, _GD.TuneClimate.f_EndCorrPow,
-                   (_GD.TuneClimate.f_PowFactor - 1000), 0);
-    gh->tcontrol_tepl->f_Power = _GD.TuneClimate.f_PowFactor - creg.Z;
+    creg_y = _GD.TControl.MeteoSensing[cSmOutTSens];
+    CorrectionRule(_GD.TuneClimate.f_StartCorrPow,
+                   _GD.TuneClimate.f_EndCorrPow,
+                   (_GD.TuneClimate.f_PowFactor - 1000),
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->tcontrol_tepl->f_Power = _GD.TuneClimate.f_PowFactor - creg_z;
     if (_GD.TuneClimate.f_PowFactor < 1000)
         gh->tcontrol_tepl->f_Power = 1000;
 
@@ -207,10 +224,14 @@ void __sMinMaxWindows(const gh_t *gh)
     //--------------------------------------------------------------------------------
 //Максимум рассчитываем по внешней температуре
 //--------------------------------------------------------------------------------
-    creg.Y = _GD.TControl.MeteoSensing[cSmOutTSens];
+    creg_y = _GD.TControl.MeteoSensing[cSmOutTSens];
     CorrectionRule(_GD.TuneClimate.f_MinTFreeze,
-                   _GD.TuneClimate.f_MinTFreeze + f_MaxTFreeze, 200, 0);
-    creg.X = creg.Z;
+                   _GD.TuneClimate.f_MinTFreeze + f_MaxTFreeze,
+                   200,
+                   0,
+                   creg_y,
+                   &creg_z);
+    int creg_x = creg_z;
 //--------------------------------------------------------------------------------
 //Если не хотим чтобы открывалась подветренная сторона устанавливаем максимальный ветер в 0
 //--------------------------------------------------------------------------------
@@ -219,38 +240,42 @@ void __sMinMaxWindows(const gh_t *gh)
 //--------------------------------------------------------------------------------
 //И по ветру
 //--------------------------------------------------------------------------------
-    creg.Y = _GD.Hot.MidlWind;
+    creg_y = _GD.Hot.MidlWind;
     CorrectionRule(_GD.TuneClimate.f_StormWind - f_StartWind,
-                   _GD.TuneClimate.f_StormWind, 100, 0);
+                   _GD.TuneClimate.f_StormWind,
+                   100,
+                   0,
+                   creg_y,
+                   &creg_z);
 //В IntZ - ограничение по ветру
 
-    if (creg.Z > gh->tcontrol_tepl->OldPozUn)
+    if (creg_z > gh->tcontrol_tepl->OldPozUn)
     {
         gh->tcontrol_tepl->UnWindStorm = _GD.TuneClimate.f_WindHold;
-        gh->tcontrol_tepl->OldPozUn = creg.Z;
+        gh->tcontrol_tepl->OldPozUn = creg_z;
     }
     if (gh->tcontrol_tepl->UnWindStorm > 0)
     {
         gh->tcontrol_tepl->UnWindStorm--;
-        creg.Z = gh->tcontrol_tepl->OldPozUn;
+        creg_z = gh->tcontrol_tepl->OldPozUn;
     }
 
 //	if (!(GD.TuneClimate.f_MaxWind)) IntZ=100;
-    if (creg.X > 100)
+    if (creg_x > 100)
     {
-        creg.Y = 100 - creg.Z;
-        creg.X -= 100;
+        creg_y = 100 - creg_z;
+        creg_x -= 100;
     }
     else
     {
-        creg.Y = creg.X - creg.Z;
-        creg.X = 0;
+        creg_y = creg_x - creg_z;
+        creg_x = 0;
     }
 //	IntY=t_max-IntX-IntZ;
 
-    creg.Y = CLAMP(0, creg.Y, t_max);
+    creg_y = CLAMP(0, creg_y, t_max);
 
-    gh->hot->Kontur[cSmWindowUnW].MaxCalc = creg.Y; //pGD_TControl_Tepl->PrevMaxWinUnW;
+    gh->hot->Kontur[cSmWindowUnW].MaxCalc = creg_y; //pGD_TControl_Tepl->PrevMaxWinUnW;
     /*--------------------------------------------------------------------------------
      //Проверяем было ли отличие от предыдущего максимума хотя бы на один шаг
      //--------------------------------------------------------------------------------
@@ -270,35 +295,43 @@ void __sMinMaxWindows(const gh_t *gh)
 //--------------------------------------------------------------------------------
     t_max = gh->gh_ctrl->f_MaxOpenOn;
 
-    creg.Y = -DefRH(gh); //pGD_Hot_Tepl->AllTask.NextRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value;
-    CorrectionRule(_GD.TuneClimate.f_max_RHStart, _GD.TuneClimate.f_max_RHEnd,
-                   ((int) _GD.TuneClimate.f_max_Cor), 0);
-    t_max = MIN(t_max, 100 - creg.Z);
+    creg_y = -DefRH(gh); //pGD_Hot_Tepl->AllTask.NextRHAir-pGD_Hot_Tepl->InTeplSens[cSmRHSens].Value;
+    CorrectionRule(_GD.TuneClimate.f_max_RHStart,
+                   _GD.TuneClimate.f_max_RHEnd,
+                   _GD.TuneClimate.f_max_Cor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    t_max = MIN(t_max, 100 - creg_z);
 
     if ((t_max > _GD.TuneClimate.f_MaxOpenRain) && (_GD.TControl.bSnow))
         t_max = _GD.TuneClimate.f_MaxOpenRain;
 
-    creg.Y = _GD.Hot.MidlWind;
+    creg_y = _GD.Hot.MidlWind;
     CorrectionRule(_GD.TuneClimate.f_StormWindOn - f_StartWind,
-                   _GD.TuneClimate.f_StormWindOn, 100, 0);
+                   _GD.TuneClimate.f_StormWindOn,
+                   100,
+                   0,
+                   creg_y,
+                   &creg_z);
 
-    if (creg.Z < gh->tcontrol_tepl->OldPozOn)
+    if (creg_z < gh->tcontrol_tepl->OldPozOn)
     {
         gh->tcontrol_tepl->OnWindStorm = _GD.TuneClimate.f_WindHold;
-        gh->tcontrol_tepl->OldPozOn = creg.Z;
+        gh->tcontrol_tepl->OldPozOn = creg_z;
     }
     if (gh->tcontrol_tepl->OnWindStorm > 0)
     {
         gh->tcontrol_tepl->OnWindStorm--;
-        creg.Z = gh->tcontrol_tepl->OldPozOn;
+        creg_z = gh->tcontrol_tepl->OldPozOn;
     }
 //--------------------------------------------------------------------------------
 //Если не хотим чтобы открывалась наветренная сторона устанавливаем максимальный ветер в 0
 //--------------------------------------------------------------------------------
-    creg.Y = creg.X - creg.Z;
-    creg.Y = CLAMP(0,  creg.Y, t_max);
+    creg_y = creg_x - creg_z;
+    creg_y = CLAMP(0,  creg_y, t_max);
 
-    gh->hot->Kontur[cSmWindowOnW].MaxCalc = creg.Y; //pGD_TControl_Tepl->PrevMaxWinOnW;
+    gh->hot->Kontur[cSmWindowOnW].MaxCalc = creg_y; //pGD_TControl_Tepl->PrevMaxWinOnW;
     /*    if ((IntY>=pGD_TControl_Tepl->PrevMaxWinOnW+ByteW)
      ||(IntY<=pGD_TControl_Tepl->PrevMaxWinOnW-ByteW))
      {
@@ -314,27 +347,22 @@ void __sMinMaxWindows(const gh_t *gh)
 //	if (YesBit((*(pGD_Hot_Hand+cHSmWinN+1-GD.Hot.PozFluger)).RCS,(cbNoMech+cbManMech)))
     if (gh->hot->Kontur[cSmWindowOnW].Status < 20)
     {
-        if (gh->tcontrol_tepl->Kontur[cSmWindowOnW].DoT / 10
-             ==  gh->hot->Kontur[cSmWindowOnW].MaxCalc)
+        if (gh->tcontrol_tepl->Kontur[cSmWindowOnW].DoT / 10 == gh->hot->Kontur[cSmWindowOnW].MaxCalc)
             gh->hot->Kontur[cSmWindowOnW].Status = cSReachMax;
 
-        if (gh->tcontrol_tepl->Kontur[cSmWindowOnW].DoT / 10
-             ==  gh->hot->Kontur[cSmWindowOnW].MinCalc)
+        if (gh->tcontrol_tepl->Kontur[cSmWindowOnW].DoT / 10 == gh->hot->Kontur[cSmWindowOnW].MinCalc)
             gh->hot->Kontur[cSmWindowOnW].Status = cSReachMin;
     }
     if (gh->hot->Kontur[cSmWindowUnW].Status < 20)
     {
-        if (gh->tcontrol_tepl->Kontur[cSmWindowUnW].DoT / 10
-             ==  gh->hot->Kontur[cSmWindowUnW].MaxCalc)
+        if (gh->tcontrol_tepl->Kontur[cSmWindowUnW].DoT / 10 ==  gh->hot->Kontur[cSmWindowUnW].MaxCalc)
             gh->hot->Kontur[cSmWindowUnW].Status = cSReachMax;
-        if (gh->tcontrol_tepl->Kontur[cSmWindowUnW].DoT / 10
-             ==  gh->hot->Kontur[cSmWindowUnW].MinCalc)
+        if (gh->tcontrol_tepl->Kontur[cSmWindowUnW].DoT / 10 ==  gh->hot->Kontur[cSmWindowUnW].MinCalc)
             gh->hot->Kontur[cSmWindowUnW].Status = cSReachMin;
     }
 
     if ((!gh->tcontrol_tepl->Kontur[cHSmWinN + _GD.Hot.PozFluger].Separate)
-        || (YesBit(gh->hand[cHSmWinN + _GD.Hot.PozFluger].RCS,
-                   cbManMech)))
+        || (YesBit(gh->hand[cHSmWinN + _GD.Hot.PozFluger].RCS, cbManMech)))
     {
         gh->tcontrol_tepl->Kontur[cSmWindowOnW].DoT = 0;
         gh->hot->Kontur[cSmWindowOnW].MaxCalc = 0;
@@ -342,9 +370,8 @@ void __sMinMaxWindows(const gh_t *gh)
         SetBit(gh->hot->Kontur[cSmWindowOnW].RCS, cbNoWorkKontur);
         gh->hot->Kontur[cSmWindowOnW].Status = cSWHand;
     }
-    if ((!gh->tcontrol_tepl->Kontur[cHSmWinN + 1 - _GD.Hot.PozFluger].Separate)
-        || (YesBit(gh->hand[cHSmWinN + 1 - _GD.Hot.PozFluger].RCS,
-                   cbManMech)))
+    if ((  ! gh->tcontrol_tepl->Kontur[cHSmWinN + 1 - _GD.Hot.PozFluger].Separate)
+        || (YesBit(gh->hand[cHSmWinN + 1 - _GD.Hot.PozFluger].RCS, cbManMech)))
     {
         SetBit(gh->hot->Kontur[cSmWindowUnW].RCS, cbNoWorkKontur);
         gh->tcontrol_tepl->Kontur[cSmWindowUnW].DoT = 0;
@@ -487,15 +514,15 @@ void __sRegulKontur(const contour_t *ctr)
 //Подсчет нерегулирумости для контура
 //------------------------------------------------------------------------
 
-    creg.X = (ctr->tcontrol->DoT / 10) - ctr->tcontrol->SensValue;
+    int creg_x = (ctr->tcontrol->DoT / 10) - ctr->tcontrol->SensValue;
 
-    if (((creg.X < 0) && (creg.X > (-cErrKontur)))
-        || ((creg.X < cErrKontur) && (creg.X > 0)))
-        creg.X = 0;
+    if (((creg_x < 0) && (creg_x > (-cErrKontur)))
+        || ((creg_x < cErrKontur) && (creg_x > 0)))
+        creg_x = 0;
 
-    if ((!creg.X) || (!SameSign(creg.X, ctr->tcontrol->SErr))) //(LngX*((long)(pGD_TControl_Tepl_Kontur->SErr)))<0)))
+    if ((! creg_x) || (! SameSign(creg_x, ctr->tcontrol->SErr))) //(LngX*((long)(pGD_TControl_Tepl_Kontur->SErr)))<0)))
         ctr->tcontrol->SErr = 0;
-    ctr->tcontrol->SErr += creg.X;
+    ctr->tcontrol->SErr += creg_x;
 
 //------------------------------------------------------------------------
 //Если общий, то взять нерегулируемость из теплицы А
@@ -530,15 +557,27 @@ void __sRegulKontur(const contour_t *ctr)
 //Устанавливаем нерегулируемость в процентах со знаком
 //------------------------------------------------------------------------
 
-    creg.Y = ctr->tcontrol->SErr;
-    CorrectionRule(v_ControlMidlWater, v_AlarmMidlWater, 100, 0);
-    ctr->hot->SError = (char) creg.Z;
-    if ((creg.Z > cv_ResetMidlWater) && (YesBit(gh->tcontrol_tepl->MechBusy[ctr->cidx].RCS, cMSBlockRegs)))
+    int creg_y = ctr->tcontrol->SErr;
+    int creg_z;
+    CorrectionRule(v_ControlMidlWater,
+                   v_AlarmMidlWater,
+                   100,
+                   0,
+                   creg_y,
+                   &creg_z);
+
+    ctr->hot->SError = (char) creg_z;
+    if ((creg_z > cv_ResetMidlWater) && (YesBit(gh->tcontrol_tepl->MechBusy[ctr->cidx].RCS, cMSBlockRegs)))
         SetBit(ctr->hot->ExtRCS, cbResetErrKontur);
-    creg.Y = -creg.Y;
-    CorrectionRule(v_ControlMidlWater, v_AlarmMidlWater, 100, 0);
-    ctr->hot->SError += (char) creg.Z;
-    if ((creg.Z > cv_ResetMidlWater) && (YesBit(gh->tcontrol_tepl->MechBusy[ctr->cidx].RCS, cMSBlockRegs)))
+    creg_y = -creg_y;
+    CorrectionRule(v_ControlMidlWater,
+                   v_AlarmMidlWater,
+                   100,
+                   0,
+                   creg_y,
+                   &creg_z);
+    ctr->hot->SError += (char) creg_z;
+    if ((creg_z > cv_ResetMidlWater) && (YesBit(gh->tcontrol_tepl->MechBusy[ctr->cidx].RCS, cMSBlockRegs)))
         SetBit(ctr->hot->ExtRCS, cbResetErrKontur);
 
 }
@@ -619,34 +658,34 @@ void __sPotentialPosibilityKontur(const contour_t *ctr, char fInv, const eStrate
 //------------------------------------------------------------------------
 //Приоритет по влажности воздуха в теплице
 //------------------------------------------------------------------------
-    creg.Y = strategy->RHPower;
-    creg.X = -DefRH(&ctr->link);
+    int creg_y = strategy->RHPower;
+    int creg_x = -DefRH(&ctr->link);
 
-    creg.Z = (int) (((long) creg.Y) * creg.X / 1000);
+    int creg_z = (int) (((long) creg_y) * creg_x / 1000);
 //------------------------------------------------------------------------
 //Приоритет по оптимальный температуре
 //------------------------------------------------------------------------
-    creg.X = 0;
+    creg_x = 0;
     if (ctr->hot->Optimal)
     {
-        creg.X = ctr->hot->Optimal - ctr->hot->Do;
+        creg_x = ctr->hot->Optimal - ctr->hot->Do;
 //------------------------------------------------------------------------
 //Если контур выключен то оптимальня температура сравнивается с минимумом контура
 //------------------------------------------------------------------------
-        creg.Y = strategy->OptimalPower;
-        creg.X = (int) (((long) creg.Y * creg.X / 100));
+        creg_y = strategy->OptimalPower;
+        creg_x = (int) (((long) creg_y * creg_x / 100));
     }
 
 //------------------------------------------------------------------------
 //Приоритет с экономичностью
 //------------------------------------------------------------------------
 
-    *pRealPower = strategy->TempPower + creg.X + creg.Z;
+    *pRealPower = strategy->TempPower + creg_x + creg_z;
     if ((*pRealPower) < 1)
         (*pRealPower) = 1;
     if (!fInv)
     {
-        (*pRealPower) = 100 - strategy->TempPower - creg.X - creg.Z;
+        (*pRealPower) = 100 - strategy->TempPower - creg_x - creg_z;
         if ((*pRealPower) < 1)
             (*pRealPower) = 1;
     }
@@ -663,7 +702,7 @@ void __WorkableKontur(const contour_t *ctr)
     if (YesBit(ctr->hand[cHSmMixVal].RCS, cbManMech))
         SetBit(ctr->hot->ExtRCS, cbAlarmErrKontur);
 
-    creg.Y = _GD.Hot.Tepl[ctr->tcontrol->MainTepl].HandCtrl[cHSmMixVal + ctr->cidx].Position;
+    int creg_y = _GD.Hot.Tepl[ctr->tcontrol->MainTepl].HandCtrl[cHSmMixVal + ctr->cidx].Position;
     //------------------------------------------------------------------------
 //Установить возможности регулирования
 //------------------------------------------------------------------------
@@ -671,7 +710,7 @@ void __WorkableKontur(const contour_t *ctr)
 #ifndef DEMO
         && (!(YesBit(ctr->hot->ExtRCS, cbAlarmErrKontur)))
 #endif
-        && (ctr->tcontrol->PumpStatus) && ((creg.Y < 100)))
+        && (ctr->tcontrol->PumpStatus) && ((creg_y < 100)))
         SetBit(ctr->hot->ExtRCS, cbReadyRegUpKontur);
 //------------------------------------------------------------------------
 //Установить бит возможности работы насосом
@@ -706,7 +745,7 @@ void __WorkableKontur(const contour_t *ctr)
 #ifndef DEMO
             && (!(YesBit(ctr->hot->ExtRCS, cbAlarmErrKontur)))
 #endif
-            && (creg.Y > 0))
+            && (creg_y > 0))
             SetBit(ctr->hot->ExtRCS, cbReadyRegDownKontur);
 //------------------------------------------------------------------------
 //Установить возможности работы насосом
@@ -714,7 +753,7 @@ void __WorkableKontur(const contour_t *ctr)
         if ((!(YesBit(ctr->hot->ExtRCS, cbReadyRegDownKontur)))
             && (!(YesBit(ctr->hot->ExtRCS, cbBlockPumpKontur)))
             && (!ctr->tcontrol->PumpPause)
-            && (gh->tcontrol_tepl->Critery < 0) && (!creg.Y)
+            && (gh->tcontrol_tepl->Critery < 0) && (! creg_y)
             && (_GD.TControl.MeteoSensing[cSmOutTSens] > 500))
             SetBit(ctr->hot->ExtRCS, cbReadyPumpKontur);
     }
@@ -877,50 +916,50 @@ void __sLastCheckWindow(const gh_t *gh)
     MaxOn = gh->hot->Kontur[cSmWindowOnW].MaxCalc;
     MaxUn = gh->hot->Kontur[cSmWindowUnW].MaxCalc;
 
-    creg.Y = gh->tcontrol_tepl->Kontur[cSmWindowUnW].CalcT;
-    if (creg.Y < 0)
-        creg.Y = 0;
-    if (creg.Y > _GD.TuneClimate.f_S1Level)
+    int creg_y = gh->tcontrol_tepl->Kontur[cSmWindowUnW].CalcT;
+    if (creg_y < 0)
+        creg_y = 0;
+    if (creg_y > _GD.TuneClimate.f_S1Level)
         tDo = _GD.TuneClimate.f_S1Level;
     else
-        tDo = creg.Y;
-    creg.Y -= _GD.TuneClimate.f_S1Level;
-    creg.Y *= _GD.TuneClimate.f_S1MinDelta;
-    if (creg.Y < 0)
-        creg.Y = 0;
+        tDo = creg_y;
+    creg_y -= _GD.TuneClimate.f_S1Level;
+    creg_y *= _GD.TuneClimate.f_S1MinDelta;
+    if (creg_y < 0)
+        creg_y = 0;
 
-    if (creg.Y > _GD.TuneClimate.f_S2Level - _GD.TuneClimate.f_S1Level)
+    if (creg_y > _GD.TuneClimate.f_S2Level - _GD.TuneClimate.f_S1Level)
         tDo = _GD.TuneClimate.f_S2Level;
     else
-        tDo += creg.Y;
-    creg.Y -= _GD.TuneClimate.f_S2Level - _GD.TuneClimate.f_S1Level;
-    creg.Y = (creg.Y * _GD.TuneClimate.f_S2MinDelta) / _GD.TuneClimate.f_S1MinDelta;
-    if (creg.Y < 0)
-        creg.Y = 0;
+        tDo += creg_y;
+    creg_y -= _GD.TuneClimate.f_S2Level - _GD.TuneClimate.f_S1Level;
+    creg_y = (creg_y * _GD.TuneClimate.f_S2MinDelta) / _GD.TuneClimate.f_S1MinDelta;
+    if (creg_y < 0)
+        creg_y = 0;
 
-    if (creg.Y > _GD.TuneClimate.f_S3Level - _GD.TuneClimate.f_S2Level)
+    if (creg_y > _GD.TuneClimate.f_S3Level - _GD.TuneClimate.f_S2Level)
         tDo = _GD.TuneClimate.f_S3Level;
     else
-        tDo += creg.Y;
-    creg.Y -= _GD.TuneClimate.f_S3Level - _GD.TuneClimate.f_S2Level;
-    creg.Y = (creg.Y * _GD.TuneClimate.f_S3MinDelta) / _GD.TuneClimate.f_S2MinDelta;
-    if (creg.Y < 0)
-        creg.Y = 0;
+        tDo += creg_y;
+    creg_y -= _GD.TuneClimate.f_S3Level - _GD.TuneClimate.f_S2Level;
+    creg_y = (creg_y * _GD.TuneClimate.f_S3MinDelta) / _GD.TuneClimate.f_S2MinDelta;
+    if (creg_y < 0)
+        creg_y = 0;
 
-    tDo += creg.Y;
+    tDo += creg_y;
 
-    creg.Y = _GD.TuneClimate.f_DefOnUn;
+    creg_y = _GD.TuneClimate.f_DefOnUn;
 //	if (MaxUn<IntY) IntY=MaxUn;
 
-    if (tDo < creg.Y)
+    if (tDo < creg_y)
     {
         DoUn = tDo;
         DoOn = 0;
     }
     else
     {
-        tDo -= creg.Y;
-        DoUn = creg.Y + tDo / 2;
+        tDo -= creg_y;
+        DoUn = creg_y + tDo / 2;
         DoOn = tDo / 2;
     }
     if (DoUn > MaxUn)
@@ -969,14 +1008,14 @@ void __sLastCheckWindow(const gh_t *gh)
 // NEW
 
 
-    creg.Y = 0;
+    creg_y = 0;
     if (! getTempVent(gh, gh->idx))
-        creg.Y = 0;
+        creg_y = 0;
     else
-        creg.Y = getTempVent(gh, gh->idx) - gh->hot->AllTask.DoTVent;
+        creg_y = getTempVent(gh, gh->idx) - gh->hot->AllTask.DoTVent;
 
-    if (((DoUn  ==  MaxUn) && (DoOn  ==  MaxOn) && (creg.Y > 0))
-        || ((DoUn  ==  MinUn) && (DoOn  ==  MinOn) && (creg.Y < 0)))
+    if (((DoUn  ==  MaxUn) && (DoOn  ==  MaxOn) && (creg_y > 0))
+        || ((DoUn  ==  MinUn) && (DoOn  ==  MinOn) && (creg_y < 0)))
         gh->tcontrol_tepl->StopVentI++;
     else
         gh->tcontrol_tepl->StopVentI = 0;
@@ -1445,7 +1484,7 @@ void __sMechWindows(void)
                 continue;
             }
 
-            creg.X = Hot_Tepl_Kontur->Do;
+            int creg_x = Hot_Tepl_Kontur->Do;
 //			IntY=abs(IntZ-((int)(pGD_Hot_Hand_Kontur->Position)));
 
             if (YesBit(Hot_Hand_Kontur->RCS, cbManMech))
@@ -1463,7 +1502,7 @@ void __sMechWindows(void)
              }
              */
 
-            Hot_Hand_Kontur->Position = (char) creg.X;
+            Hot_Hand_Kontur->Position = (char) creg_x;
 
 //			pGD_TControl_Tepl_Kontur->TPause=GD.TuneClimate.f_MinTime;
         }

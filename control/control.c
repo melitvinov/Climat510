@@ -301,21 +301,31 @@ void AllTaskAndCorrection(const gh_t *gh)
     int sum;
     int val = 0;
 
-    creg.Y = _GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
-    /*Установка и коррекция по солнцу температуры обогрева*/
     gh->hot->AllTask.DoTHeat = gh->hot->AllTask.TAir;
-    creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                          _GD.TuneClimate.s_TConst,cbCorrTOnSun);
-    SetBit(gh->hot->RCS,creg.X);
-    gh->hot->AllTask.DoTHeat+=creg.Z;
+    int creg_y = _GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
+    int creg_z;
+    /*Установка и коррекция по солнцу температуры обогрева*/
+    int creg_x = CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                            _GD.TuneClimate.s_TEnd,
+                            _GD.TuneClimate.s_TConst,
+                            cbCorrTOnSun,
+                            creg_y,
+                            &creg_z);
+    SetBit(gh->hot->RCS, cbCorrTOnSun);
+
+    gh->hot->AllTask.DoTHeat += creg_z;
     /*Коррекция прогноза*/
-    gh->hot->AllTask.NextTAir+=creg.Z;
+    gh->hot->AllTask.NextTAir += creg_z;
     if (gh->hot->AllTask.DoTVent)
     {
-        CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                       _GD.TuneClimate.s_TVentConst,0);
-        gh->hot->AllTask.DoTVent+=creg.Z;
-        gh->hot->AllTask.NextTVent+=creg.Z;
+        CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                       _GD.TuneClimate.s_TEnd,
+                       _GD.TuneClimate.s_TVentConst,
+                       0,
+                       creg_y,
+                       &creg_z);
+        gh->hot->AllTask.DoTVent+=creg_z;
+        gh->hot->AllTask.NextTVent+=creg_z;
     }
     else
     {
@@ -329,10 +339,14 @@ void AllTaskAndCorrection(const gh_t *gh)
     if (gh->hot->AllTask.RHAir)
     {
         gh->hot->AllTask.DoRHAir = gh->hot->AllTask.RHAir;
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_RHConst,cbCorrRHOnSun);
-        SetBit(gh->hot->RCS,creg.X);
-        gh->hot->AllTask.DoRHAir-=creg.Z;
+        int creg_x = CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                                _GD.TuneClimate.s_TEnd,
+                                _GD.TuneClimate.s_RHConst,
+                                cbCorrRHOnSun,
+                                creg_y,
+                                &creg_z);
+        SetBit(gh->hot->RCS, creg_x);
+        gh->hot->AllTask.DoRHAir-=creg_z;
         /*Коррекция прогноза*/
 //		pGD_Hot_Tepl->AllTask.NextRHAir-=IntZ;
     }
@@ -362,53 +376,77 @@ void AllTaskAndCorrection(const gh_t *gh)
                 gh->hot->AllTask.DoCO2 = gh->hot->AllTask.DoCO2 - _GD.TuneClimate.co2Off;
         }
 
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_CO2Const,cbCorrCO2OnSun);
-        SetBit(gh->hot->RCS,creg.X);
-        gh->hot->AllTask.DoCO2+=creg.Z;
+        int creg_x = CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                                _GD.TuneClimate.s_TEnd,
+                                _GD.TuneClimate.s_CO2Const,
+                                cbCorrCO2OnSun,
+                                creg_y,
+                                &creg_z);
+        SetBit(gh->hot->RCS, cbCorrCO2OnSun);
+        gh->hot->AllTask.DoCO2+=creg_z;
     }
     /*---------------------------------------------------*/
     /*Установка и коррекция по солнцу минимальной температуры в контурах 1 и 2*/
 
     if (gh->hot->Kontur[cSmKontur1].MinTask)
     {
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_MinTPipeConst,0/*cbCorrMinTaskOnSun*/);
+        CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                        _GD.TuneClimate.s_TEnd,
+                        _GD.TuneClimate.s_MinTPipeConst,
+                        0/*cbCorrMinTaskOnSun*/,
+                        creg_y,
+                        &creg_z);
 //		SetBit(pGD_Hot_Tepl->Kontur[cSmKontur1].RCS,IntX);
-        gh->hot->Kontur[cSmKontur1].MinCalc = gh->hot->Kontur[cSmKontur1].MinTask-creg.Z;
-        creg.Y = DefRH(gh);//MeteoSens[cSmFARSens].Value;
+        gh->hot->Kontur[cSmKontur1].MinCalc = gh->hot->Kontur[cSmKontur1].MinTask-creg_z;
+        creg_y = DefRH(gh);//MeteoSens[cSmFARSens].Value;
 
-        creg.X = CorrectionRule(_GD.TuneClimate.c_RHStart,_GD.TuneClimate.c_RHEnd,
-                              _GD.TuneClimate.c_RHOnMin1,0/*cbCorrMinTaskOnSun*/);
+        CorrectionRule(_GD.TuneClimate.c_RHStart,
+                        _GD.TuneClimate.c_RHEnd,
+                        _GD.TuneClimate.c_RHOnMin1,
+                        0/*cbCorrMinTaskOnSun*/,
+                        creg_y,
+                        &creg_z);
 //		SetBit(pGD_Hot_Tepl->Kontur[cSmKontur1].RCS,IntX);
-        gh->hot->Kontur[cSmKontur1].MinCalc+=creg.Z;
+        gh->hot->Kontur[cSmKontur1].MinCalc += creg_z;
 
     }
     gh->hot->Kontur[cSmKontur2].MinCalc = gh->hot->Kontur[cSmKontur2].MinTask;
     if (gh->hot->Kontur[cSmKontur2].MinTask)
     {
-        creg.Y = DefRH(gh);//MeteoSens[cSmFARSens].Value;
+        creg_y = DefRH(gh);//MeteoSens[cSmFARSens].Value;
 
-        creg.X = CorrectionRule(_GD.TuneClimate.c_RHStart,_GD.TuneClimate.c_RHEnd,
-                              _GD.TuneClimate.c_RHOnMin2,0/*cbCorrMinTaskOnSun*/);
+         CorrectionRule(_GD.TuneClimate.c_RHStart,
+                        _GD.TuneClimate.c_RHEnd,
+                        _GD.TuneClimate.c_RHOnMin2,
+                        0/*cbCorrMinTaskOnSun*/,
+                        creg_y,
+                        &creg_z);
 //		SetBit(pGD_Hot_Tepl->Kontur[cSmKontur1].RCS,IntX);
-        gh->hot->Kontur[cSmKontur2].MinCalc+=creg.Z;
+        gh->hot->Kontur[cSmKontur2].MinCalc += creg_z;
     }
 
-    creg.Y = _GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
+    creg_y = _GD.Hot.MidlSR;//MeteoSens[cSmFARSens].Value;
     if (gh->hot->Kontur[cSmKontur3].MinTask)
     {
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_MinTPipe3,0);
-        gh->hot->Kontur[cSmKontur3].MinCalc = gh->hot->Kontur[cSmKontur3].MinTask-creg.Z;
+        CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                        _GD.TuneClimate.s_TEnd,
+                        _GD.TuneClimate.s_MinTPipe3,
+                        0,
+                        creg_y,
+                        &creg_z);
+        gh->hot->Kontur[cSmKontur3].MinCalc = gh->hot->Kontur[cSmKontur3].MinTask - creg_z;
     }
 
 //	pGD_Hot_Tepl->Kontur[cSmKontur3].MinCalc = pGD_Hot_Tepl->Kontur[cSmKontur3].MinTask;
     if (gh->hot->Kontur[cSmKontur5].MinTask)
     {
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_MinTPipe5,0/*cbCorrMinTaskOnSun*/);
-        gh->hot->Kontur[cSmKontur5].MinCalc = gh->hot->Kontur[cSmKontur5].MinTask+creg.Z;
+        CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                        _GD.TuneClimate.s_TEnd,
+                        _GD.TuneClimate.s_MinTPipe5,
+                        0/*cbCorrMinTaskOnSun*/,
+                        creg_y,
+                        &creg_z);
+        gh->hot->Kontur[cSmKontur5].MinCalc = gh->hot->Kontur[cSmKontur5].MinTask + creg_z;
     }
 
     gh->hot->AllTask.DoPressure = gh->gh_ctrl->c_DoPres;
@@ -418,25 +456,36 @@ void AllTaskAndCorrection(const gh_t *gh)
     if (gh->hot->Kontur[cSmWindowUnW].MinTask)
     {
         gh->hot->Kontur[cSmWindowUnW].MinCalc = gh->hot->Kontur[cSmWindowUnW].MinTask;
-        creg.X = CorrectionRule(_GD.TuneClimate.s_TStart[0],_GD.TuneClimate.s_TEnd,
-                              _GD.TuneClimate.s_MinOpenWinConst,0/*cbCorrMinTaskOnSun*/);
-        SetBit(gh->hot->Kontur[cSmWindowUnW].RCS,creg.X);
-        gh->hot->Kontur[cSmWindowUnW].MinCalc+=creg.Z;
+        CorrectionRule(_GD.TuneClimate.s_TStart[0],
+                       _GD.TuneClimate.s_TEnd,
+                       _GD.TuneClimate.s_MinOpenWinConst,
+                       0/*cbCorrMinTaskOnSun*/,
+                       creg_y,
+                       &creg_z);
+        SetBit(gh->hot->Kontur[cSmWindowUnW].RCS, 0);
+        gh->hot->Kontur[cSmWindowUnW].MinCalc += creg_z;
     }
     /*----------------------------------------------------------------*/
-    creg.Y = DefRH(gh);
-    CorrectionRule(_GD.TuneClimate.f_min_RHStart,_GD.TuneClimate.f_min_RHEnd,
-                   _GD.TuneClimate.f_CorrTVent,0);
-    gh->hot->AllTask.NextTVent-=creg.Z;
-    gh->hot->AllTask.DoTVent-=creg.Z;
-    creg.Y=-creg.Y;
+    creg_y = DefRH(gh);
+    CorrectionRule(_GD.TuneClimate.f_min_RHStart,
+                   _GD.TuneClimate.f_min_RHEnd,
+                   _GD.TuneClimate.f_CorrTVent,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->AllTask.NextTVent -= creg_z;
+    gh->hot->AllTask.DoTVent -= creg_z;
+    creg_y = -creg_y;
 
-    CorrectionRule(_GD.TuneClimate.f_max_RHStart,_GD.TuneClimate.f_max_RHEnd,
-                   _GD.TuneClimate.f_CorrTVentUp,0);
-    gh->hot->AllTask.NextTVent+=creg.Z;
-    gh->hot->AllTask.DoTVent+=creg.Z;
+    CorrectionRule(_GD.TuneClimate.f_max_RHStart,
+                   _GD.TuneClimate.f_max_RHEnd,
+                   _GD.TuneClimate.f_CorrTVentUp,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->AllTask.NextTVent += creg_z;
+    gh->hot->AllTask.DoTVent += creg_z;
     /*--------------------------------------------------------------*/
-
 }
 
 void SetIfReset(const gh_t *gh)
@@ -508,23 +557,33 @@ void __cNextTCalc(const gh_t *gh)
     /**********************************************/
     /*СУПЕР АЛГОРИТМ ДЛЯ РАСЧЕТА*/
     gh->hot->AllTask.Rez[0]=getTempHeat(gh, gh->idx);
-    creg.X=(gh->hot->AllTask.DoTHeat-getTempHeat(gh, gh->idx));
+    int creg_x = gh->hot->AllTask.DoTHeat - getTempHeat(gh, gh->idx);
 
 /**********************************************/
 /*Вычиляем увеличение от солнечной радиации*/
-    creg.Y = _GD.Hot.MidlSR;
+    int creg_y = _GD.Hot.MidlSR;
+    int creg_z;
+
     if ((!YesBit(gh->hot->InTeplSens[cSmInLightSens].RCS,cbNoWorkSens)))
-        creg.Y = gh->hot->InTeplSens[cSmInLightSens].Value;
+        creg_y = gh->hot->InTeplSens[cSmInLightSens].Value;
 
-    CorrectionRule(_GD.TuneClimate.c_SRStart,_GD.TuneClimate.c_SREnd,
-                   _GD.TuneClimate.c_SRFactor,0);
-    gh->hot->NextTCalc.UpSR = creg.Z;
+    CorrectionRule(_GD.TuneClimate.c_SRStart,
+                   _GD.TuneClimate.c_SREnd,
+                   _GD.TuneClimate.c_SRFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->NextTCalc.UpSR = creg_z;
 /*Вычиляем увеличение от разницы температуры задания и стекла*/
-    creg.Y = gh->hot->AllTask.NextTAir-gh->hot->InTeplSens[cSmGlassSens].Value;
+    creg_y = gh->hot->AllTask.NextTAir-gh->hot->InTeplSens[cSmGlassSens].Value;
 
-    CorrectionRule(_GD.TuneClimate.c_GlassStart,_GD.TuneClimate.c_GlassEnd,
-                   _GD.TuneClimate.c_GlassFactor,0);
-    gh->hot->NextTCalc.LowGlass = creg.Z;
+    CorrectionRule(_GD.TuneClimate.c_GlassStart,
+                   _GD.TuneClimate.c_GlassEnd,
+                   _GD.TuneClimate.c_GlassFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->NextTCalc.LowGlass = creg_z;
 
     if (gh->tcontrol_tepl->Screen[0].Mode < 2)
         //if (pGD_TControl_Tepl->Screen[0].Mode < 2)
@@ -556,13 +615,21 @@ void __cNextTCalc(const gh_t *gh)
 /*Вычисляем корректировки ветра фрамуг и разницы между температурой задания
 и внешней температуры соответственно*/
 /*Ветер и фрамуги увеличивают эту разницу*/
-    creg.Y = _GD.Hot.MidlWind;
-    CorrectionRule(_GD.TuneClimate.c_WindStart,_GD.TuneClimate.c_WindEnd,
-                   _GD.TuneClimate.c_WindFactor,0);
-    creg.Y = gh->hot->AllTask.NextTAir-_GD.TControl.MeteoSensing[cSmOutTSens]-creg.Z;
-    CorrectionRule(_GD.TuneClimate.c_OutStart,_GD.TuneClimate.c_OutEnd,
-                   _GD.TuneClimate.c_OutFactor,0);
-    gh->hot->NextTCalc.LowOutWinWind+=creg.Z;
+    creg_y = _GD.Hot.MidlWind;
+    CorrectionRule(_GD.TuneClimate.c_WindStart,
+                   _GD.TuneClimate.c_WindEnd,
+                   _GD.TuneClimate.c_WindFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    creg_y = gh->hot->AllTask.NextTAir-_GD.TControl.MeteoSensing[cSmOutTSens]-creg_z;
+    CorrectionRule(_GD.TuneClimate.c_OutStart,
+                   _GD.TuneClimate.c_OutEnd,
+                   _GD.TuneClimate.c_OutFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->NextTCalc.LowOutWinWind += creg_z;
 
 //	if (YesBit(pGD_Hot_Tepl->DiskrSens[0],cSmLightDiskr))
     gh->hot->NextTCalc.UpLight=((long)_GD.TuneClimate.c_LightFactor * gh->hand[cHSmLight].Position) /100;
@@ -589,36 +656,48 @@ void __cNextTCalc(const gh_t *gh)
 ***********************************************************************/
     gh->hot->NextTCalc.dSumCalcF = 0;
 /*Вычиляем увеличение от солнечной радиации*/
-    creg.Y = _GD.Hot.MidlSR;
+    creg_y = _GD.Hot.MidlSR;
 /*if work on internal light sensor, then change IntY*/
 
     if ((!YesBit(gh->hot->InTeplSens[cSmInLightSens].RCS,cbNoWorkSens)))
-        creg.Y = gh->hot->InTeplSens[cSmInLightSens].Value;
+        creg_y = gh->hot->InTeplSens[cSmInLightSens].Value;
 
-    CorrectionRule(_GD.TuneClimate.c_SRStart,_GD.TuneClimate.c_SREnd,
-                   _GD.TuneClimate.f_SRFactor,0);
-    gh->hot->NextTCalc.dSumCalcF+=creg.Z;
+    CorrectionRule(_GD.TuneClimate.c_SRStart,
+                   _GD.TuneClimate.c_SREnd,
+                   _GD.TuneClimate.f_SRFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->NextTCalc.dSumCalcF+=creg_z;
 
 /*Вычисляем корректировки ветра фрамуг и разницы между температурой задания
 и внешней температуры соответственно*/
 /*Ветер и фрамуги увеличивают эту разницу*/
-    creg.Y = _GD.Hot.MidlWind;
-    CorrectionRule(_GD.TuneClimate.c_WindStart,_GD.TuneClimate.c_WindEnd,
-                   _GD.TuneClimate.f_WindFactor,0);
-    creg.Y = gh->hot->AllTask.NextTAir-_GD.TControl.MeteoSensing[cSmOutTSens]-creg.Z;
-    CorrectionRule(_GD.TuneClimate.c_OutStart,_GD.TuneClimate.c_OutEnd,
-                   _GD.TuneClimate.f_OutFactor,0);
-    gh->hot->NextTCalc.dSumCalcF+=creg.Z;
+    creg_y = _GD.Hot.MidlWind;
+    CorrectionRule(_GD.TuneClimate.c_WindStart,
+                   _GD.TuneClimate.c_WindEnd,
+                   _GD.TuneClimate.f_WindFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    creg_y = gh->hot->AllTask.NextTAir-_GD.TControl.MeteoSensing[cSmOutTSens]-creg_z;
+    CorrectionRule(_GD.TuneClimate.c_OutStart,
+                   _GD.TuneClimate.c_OutEnd,
+                   _GD.TuneClimate.f_OutFactor,
+                   0,
+                   creg_y,
+                   &creg_z);
+    gh->hot->NextTCalc.dSumCalcF+=creg_z;
 /*********************************************************************
 ***********************************************************************
 ***********************************************************************/
 
 
 
-    creg.Y = gh->hot->NextTCalc.DifTAirTDo;
-    if ((_GD.TuneClimate.c_MullDown>10)&&(creg.Y<0)&&(_GD.TuneClimate.c_MullDown<30))
-        creg.Y=(((long)creg.Y)*_GD.TuneClimate.c_MullDown)/10;
-    gh->hot->NextTCalc.PCorrection=((int)((((long)(creg.Y))*((long)gh->gh_ctrl->c_PFactor))/100));
+    creg_y = gh->hot->NextTCalc.DifTAirTDo;
+    if ((_GD.TuneClimate.c_MullDown>10)&&(creg_y<0)&&(_GD.TuneClimate.c_MullDown<30))
+        creg_y=(((long)creg_y)*_GD.TuneClimate.c_MullDown)/10;
+    gh->hot->NextTCalc.PCorrection=((int)((((long)(creg_y))*((long)gh->gh_ctrl->c_PFactor))/100));
     if (gh->tcontrol_tepl->StopI<2)
         gh->tcontrol_tepl->Integral+=((((long)(gh->hot->NextTCalc.DifTAirTDo))*((long)gh->gh_ctrl->c_IFactor))/10);
     if (gh->tcontrol_tepl->Integral>2000000)
@@ -638,7 +717,7 @@ void __cNextTCalc(const gh_t *gh)
     }
 //	IntY = pGD_Hot_Tepl->NextTCalc.DifTAirTDo;
     gh->tcontrol_tepl->SaveIntegral = gh->tcontrol_tepl->Integral;
-    if ((gh->tcontrol_tepl->StopI>3)&&(ABS(creg.Y)<cResetDifTDo))
+    if ((gh->tcontrol_tepl->StopI>3)&&(ABS(creg_y)<cResetDifTDo))
     {
 
 //		CorrectionRule(0,200,1000,0);
@@ -661,11 +740,9 @@ void __cNextTCalc(const gh_t *gh)
             gh->tcontrol_tepl->SaveIntegral*=100;
         }
     }
-    if ((gh->tcontrol_tepl->StopI>3)&&(!SameSign(creg.Y,gh->tcontrol_tepl->Critery)))
+    if ((gh->tcontrol_tepl->StopI>3)&&(!SameSign(creg_y, gh->tcontrol_tepl->Critery)))
     {
-        gh->tcontrol_tepl->SaveIntegral
-        =creg.Y+CalcAllKontur
-         -gh->hot->NextTCalc.PCorrection+gh->hot->NextTCalc.dSumCalc;
+        gh->tcontrol_tepl->SaveIntegral =creg_y + CalcAllKontur - gh->hot->NextTCalc.PCorrection + gh->hot->NextTCalc.dSumCalc;
         gh->tcontrol_tepl->SaveIntegral*=100;
     }
     if (!gh->tcontrol_tepl->Critery)
@@ -681,26 +758,27 @@ void __cNextTCalc(const gh_t *gh)
         Далее расчет критерия для фрамуг
 *******************************************************************/
     if (getTempVent(gh, gh->idx))
-        creg.Y = getTempVent(gh, gh->idx)-gh->hot->AllTask.DoTVent;
-    else creg.Y = 0;
+        creg_y = getTempVent(gh, gh->idx)-gh->hot->AllTask.DoTVent;
+    else
+        creg_y = 0;
 
-    gh->hot->NextTCalc.PCorrectionVent=((int)((((long)(creg.Y))*((long)gh->gh_ctrl->f_PFactor))/100));
+    gh->hot->NextTCalc.PCorrectionVent=((int)((((long)(creg_y))*((long)gh->gh_ctrl->f_PFactor))/100));
     if (gh->tcontrol_tepl->StopVentI<2)
-        gh->tcontrol_tepl->IntegralVent+=((((long)(creg.Y))*((long)gh->gh_ctrl->f_IFactor))/10);
+        gh->tcontrol_tepl->IntegralVent+=((((long)(creg_y))*((long)gh->gh_ctrl->f_IFactor))/10);
     if (gh->tcontrol_tepl->IntegralVent<0) gh->tcontrol_tepl->IntegralVent = 0;
     gh->hot->NextTCalc.ICorrectionVent=(int)(gh->tcontrol_tepl->IntegralVent/100);
     if (! gh->gh_ctrl->f_IFactor)
         gh->tcontrol_tepl->IntegralVent = 0;
 
-    creg.X = gh->hot->NextTCalc.PCorrectionVent+gh->hot->NextTCalc.ICorrectionVent+gh->hot->NextTCalc.dSumCalcF;
+    creg_x = gh->hot->NextTCalc.PCorrectionVent+gh->hot->NextTCalc.ICorrectionVent+gh->hot->NextTCalc.dSumCalcF;
 //Блокировка фрамуг при отоплении
-    if ((gh->tcontrol_tepl->TVentCritery<creg.X)&&(!gh->tcontrol_tepl->StopI)&&(creg.X>0)&&((gh->gh_ctrl->f_PFactor%100)>89))
+    if ((gh->tcontrol_tepl->TVentCritery < creg_x)&&(!gh->tcontrol_tepl->StopI)&&(creg_x > 0)&&((gh->gh_ctrl->f_PFactor%100)>89))
     {
         gh->tcontrol_tepl->IntegralVent = gh->tcontrol_tepl->TVentCritery-gh->hot->NextTCalc.PCorrectionVent-gh->hot->NextTCalc.dSumCalcF;
         gh->tcontrol_tepl->IntegralVent*=100;
-        creg.X = gh->tcontrol_tepl->TVentCritery;
+        creg_x = gh->tcontrol_tepl->TVentCritery;
     }
-    gh->tcontrol_tepl->TVentCritery = creg.X;
+    gh->tcontrol_tepl->TVentCritery = creg_x;
 //	if (!SameSign(pGD_TControl_Tepl->TVentCritery,pGD_TControl_Tepl->LastTVentCritery))
 //	  	pGD_TControl_Tepl->StopVentI = 0;
     if (gh->tcontrol_tepl->StopVentI>4)
@@ -710,22 +788,20 @@ void __cNextTCalc(const gh_t *gh)
     if (gh->tcontrol_tepl->StopVentI>3)
     {
         gh->tcontrol_tepl->SaveIntegralVent = gh->tcontrol_tepl->IntegralVent;
-        CorrectionRule(0,100,500,0);
+        CorrectionRule(0,100,500,0, creg_y, &creg_z);
         if (gh->tcontrol_tepl->AbsMaxVent>0)
-            creg.Z+=gh->tcontrol_tepl->AbsMaxVent;
-        if (gh->tcontrol_tepl->TVentCritery>creg.Z)
+            creg_z += gh->tcontrol_tepl->AbsMaxVent;
+        if (gh->tcontrol_tepl->TVentCritery > creg_z)
         {
-            gh->tcontrol_tepl->SaveIntegralVent
-            =creg.Z-gh->hot->NextTCalc.PCorrectionVent-gh->hot->NextTCalc.dSumCalcF;
+            gh->tcontrol_tepl->SaveIntegralVent = creg_z-gh->hot->NextTCalc.PCorrectionVent - gh->hot->NextTCalc.dSumCalcF;
             gh->tcontrol_tepl->SaveIntegralVent*=100;
         }
-        creg.Y=-creg.Y;
-        CorrectionRule(0,100,500,0);
-        creg.Z++;
-        if (gh->tcontrol_tepl->TVentCritery<-creg.Z)
+        creg_y = -creg_y;
+        CorrectionRule(0,100,500,0, creg_y, &creg_z);
+        creg_z++;
+        if (gh->tcontrol_tepl->TVentCritery< -creg_z)
         {
-            gh->tcontrol_tepl->SaveIntegralVent
-            =-creg.Z-gh->hot->NextTCalc.PCorrectionVent-gh->hot->NextTCalc.dSumCalcF;
+            gh->tcontrol_tepl->SaveIntegralVent = -creg_z-gh->hot->NextTCalc.PCorrectionVent - gh->hot->NextTCalc.dSumCalcF;
             gh->tcontrol_tepl->SaveIntegralVent*=100;
         }
     }
@@ -759,32 +835,33 @@ void SetMixValvePosition(const gh_t *gh)
         }
         ctr.tcontrol->TPause = cMinPauseMixValve;
 
-        creg.X = ctr.hot->Do - ctr.tcontrol->SensValue;
+        int creg_x = ctr.hot->Do - ctr.tcontrol->SensValue;
         //(*IntVal)=(*IntVal)+IntX;
         long long_y = _GD.ConstMechanic[gh->idx].ConstMixVal[contour_idx].v_PFactor;
-        long_y = long_y*creg.X;//(*IntVal);
-        creg.Y=(int16_t)(long_y/10000);
+        long_y = long_y * creg_x;//(*IntVal);
+        int creg_y = (int16_t)(long_y/10000);
         //if (!IntY) continue;
-        creg.Z=(*IntVal)/100;
+        int creg_z = (*IntVal)/100;
         //IntZ=(*(pGD_Hot_Hand_Kontur+cHSmMixVal)).Position;
-        creg.Z+=creg.Y;
-        if (creg.Z>100)
+        creg_z += creg_y;
+        if (creg_z > 100)
         {
-            (*IntVal)=(100-creg.Y)*100;
-            creg.Z = 100;
+            (*IntVal)=(100 - creg_y)*100;
+            creg_z = 100;
+        }
+        else if (creg_z < 0)
+        {
+            (*IntVal)=(-creg_y) * 100;
+            creg_z = 0;
         }
         else
-            if (creg.Z<0)
         {
-            (*IntVal)=(-creg.Y)*100;
-            creg.Z = 0;
+            (*IntVal)+=(int16_t)((((long)creg_x) * _GD.ConstMechanic[gh->idx].ConstMixVal[contour_idx].v_IFactor)/100);
         }
-        else
-            (*IntVal)+=(int16_t)((((long)creg.X) * _GD.ConstMechanic[gh->idx].ConstMixVal[contour_idx].v_IFactor)/100);
 
         //ogrMax(&IntZ,100);//if (IntZ>100) IntZ = 100;
         //ogrMin(&IntZ,0);//if (IntZ<0)	IntZ = 0;
-        ctr.hand[cHSmMixVal].Position=(char)(creg.Z);
+        ctr.hand[cHSmMixVal].Position=(char)creg_z;
     }
 }
 
@@ -1041,9 +1118,7 @@ void SetDiskr(const gh_t *gh)
 
     for (int i = 0;i<4;i++)
     {
-        creg.X = 1;
-        creg.X<<=i;
-        if (YesBit(gh->hand[cHSmSIOVals].Position, creg.X))
+        if (YesBit(gh->hand[cHSmSIOVals].Position, 1 << i))
             write_output_bit(gh->idx, cHSmSIOVals, 0, i);
     }
 
@@ -1117,15 +1192,15 @@ static void do_contour_mechanics(const gh_t *gh, int mech_idx)
             }
             if (mechbusy->PrevTask == mech->Position*10)
             {
-                creg.Y = _GD.TuneClimate.f_MaxAngle*10;
-                creg.Y = CLAMP(10, creg.Y, 50);
-                if (abs(mechbusy->Sens->Value - mechbusy->PrevTask)>creg.Y)
+                int creg_y = _GD.TuneClimate.f_MaxAngle*10;
+                creg_y = CLAMP(10, creg_y, 50);
+                if (abs(mechbusy->Sens->Value - mechbusy->PrevTask) > creg_y)
                 {
                     mechbusy->TryMes++;
                     if (mechbusy->TryMes>4)
                     {
                         mechbusy->TryMes = 0;
-                        mechbusy->TryMove+=(abs(mechbusy->Sens->Value-mechbusy->PrevTask)/creg.Y);
+                        mechbusy->TryMove+=(abs(mechbusy->Sens->Value-mechbusy->PrevTask) / creg_y);
                     }
                     else
                     {
@@ -1137,7 +1212,7 @@ static void do_contour_mechanics(const gh_t *gh, int mech_idx)
                 long_x *= ConstMechanic_Mech->v_TimeMixVal;//MBusy->CalcTime;
                 long_x /= 1000;
 
-                if (abs(mechbusy->Sens->Value-mechbusy->PrevTask)<=creg.Y)
+                if (abs(mechbusy->Sens->Value-mechbusy->PrevTask) <= creg_y)
                 {
                     mechbusy->TryMove = 0;
                     if (mechbusy->PrevDelta>10)
@@ -1213,14 +1288,14 @@ static void do_contour_mechanics(const gh_t *gh, int mech_idx)
     }
     if (byte_y)
     {
-        creg.Y = ConstMechanic_Mech->v_MinTim;
+        int creg_y = ConstMechanic_Mech->v_MinTim;
 /*			if ((ByteX == cHSmWinN)||(ByteX == cHSmWinS))
         {
             ogrMin(&IntY,90);
             pGD_TControl_Tepl->FramUpdate[ByteX-cHSmWinN]=0;
         }*/
-        creg.Y = MAX(creg.Y, 5);
-        mechbusy->PauseMech = creg.Y;
+        creg_y = MAX(creg_y, 5);
+        mechbusy->PauseMech = creg_y;
         if (YesBit(mechbusy->RCS,cMSBlockRegs))
             mechbusy->PauseMech = 150;
     }
@@ -1363,7 +1438,7 @@ void SetLighting(const gh_t *gh)
     char bZad;
 
     if (!(_GD.MechConfig[gh->idx].RNum[cHSmLight])) return;  // if hand mode exit
-    creg.Z = 0;
+    int creg_z = 0;
 
 //	if(SameSign(IntY,IntZ)) pGD_TControl_Tepl->LightExtraPause = 0;
 
@@ -1403,9 +1478,15 @@ void SetLighting(const gh_t *gh)
         if (_GD.TControl.Tepl[0].SensHalfHourAgo < _GD.TuneClimate.l_SunOn50)
         {
 //			pGD_TControl_Tepl->LightMode = 50;
-            creg.Y = _GD.Hot.MidlSR;
-            CorrectionRule(_GD.TuneClimate.l_SunOn100,_GD.TuneClimate.l_SunOn50,50,0);
-            gh->tcontrol_tepl->LightMode = 100-creg.Z;
+            int creg_y = _GD.Hot.MidlSR;
+            int creg_z;
+            CorrectionRule(_GD.TuneClimate.l_SunOn100,
+                           _GD.TuneClimate.l_SunOn50,
+                           50,
+                           0,
+                           creg_y,
+                           &creg_z);
+            gh->tcontrol_tepl->LightMode = 100 - creg_z;
         }
 
 //		if (GD.TControl.Tepl[0].SensHalfHourAgo<GD.TuneClimate.l_SunOn100)
@@ -1545,31 +1626,43 @@ void Configuration(void)
 #ifdef Vitebsk
 void    TransferWaterToBoil(void)
 {
-    creg.X = _GD.Hot.MaxReqWater/100; //Делаем запас на 5 градусов
+    int creg_x = _GD.Hot.MaxReqWater/100; //Делаем запас на 5 градусов
 //	IntX = IntX/100;
-    creg.X++;
+    creg_x++;
+    int creg_y;
 //	IntY = 0;
-    switch (creg.X)
+    switch (creg_x)
     {
     case 0:
     case 1:
     case 2:
-    case 3: creg.Y = 1; break;
+    case 3:
+        creg_y = 1;
+        break;
+
     case 4:
     case 5:
-    case 6: creg.Y = creg.X-2; break;
-    case 7: creg.Y = 0; break;
+    case 6:
+        creg_y = creg_x - 2;
+        break;
+    case 7:
+        creg_y = 0;
+        break;
     case 8:
     case 9:
-    case 10: creg.Y = creg.X-3; break;
-    default: creg.Y = 7;
+    case 10:
+        creg_y = creg_x - 3;
+        break;
+    default:
+        creg_y = 7;
+        break;
     }
 
-    if (YesBit(creg.Y,0x01))
+    if (YesBit(creg_y,0x01))
         write_output_bit(0,cHSmRegs+4,0,0);
-    if (YesBit(creg.Y,0x02))
+    if (YesBit(creg_y,0x02))
         write_output_bit(0,cHSmRegs+4,0,1);
-    if (YesBit(creg.Y,0x04))
+    if (YesBit(creg_y,0x04))
         write_output_bit(0,cHSmRegs+4,0,2);
 //	GD.Hot.Demon = IntY;
 
@@ -1698,9 +1791,10 @@ void control_post(int second, bool is_transfer_in_progress)
     }
     else
     {
-        creg.X = ctx.PastPerRas;
-        if (ctx.TecPerRas>creg.X) creg.X = ctx.TecPerRas;
-        _GD.TControl.NowRasx=(long)_GD.TuneClimate.ScaleRasx*(long)23040/(long)creg.X/100;
+        int creg_x = ctx.PastPerRas;
+        if (ctx.TecPerRas > creg_x)
+            creg_x = ctx.TecPerRas;
+        _GD.TControl.NowRasx=(long)_GD.TuneClimate.ScaleRasx*(long)23040/(long)creg_x/100;
     }
     #warning "useless - volume is always zero"
     //GD.TControl.FullVol+=ctx.Volume;
