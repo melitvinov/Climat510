@@ -42,9 +42,11 @@ BUILD_DIR := $(CFG)/build
 TARG_DIR := $(CFG)/out
 # Tools directory. Python scripts are hosted there
 TOOLS_DIR := ../tools
+# Path to stlink
+STLINK_DIR := d:/winp/dev/stlink/ST-LINK Utility
 
 # Defines to pass to compiler
-CDEFS := -DAGAPOVSKIY_DOUBLE_VALVE -DDEBUG
+CDEFS := -DAGAPOVSKIY_DOUBLE_VALVE -DDEBUG -DNOTESTMEM
 
 # Additional libraries
 LIBS := -lm

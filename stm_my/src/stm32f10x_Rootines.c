@@ -691,6 +691,9 @@ TipRes
 --------------------------------------------------*/
 void TestMem(uchar TipReset)
 {
+    #warning "disabled"
+    return;
+
     InitBlockEEP();  /*подпрограмма в GD */
     ButtonReset();
 //	   TipReset=2;
@@ -757,7 +760,8 @@ void Measure()
                 sensdata.uInTeplSens[tTepl][nSens]=0;
                 continue;
             }
-            if (ErrModule>=iMODULE_MAX_ERR) tSensVal=0;
+            if (ErrModule>=iMODULE_MAX_ERR)
+                tSensVal=0;
             CalibrNew(1,tTepl,nSens,tSensVal);
         }
     }
@@ -770,7 +774,8 @@ void Measure()
             sensdata.uMeteoSens[nSens]=0;
             continue;
         }
-        if (ErrModule>=iMODULE_MAX_ERR) tSensVal=0;
+        if (ErrModule>=iMODULE_MAX_ERR)
+            tSensVal=0;
         CalibrNew(0,0,nSens,tSensVal);
     }
 }

@@ -276,11 +276,12 @@ void USART_OUT_Configuration(uint16_t fbrate)
 }
 
 
-USART_OUT_INT_VECT
+void UART4_IRQHandler(void)
 {
     uint16_t retByte,i;
     //uint16_t i;
 
+    // received something
     if ((USART_OUT->SR & USART_FLAG_RXNE)!=0)
     {
 //			USART_PC->SR=0;
@@ -398,21 +399,20 @@ USART_OUT_INT_VECT
         //if (PHASE_RS_OUT == RSOUT_INIT) {USART_MASTER_STOPSEND; return;}
         if ((PHASE_RS_OUT == RSOUT_START)||(PHASE_RS_OUT == RSOUT_HEAD))
         {
-            //for (i=0;i<10;i++);
             USART_MASTER_STOPSEND;
-            PHASE_RS_OUT++;
-//				return;
+            if (PHASE_RS_OUT == RSOUT_START)
+                PHASE_RS_OUT = RSOUT_HEAD;
+            else
+                PHASE_RS_OUT = RSOUT_CHK;
         }
         if ((PHASE_RS_OUT == RSOUT_SENDCHK))
         {
-            //for (i=0;i<10;i++);
             USART_MASTER_STOPSEND;
-//				return;
         }
         if ((PHASE_RS_OUT == RSOUT_SEND))
         {
             //USART_ITConfig(USART_OUT, USART_IT_TXE, ENABLE);
-            PHASE_RS_OUT++;
+            PHASE_RS_OUT = RSOUT_SENDCHK;
             chSumUARTOUT=55-chSumUARTOUT;
             retByte=chSumUARTOUT;
             USART_SendData(USART_OUT,retByte);
@@ -459,7 +459,6 @@ uint8_t RS485_Master_ExchangeDataIRQ(uint8_t fNCtr, uint16_t fAdrSend, uint16_t 
     GLDir=Dir;
     ptrUARTOUT=0;
     PHASE_RS_OUT=RSOUT_START;
-    for (i=0;i<100;i++);
 
     USART_SendData(USART_OUT,retByte);
     return MODULE_IS_OK;
@@ -718,7 +717,8 @@ uint16_t GetInIPC(uint16_t nAddress,char* nErr)
     }
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
-        if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
+        if (!ModulData[i].CpM)
+            ModulData[i].CpM=vCpM;
         if (vCpM  ==  ModulData[i].CpM)
         {
             *nErr=ModulData[i].Err;
@@ -833,7 +833,6 @@ void ResMod(void)
 
 uint8_t IMOD_Exchange(TModulData*   fModule)
 {
-    uint8_t fIdent[8];
     uint8_t nModule;
     uint8_t Res;
     nModule=fModule->CpM%100+120;
@@ -916,7 +915,8 @@ void SendIPC(uint8_t *fErrModule)
         StatusByte=0;
         cModule++;
         cOperInModule=0;
-        if (cCycle!=cModule%10) cOperInModule=2;
+        if (cCycle!=cModule%10)
+            cOperInModule=2;
     }
 
     cModule%=OUT_MODUL_SUM;

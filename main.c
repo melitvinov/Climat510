@@ -211,9 +211,9 @@ static void init(void)
 
     InitLCD();
 
-#ifdef SumExtCG
+//#ifdef SumExtCG
     SendFirstScreen(1);
-#endif
+//#endif
     clear_d();
     wtf0.Menu=0;
     nReset=3;
@@ -225,9 +225,11 @@ static void init(void)
     int byte_x=1;
     wtf0.SostRS=OUT_UNIT;
     KeyboardProcess();
+
     if (keyboardGetBITKL())
         byte_x=6;
     TestMem(byte_x);
+
     wtf0.Second=38;
     control_init();
     initCheckConfig();

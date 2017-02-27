@@ -229,7 +229,10 @@ void w_txt(const char *bu)
         while ((*vu))
         {
             if (*vu++  == '#')
-                bu = vu;break;
+            {
+                bu = vu;
+                break;
+            }
         }
     }
     while ((*bu)&&((*bu)!='#'))
