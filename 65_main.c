@@ -223,7 +223,7 @@ start:
 #warning Изменение блока
         //убрать, тестовая вещь показывает прием пакета
 
-       	checkConfig();
+       	//checkConfig();   // тест для Казани
 
         if (NumBlock)
         	ReWriteFRAM();

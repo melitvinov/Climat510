@@ -112,13 +112,14 @@ unsigned char analyse_get_url(char *str)
 	return(-2);
 	}
 
-/*uint16_t CRC16(char *fbuf, const uint16_t start, const uint16_t end)
+uint16_t CRC16(char *fbuf, const uint16_t end)
 {
   volatile int i,j;
   volatile uint16_t bCRC;
   volatile char ch;
   bCRC = 0xFFFF;
-  for (i=start; i<end; i++)
+  for (i=0; i<end+1; i++)
+  //for (i=0; i<11; i++)
   {
 	  ch = *fbuf;
     bCRC = bCRC ^ ch;
@@ -135,9 +136,9 @@ unsigned char analyse_get_url(char *str)
     }
   }
   return bCRC;
-}*/
+}
 
-char CheckSum(char *byte, int size)
+/*char CheckSum(char *byte, int size)
 {
   int i;
   char res = 0;
@@ -146,7 +147,7 @@ char CheckSum(char *byte, int size)
 	  res = res + byte[i];
   }
   return res;
-}
+}*/
 
 int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 {
@@ -210,8 +211,26 @@ switch (Sockets[nSock].IP_PHASE)
 	case(ETH_RECVBLOCK):
 		if (Sockets[nSock].Header.Size<=plen-54)
         {
-          volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
-          if ( crc != fbuf[info_data_len+53] ) return 0;
+		  // было
+          //volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
+          //if ( crc != fbuf[info_data_len+53] ) return 0;
+
+		  // стало
+			//volatile short crc = CRC16(&fbuf[data_p], info_data_len-10);
+			//volatile short crcPack = (fbuf[info_data_len-1+53] << 8) + fbuf[info_data_len+53];
+			//volatile int8_t crc1;
+			//volatile int8_t crc2;
+
+			//volatile int8_t b1 = fbuf[info_data_len-1+53];
+			//volatile int8_t b2 =fbuf[info_data_len+53];
+
+			//crc1 = crc>>8;
+			//crc2 = (int8_t)crc;
+
+//			crc = 10;
+
+			//if ( ( crc1 != b1 ) ||  ( crc2 != b2 ) ) return 0;
+			//if (crcPack != crc) return 0;
         }
 
 		if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
