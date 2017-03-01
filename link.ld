@@ -1,60 +1,74 @@
-OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
-SEARCH_DIR(.)
-INCLUDE "memory.ld"
+/*      Linker script.
+        Based on Miro Samek's 'Building Bare-Metal ARM Systems with GNU'
+*/
 
-/* Section Definitions */ 
-SECTIONS 
-{ 
-    .text : 
-    { 
-        KEEP(*(.isr_vector .isr_vector.*)) 
-        *(.text .text.* .gnu.linkonce.t.*) 	      
-        *(.glue_7t) *(.glue_7)		                
-        *(.rodata .rodata* .gnu.linkonce.r.*)		    	                  
-    } > rom
-    
-    .ARM.extab : 
+OUTPUT_FORMAT("elf32-littlearm")
+OUTPUT_ARCH(arm)
+
+MEMORY
+{
+    ROM (rx) :       ORIGIN = 0x08000000, LENGTH = (256k)
+    RAM (rwx):       ORIGIN = 0x20000000, LENGTH = (64k)
+}
+
+MIN_STACK_SIZE = 2048;
+
+SECTIONS
+{
+    .reset ORIGIN(ROM):
     {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > rom
-    
-    __exidx_start = .;
-    .ARM.exidx :
+        KEEP(*(.initvectors))
+    } >ROM
+
+    . = ALIGN(4);
+
+    .text :
     {
-        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > rom
-    __exidx_end = .;
-    
-    . = ALIGN(4); 
+        /*KEEP(*(.init))*/      /* Startup code from .init-section */
+	*(.text .text.*)        /* remaining code */
+	*(.gnu.linkonce.t.*)
+	*(.glue_7)
+	*(.glue_7t)
+	*(.gcc_except_table)
+	*(.rodata)              /* read-only data (constants) */
+	*(.rodata*)
+	*(.gnu.linkonce.r.*)
+        . = ALIGN(4);
+    } > ROM
+
     _etext = .;
-    _sidata = .; 
-    		
-    .data : AT (_etext) 
-    { 
-        _sdata = .; 
-        *(.data .data.*) 
-        . = ALIGN(4); 
-        _edata = . ;
-    } > ram
+    PROVIDE (etext = .);
 
-    /* .bss section which is used for uninitialized data */ 
-    .bss (NOLOAD) : 
-    { 
-        _sbss = . ; 
-        *(.bss .bss.*) 
-        *(COMMON) 
-        . = ALIGN(4); 
-        _ebss = . ; 
-    } > ram
-    
-    /* stack section */
-    .co_stack (NOLOAD):
+    .data ORIGIN(RAM):
     {
-        . = ALIGN(8);
-        *(.co_stack .co_stack.*)
-    } > ram
-       
-    . = ALIGN(4); 
+        __data_load = LOADADDR (.data);
+        __data = .;
+        KEEP(*(.vectors))
+        SORT(CONSTRUCTORS) /* mt 4/2005 */
+        *(.data .data.* .gnu.linkonce.d.*)
+        . = ALIGN (4);
+        __data_end = .;
+    } >RAM AT>ROM
 
-    _end = . ; 
-} 
+    .bss (NOLOAD) :
+    {
+        __bss = .;
+        *(.bss .bss.* .gnu.linkonce.b.*)
+        *(COMMON)
+        . = ALIGN (4);
+        __bss_end = .;
+    } >RAM
+
+    .stack ALIGN(8):
+    {
+        __stack_bottom = .;
+        . = ORIGIN(RAM) + LENGTH(RAM);
+        . = ALIGN (8);
+        __stack_top = .;
+        ASSERT( SIZEOF(.stack) >= MIN_STACK_SIZE, "stack size is too small !") ;
+    } >RAM
+
+    _end = .;
+    __end = .;
+    PROVIDE(end = .);
+}

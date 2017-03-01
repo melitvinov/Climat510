@@ -65,4 +65,21 @@ typedef int8_t s8;
 #define MIN(a, b)          ({ typeof(a) _a = (a); typeof(b) _b = (b); _a < _b ? _a : _b; })
 #define MAX(a, b)          ({ typeof(a) _a = (a); typeof(b) _b = (b); _a > _b ? _a : _b; })
 
+// aliases for GCC attributes
+#define __packed            __attribute__ ((packed))
+#define __long_call         __attribute__ ((long_call))
+#define __always_inline     __attribute__ ((always_inline))
+#define __pure              __attribute__ ((pure))
+#define __const_func        __attribute__ ((const))
+#define __noinline          __attribute__ ((__noinline__))
+#define __noreturn          __attribute__ ((__noreturn__))
+#define __aligned(bound)    __attribute__ ((aligned(bound)))
+#define __cleanup(dtor)     __attribute__((__cleanup__(dtor)))
+#define __naked             __attribute__ ((naked))
+#define __flatten           __attribute__ ((flatten))
+#define __hot               __attribute__ ((hot))
+#define __unused            __attribute__ ((unused))
+#define __used              __attribute__ ((used))
+#define __optimize(level)   __attribute__ ((optimize(level)))
+
 #endif

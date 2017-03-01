@@ -3,15 +3,15 @@
 #include "syntax.h"
 #include "stm32f10x.h"
 #include "stm32f10x_rcc.h"
-#include "misc.h"
 
 #include "hal_tty.h"
+#include "hal_sys.h"
 
 // bit-bang uart 9600-n-1 on pb7 (i2c1_sda_master)
 
 typedef struct
 {
-    u16 shiftreg;
+    volatile u16 shiftreg;
     u8 buf[HAL_TTY_TX_BUF_SIZE];
     volatile uint r;
     volatile uint w;
@@ -22,6 +22,8 @@ static const uint pin_idx = 9;
 static TIM_TypeDef * const timer = TIM4;
 
 static tty_rt_t rt;
+
+#define TTY_PRIORITY    1
 
 void HAL_tty_init(void)
 {
@@ -35,54 +37,30 @@ void HAL_tty_init(void)
 
     RCC->APB1ENR |= RCC_APB1Periph_TIM4;
 
-    // APB1 freq is 36 MHz
-
-    timer->PSC = 0; // 36 MHz
-    timer->ARR = 36E6/9600./4.5;
+    timer->PSC = 0; // 1:1 prescaler
+    timer->ARR = HAL_SYS_F_CPU / 9600.;
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
     timer->EGR = TIM_EGR_UG;
 
     #warning "refactor the priorities !"
-    NVIC_SetPriority(TIM4_IRQn, 1);
+    NVIC_SetPriority(TIM4_IRQn, TTY_PRIORITY);
     NVIC_ClearPendingIRQ(TIM4_IRQn);
     NVIC_EnableIRQ(TIM4_IRQn);
 
     rt.shiftreg = 0;
 }
 
-void HAL_tty_putc(u8 chr)
+void timer4_handler(void)
 {
-    #warning "detect if interrupts are disabled and proceed in polling mode"
-
-    uint w = rt.w;
-    uint new_w = (w + 1) % countof(rt.buf);
-    while (new_w == rt.r);      // wait for free place in buffer
-
-    rt.buf[w] = chr;            // put byte on hold in buffer
-    rt.w = new_w;
-
-    timer->CR1 = TIM_CR1_CEN;
-}
-
-void HAL_tty_puts(const char *str)
-{
-    while (*str)
-        HAL_tty_putc(*str++);
-}
-
-static volatile bool is_inside = 0;
-
-
-void TIM4_IRQHandler(void)
-{
-    if (rt.shiftreg != 0)
+    uint shiftreg = rt.shiftreg;
+    if (shiftreg != 0)
     {
-        if (rt.shiftreg & 0x01)
+        if (shiftreg & 0x01)
             port->BSRR = 1 << pin_idx;
         else
             port->BRR = 1 << pin_idx;
-        rt.shiftreg >>= 1;
+        rt.shiftreg = shiftreg >> 1;
     }
     else
     {
@@ -101,9 +79,57 @@ void TIM4_IRQHandler(void)
 
     // NOTE: lame stm is seems to be slow clearing nvic
     // so the nops are for avoiding the dupe interrupt
-    #warning "what if timers are running extra fast ? some error with the pll setup ?"
     timer->SR = 0;
     asm volatile ("dmb":::);
     asm volatile ("dmb":::);
-//  asm volatile ("nop":::);
+}
+
+void HAL_tty_putc(u8 chr)
+{
+    u32 primask;
+    u32 basepri;
+    __asm__ volatile("mrs %0, primask" : "=r" (primask));
+    __asm__ volatile ("MRS  %0, basepri_max" : "=r" (basepri));
+    basepri >>= 8 - __NVIC_PRIO_BITS;
+
+    if (unlikely((primask & 0x01) || (basepri && basepri <= TTY_PRIORITY))) // we're running with disabled interrupts. proceed in polling mode
+    {
+        // flush
+        while (rt.shiftreg)
+        {
+            timer->CR1 = TIM_CR1_CEN;
+            while (! (timer->SR & TIM_SR_UIF));
+            timer4_handler();
+        }
+
+        uint w = rt.w;
+        uint new_w = (w + 1) % countof(rt.buf);
+        rt.buf[w] = chr;            // put byte on hold in buffer
+        rt.w = new_w;
+
+        do
+        {
+            timer->CR1 = TIM_CR1_CEN;
+            while (! (timer->SR & TIM_SR_UIF));
+            timer4_handler();
+        }
+        while (rt.shiftreg);
+    }
+    else
+    {
+        uint w = rt.w;
+        uint new_w = (w + 1) % countof(rt.buf);
+        while (new_w == rt.r);      // wait for free place in buffer
+
+        rt.buf[w] = chr;            // put byte on hold in buffer
+        rt.w = new_w;
+
+        timer->CR1 = TIM_CR1_CEN;
+    }
+}
+
+void HAL_tty_puts(const char *str)
+{
+    while (*str)
+        HAL_tty_putc(*str++);
 }

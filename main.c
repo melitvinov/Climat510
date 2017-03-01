@@ -207,7 +207,7 @@ static void periodic_task(void)
 static void init(void)
 {
     HAL_tty_init();
-    SETEA;
+//    SETEA;
 
     while (1)
     {
