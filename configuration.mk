@@ -34,7 +34,7 @@ QUIET := true
 USE_LTO := false
 
 # Modules to build project from
-MODULES := . control
+MODULES := . control hal env
 
 # Build directory - place for intermediate objects, listings etc.
 BUILD_DIR := $(CFG)/build

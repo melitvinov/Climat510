@@ -178,7 +178,7 @@ typedef struct
     uint16_t    newsZone;       // new
     int16_t     Rez[8];    // 9
     eMechanic   HandCtrl[cSHandCtrl];
-} eTepl;
+} eZone;
 
 
 typedef struct
@@ -212,7 +212,7 @@ typedef struct
     uint8_t       Year;
     uint8_t       Demo;
 /***************************************/
-    eTepl       Tepl[cSTepl];
+    eZone       Zones[NZONES];
 
     int16_t     Rez2[10];
 /***************************************/
@@ -245,7 +245,7 @@ typedef struct
 
     int16_t     Rez[19];
 //+42 байта
-} eTeplControl;
+} eZoneControl;
 
 typedef struct
 {
@@ -254,7 +254,7 @@ typedef struct
     uint8_t           rSMechanic;
     uint8_t           rSTepl;
     uint8_t           rVersion;
-    eTeplControl    Tepl[cSTepl];
+    eZoneControl    Zones[NZONES];
     uint8_t           NFCtr;
     uint8_t         IPAddr[4];
     uint8_t           ConfSTepl;
@@ -610,7 +610,7 @@ typedef struct
     int16_t             DoT;
     int32_t             CalcT;
     int8_t              PumpStatus;
-    int8_t              MainTepl;
+    int8_t              MainZone;
     int16_t             TPause;
     int8_t              Manual;
     int8_t              Separate;
@@ -761,11 +761,11 @@ typedef struct
     int8_t          bAlarm;
     int8_t          NAndKontur;
     int8_t          Alarms[MAX_ALARMS];
-} eTControlTepl;
+} eTControlZone;
 
 typedef struct
 {
-    eTControlTepl   Tepl[cSTepl];
+    eTControlZone   Zones[NZONES];
 //		int16_t 		LastLastMeteoSensing[cConfSMetSens];
     int16_t         MeteoSensing[cConfSMetSens];
     uint8_t         TimeMeteoSensing[cConfSMetSens];
@@ -790,7 +790,7 @@ typedef int16_t eSensLevel[4];
 
 typedef struct
 {
-    eSensLevel InTeplSens[cSTepl][cConfSSens];
+    eSensLevel InTeplSens[NZONES][cConfSSens];
     eSensLevel MeteoSens[cConfSMetSens];
 } eLevel;
 

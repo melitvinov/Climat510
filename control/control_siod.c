@@ -23,23 +23,23 @@ const siod_ctx_t *siod_view(void)
 
 void siodInit(void)
 {
-    for (int gh_idx=0; gh_idx<_GD.Control.ConfSTepl; gh_idx++)
+    for (int zone_idx=0; zone_idx<_GD.Control.ConfSTepl; zone_idx++)
     {
-        gh_t gh = make_gh_ctx(gh_idx);
-        gh.tcontrol_tepl->PauseSIO = 0;
+        zone_t zone = make_zone_ctx(zone_idx);
+        zone.tcontrol_tepl->PauseSIO = 0;
     }
 }
 
-void SetUpSiod(const gh_t *gh)
+void SetUpSiod(const zone_t *zone)
 {
     //uint16_t numConf;
     //uint16_t confGroup[8][9];
     char equalConf;
     char nMas, nCon;
 
-    if (! gh->gh_ctrl->sio_SVal) return;                        // нет клапанов
+    if (! zone->gh_ctrl->sio_SVal) return;                        // нет клапанов
 
-    gh->hot->OtherCalc.TimeSiod= gh->tcontrol_tepl->TimeSIO;
+    zone->hot->OtherCalc.TimeSiod= zone->tcontrol_tepl->TimeSIO;
 
 //	for (nMas=0;nMas<GD.Control.ConfSTepl;nMas++)		// !!!
 //	{
@@ -49,11 +49,11 @@ void SetUpSiod(const gh_t *gh)
 
     for (nCon=0; nCon<_GD.Control.ConfSTepl;nCon++)
     {
-        if (nCon != gh->idx)
+        if (nCon != zone->idx)
         {
-            gh_t other_gh = make_gh_ctx(nCon);
+            zone_t other_gh = make_zone_ctx(nCon);
 
-            if ((gh->mech_cfg->RNum[cHSmSIOPump] == other_gh.mech_cfg->RNum[cHSmSIOPump])
+            if ((zone->mech_cfg->RNum[cHSmSIOPump] == other_gh.mech_cfg->RNum[cHSmSIOPump])
                 && (other_gh.tcontrol_tepl->FazaSiod))
                 return;
         }
@@ -123,29 +123,29 @@ void SetUpSiod(const gh_t *gh)
 
     //if (GD.TControl.Tepl[fnTepl].FazaSiod) return;
 
-    if (! gh->hot->AllTask.SIO)
+    if (! zone->hot->AllTask.SIO)
         return;   // нет задания
     //if (pGD_TControl_Tepl->PauseSIO<1440)
     //	pGD_TControl_Tepl->PauseSIO++;
-    if (gh->tcontrol_tepl->PauseSIO < 1440*60)
-        gh->tcontrol_tepl->PauseSIO++;
+    if (zone->tcontrol_tepl->PauseSIO < 1440*60)
+        zone->tcontrol_tepl->PauseSIO++;
 
 
-    if ((   ((gh->hot->InTeplSens[cSmRHSens].Value - gh->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
-            ||(gh->hot->InTeplSens[cSmRHSens].Value > 9600))
-        &&  gh->hot->AllTask.DoRHAir)
+    if ((   ((zone->hot->InTeplSens[cSmRHSens].Value - zone->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
+            ||(zone->hot->InTeplSens[cSmRHSens].Value > 9600))
+        &&  zone->hot->AllTask.DoRHAir)
         return;              // если достигнута заданная влажность влажность + коэфицент
 
 
 #warning CHECK THIS
 // NEW
-    if ((gh->hot->AllTask.DoTHeat-getTempHeat(gh, gh->idx))>_GD.TuneClimate.sio_TStop)
+    if ((zone->hot->AllTask.DoTHeat-getTempHeat(zone, zone->idx))>_GD.TuneClimate.sio_TStop)
         return;  // если держать больше чем измерено
-    if (((getTempHeat(gh, gh->idx) - gh->hot->AllTask.DoTHeat)<_GD.TuneClimate.sio_TStart)
-        &&(((gh->hot->AllTask.DoRHAir-gh->hot->InTeplSens[cSmRHSens].Value)<_GD.TuneClimate.sio_RHStart)
-           ||(!gh->hot->InTeplSens[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
+    if (((getTempHeat(zone, zone->idx) - zone->hot->AllTask.DoTHeat)<_GD.TuneClimate.sio_TStart)
+        &&(((zone->hot->AllTask.DoRHAir-zone->hot->InTeplSens[cSmRHSens].Value)<_GD.TuneClimate.sio_RHStart)
+           ||(!zone->hot->InTeplSens[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
 
-    int creg_y = getTempHeat(gh, gh->idx)-gh->hot->AllTask.DoTHeat;
+    int creg_y = getTempHeat(zone, zone->idx)-zone->hot->AllTask.DoTHeat;
     int creg_z;
 
     CorrectionRule(_GD.TuneClimate.sio_TStart,
@@ -156,7 +156,7 @@ void SetUpSiod(const gh_t *gh)
                    &creg_z);
     int creg_x = (int)(_GD.TuneClimate.sio_TStartFactor-creg_z);
 
-    creg_y = gh->hot->AllTask.DoRHAir-gh->hot->InTeplSens[cSmRHSens].Value;
+    creg_y = zone->hot->AllTask.DoRHAir-zone->hot->InTeplSens[cSmRHSens].Value;
     CorrectionRule(_GD.TuneClimate.sio_RHStart,
                    _GD.TuneClimate.sio_RHEnd,
                    _GD.TuneClimate.sio_RHStartFactor-_GD.TuneClimate.sio_RHEndFactor,
@@ -165,83 +165,83 @@ void SetUpSiod(const gh_t *gh)
                    &creg_z);
     creg_z=_GD.TuneClimate.sio_RHStartFactor - creg_z;
 
-    if ((gh->hot->InTeplSens[cSmRHSens].Value)&&(gh->hot->AllTask.DoRHAir))
+    if ((zone->hot->InTeplSens[cSmRHSens].Value)&&(zone->hot->AllTask.DoRHAir))
     {
         if (creg_x > creg_z)
             creg_x = creg_z;
     }
 
-    ctx.fnSIOpause[gh->idx] = gh->tcontrol_tepl->PauseSIO;     // out
+    ctx.fnSIOpause[zone->idx] = zone->tcontrol_tepl->PauseSIO;     // out
 
-    if (gh->tcontrol_tepl->PauseSIO < creg_x*60)
+    if (zone->tcontrol_tepl->PauseSIO < creg_x*60)
         return;        // проверка паузы между вкл
 
-    gh->tcontrol_tepl->FazaSiod=cSIOFazaPump;
-    gh->tcontrol_tepl->TimeSIO+=gh->hot->AllTask.SIO;
-    gh->tcontrol_tepl->PauseSIO=0;
-    gh->tcontrol_tepl->CurVal=0;
+    zone->tcontrol_tepl->FazaSiod=cSIOFazaPump;
+    zone->tcontrol_tepl->TimeSIO+=zone->hot->AllTask.SIO;
+    zone->tcontrol_tepl->PauseSIO=0;
+    zone->tcontrol_tepl->CurVal=0;
 }
 
-void DoSiod(const gh_t *gh)
+void DoSiod(const zone_t *zone)
 {
     char NSIO;
 
     //if (!(YesBit((*(pGD_Hot_Hand+cHSmSIOPump)).RCS,cbManMech))) (*(pGD_Hot_Hand+cHSmSIOPump)).Position=0;
     //else return;
 
-    if (! YesBit(gh->hand[cHSmSIOVals].RCS,cbManMech))
-        gh->hand[cHSmSIOVals].Position=0;
+    if (! YesBit(zone->hand[cHSmSIOVals].RCS,cbManMech))
+        zone->hand[cHSmSIOVals].Position=0;
     else
         return;
 
-    NSIO = gh->gh_ctrl->sio_SVal;
+    NSIO = zone->gh_ctrl->sio_SVal;
     if (NSIO > cNumValSiodMax)
         NSIO = cNumValSiodMax;
 
 
-    ctx.fnSIOfaza[gh->idx] = gh->tcontrol_tepl->FazaSiod;  // out
+    ctx.fnSIOfaza[zone->idx] = zone->tcontrol_tepl->FazaSiod;  // out
 
-    switch (gh->tcontrol_tepl->FazaSiod)
+    switch (zone->tcontrol_tepl->FazaSiod)
     {
     case cSIOFazaVal:
         {
-            int creg_x = 1 << (gh->tcontrol_tepl->CurVal%4);
+            int creg_x = 1 << (zone->tcontrol_tepl->CurVal%4);
             //fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
-            SetBit(gh->hand[cHSmSIOVals].Position, creg_x);
+            SetBit(zone->hand[cHSmSIOVals].Position, creg_x);
         }
-        if (!gh->tcontrol_tepl->TPauseSIO)
-            gh->tcontrol_tepl->TPauseSIO = gh->hot->AllTask.SIO;
+        if (!zone->tcontrol_tepl->TPauseSIO)
+            zone->tcontrol_tepl->TPauseSIO = zone->hot->AllTask.SIO;
         #warning "falling thru. is it ok ?"
     case cSIOFazaPause:
-        if (!gh->tcontrol_tepl->TPauseSIO)
+        if (!zone->tcontrol_tepl->TPauseSIO)
         {
-            gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
-            gh->tcontrol_tepl->CurVal++;
+            zone->tcontrol_tepl->TPauseSIO=sio_ValPause;
+            zone->tcontrol_tepl->CurVal++;
 
-            ctx.fnSIOvelvOut[gh->idx] = gh->tcontrol_tepl->CurVal;           // out
+            ctx.fnSIOvelvOut[zone->idx] = zone->tcontrol_tepl->CurVal;           // out
         }
     case cSIOFazaPump:
-        gh->hand[cHSmSIOPump].Position = 1;
-        if (!gh->tcontrol_tepl->TPauseSIO)
-            gh->tcontrol_tepl->TPauseSIO=sio_ValPause;
+        zone->hand[cHSmSIOPump].Position = 1;
+        if (!zone->tcontrol_tepl->TPauseSIO)
+            zone->tcontrol_tepl->TPauseSIO=sio_ValPause;
 
-        ctx.fnSIOpumpOut[gh->idx] = gh->tcontrol_tepl->TPauseSIO;            // out
+        ctx.fnSIOpumpOut[zone->idx] = zone->tcontrol_tepl->TPauseSIO;            // out
         break;
 
     case cSIOFazaEnd:
-        gh->tcontrol_tepl->FazaSiod=0;
-        gh->hand[cHSmSIOPump].Position = 0;       // new
+        zone->tcontrol_tepl->FazaSiod=0;
+        zone->hand[cHSmSIOPump].Position = 0;       // new
         return;
 
     default:
         return;
     }
-    if (--gh->tcontrol_tepl->TPauseSIO)
+    if (--zone->tcontrol_tepl->TPauseSIO)
         return;
 
-    if ((gh->tcontrol_tepl->FazaSiod == cSIOFazaPause)&&(gh->tcontrol_tepl->CurVal<NSIO))
-        gh->tcontrol_tepl->FazaSiod=cSIOFazaVal;
+    if ((zone->tcontrol_tepl->FazaSiod == cSIOFazaPause)&&(zone->tcontrol_tepl->CurVal<NSIO))
+        zone->tcontrol_tepl->FazaSiod=cSIOFazaVal;
     else
-        gh->tcontrol_tepl->FazaSiod++;
+        zone->tcontrol_tepl->FazaSiod++;
 
 }

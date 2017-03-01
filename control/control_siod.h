@@ -13,7 +13,7 @@ typedef struct
 const siod_ctx_t *siod_view(void);
 
 void siodInit(void);
-void SetUpSiod(const gh_t *gh);
-void DoSiod(const gh_t *gh);
+void SetUpSiod(const zone_t *zone);
+void DoSiod(const zone_t *zone);
 
 #endif

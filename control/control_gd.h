@@ -28,7 +28,7 @@ typedef struct
 // blobs in remote reporting
 typedef struct
 {
-    eCalSensor  InTeplSens[cSTepl][cConfSSens];
+    eCalSensor  InTeplSens[NZONES][cConfSSens];
     // blobs in remote reporting
     eCalSensor  MeteoSens[cConfSMetSens];
 } eFullCal;
@@ -81,14 +81,14 @@ typedef struct  eGData
     eHot            Hot;
     eControl        Control;
     eTimer          Timers[cSTimer];
-    eConstMech      ConstMechanic[cSTepl];
-    eStrategy       Strategy[cSTepl][cSStrategy];
-    eMechConfig     MechConfig[cSTepl];
+    eConstMech      ConstMechanic[NZONES];
+    eStrategy       Strategy[NZONES][cSStrategy];
+    eMechConfig     MechConfig[NZONES];
     eTuneClimate    TuneClimate;
     eTControl       TControl;
     eLevel          Level;
     // NOT blobs in remote reporting
-    eFanBlock FanBlock[cSTepl][2];
+    eFanBlock FanBlock[NZONES][2];
 } eGData;
 
 typedef struct
@@ -98,23 +98,23 @@ typedef struct
 
 typedef struct
 {
-    int16_t         uInTeplSens[cSTepl][cConfSSens];
+    int16_t         uInTeplSens[NZONES][cConfSSens];
     int16_t         uMeteoSens[cConfSMetSens];
 } sens_t;
 
 typedef struct
 {
     int idx;
-    eTepl *hot;
+    eZone *hot;
     eMechanic *hand;
-    eTControlTepl *tcontrol_tepl;
-    eTeplControl *gh_ctrl;
+    eTControlZone *tcontrol_tepl;
+    eZoneControl *gh_ctrl;
     eTControl *tctrl;
     const eMechConfig *mech_cfg;
     const eConstMech *const_mech;
     const eStrategy *strategies;
     const eFanBlock *fanblock;
-} gh_t;
+} zone_t;
 
 typedef struct
 {
@@ -123,7 +123,7 @@ typedef struct
     eTControlKontur *tcontrol;
     eMechanic *hand;
     const eStrategy *strategy;
-    gh_t link;
+    zone_t link;
 } contour_t;
 
 #ifdef _FRIEND_OF_CONTROL_

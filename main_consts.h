@@ -3,7 +3,7 @@
 
 #include "405_ConfigEnRuSR.h"
 
-extern const uint16_t InitSystems[cSTepl][10];
-extern const uint16_t MechC[cSTepl][SUM_NAME_CONF];
+extern const uint16_t InitSystems[NZONES][10];
+extern const uint16_t MechC[NZONES][SUM_NAME_CONF];
 
 #endif

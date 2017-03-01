@@ -53,7 +53,7 @@ void CheckWithoutPC(void)
         NMinPCOut=0;
         USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
         simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
-        gd_rw()->TControl.Tepl[0].WithoutPC++;
+        gd_rw()->TControl.Zones[0].WithoutPC++;
     }
     NMinPCOut++;
 }
@@ -90,7 +90,7 @@ void Init_STM32(void)
 
 
     w1Init();
-    Init_MEAS_INPUT();
+//    Init_MEAS_INPUT();
 //    Init_IWDG(&GD.TControl.Tepl[0].nReset);
     Check_IWDG();
     USART_OUT_Configuration(9600);
@@ -371,7 +371,7 @@ void Reg48ToI2C()
     uint16_t i;
 //	for (i=0;i<8;i++)
 //		I2C_Rel_Write(OutR[i],i);
-    SendIPC(&gd_rw()->Hot.Tepl[0].ConnectionStatus);
+    SendIPC(&gd_rw()->Hot.Zones[0].ConnectionStatus);
 }
 
 void OutReg()
@@ -528,11 +528,11 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     uS=&sensdata.uInTeplSens[fnTepl][fnSens];
     nameS=&NameSensConfig[fnSens];
 
-    valueS=&gd_rw()->Hot.Tepl[fnTepl].InTeplSens[fnSens];
-    llS=&gd_rw()->TControl.Tepl[fnTepl].LastLastInTeplSensing[fnSens];
-    lS=&gd_rw()->TControl.Tepl[fnTepl].LastInTeplSensing[fnSens];
+    valueS=&gd_rw()->Hot.Zones[fnTepl].InTeplSens[fnSens];
+    llS=&gd_rw()->TControl.Zones[fnTepl].LastLastInTeplSensing[fnSens];
+    lS=&gd_rw()->TControl.Zones[fnTepl].LastInTeplSensing[fnSens];
     levelS=gd_rw()->Level.InTeplSens[fnTepl][fnSens];
-    tPause=&gd_rw()->TControl.Tepl[fnTepl].TimeInTepl[fnSens];
+    tPause=&gd_rw()->TControl.Zones[fnTepl].TimeInTepl[fnSens];
     if (met)
     {
         uS=&sensdata.uMeteoSens[fnSens];
@@ -601,14 +601,14 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
     if (nameS->TypeSens == cTypeFram)
     {
-        if (! (gd()->TControl.Tepl[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
-            gd_rw()->TControl.Tepl[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Zones[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
+            gd_rw()->TControl.Zones[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
     if (nameS->TypeSens == cTypeScreen)
     {
-        if (! (gd()->TControl.Tepl[fnTepl].MechBusy[cHSmScrTH].RCS & cMSBusyMech))
-            gd_rw()->TControl.Tepl[fnTepl].MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Zones[fnTepl].MechBusy[cHSmScrTH].RCS & cMSBusyMech))
+            gd_rw()->TControl.Zones[fnTepl].MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
 
     }
     valueS->Value=Mes;
@@ -638,7 +638,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     char        met=0;
     if (nSArea)
     {
-        fSens=&gd_rw()->Hot.Tepl[nTepl].InTeplSens[nSens];
+        fSens=&gd_rw()->Hot.Zones[nTepl].InTeplSens[nSens];
         fuSens=&sensdata.uInTeplSens[nTepl][nSens];
         fCalSens=&caldata.Cal.InTeplSens[nTepl][nSens];
         fNameSens=&NameSensConfig[nSens];
@@ -694,7 +694,7 @@ void TestMem(uchar TipReset)
     #warning "disabled"
     return;
 
-    InitBlockEEP();  /*подпрограмма в GD */
+    InitBlockEEP();
     ButtonReset();
 //	   TipReset=2;
 /*------ проверка контр суммы блока CONTROL ---------------------------*/
@@ -748,15 +748,15 @@ void Measure()
     uint16_t    tSensVal;
     int nModule;
     int8_t ErrModule;
-    for (tTepl=0;tTepl<cSTepl;tTepl++)
+    for (tTepl=0;tTepl<NZONES;tTepl++)
     {
         for (nSens=0;nSens<cConfSSens;nSens++)
         {
             tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
             if (ErrModule<0)
             {
-                gd_rw()->Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
-                gd_rw()->Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
+                gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
+                gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].Value=0;
                 sensdata.uInTeplSens[tTepl][nSens]=0;
                 continue;
             }
@@ -792,13 +792,13 @@ void CheckInputConfig()
     tTempConf.U1 = 0;
     tTempConf.U2 = 0;
 
-    for (tTepl=0;tTepl<cSTepl;tTepl++)
+    for (tTepl=0;tTepl<NZONES;tTepl++)
         for (nSens=0;nSens<cConfSInputs;nSens++)
         {
             tTempConf.Input=GetInputConfig(tTepl,nSens)%100;
             UpdateInIPC(GetInputConfig(tTepl,nSens),&tTempConf);
         }
-    for (tTepl=0;tTepl<cSTepl;tTepl++)
+    for (tTepl=0;tTepl<NZONES;tTepl++)
         for (nSens=0;nSens<cConfSSens;nSens++)
             UpdateInIPC(GetSensConfig(tTepl,nSens), &caldata.Cal.InTeplSens[tTepl][nSens]);
     for (nSens=0;nSens<cConfSMetSens;nSens++)
@@ -808,14 +808,14 @@ void CheckInputConfig()
 
 void LoadDiscreteInputs(void)
 {
-    for (int gh_idx=0; gh_idx<cSTepl; gh_idx++)
+    for (int zone_idx=0; zone_idx<NZONES; zone_idx++)
     {
-        eTepl *gh = &gd_rw()->Hot.Tepl[gh_idx];
+        eZone *zone = &gd_rw()->Hot.Zones[zone_idx];
         char nErr;
         for (int input_idx=0; input_idx < cConfSInputs; input_idx++)
         {
-            if (GetDiskrIPC(GetInputConfig(gh_idx,input_idx),&nErr))
-                gh->discrete_inputs[0] |= 1<<input_idx;
+            if (GetDiskrIPC(GetInputConfig(zone_idx,input_idx),&nErr))
+                zone->discrete_inputs[0] |= 1<<input_idx;
         }
     }
 }

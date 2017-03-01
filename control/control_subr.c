@@ -19,15 +19,15 @@ extern int8_t  bWaterReset[16];
 static int16_t teplTmes[8][6];
 
 
-static int16_t getTempSensor(const gh_t *gh, int fnTepl, int sensor)
+static int16_t getTempSensor(const zone_t *zone, int fnTepl, int sensor)
 {
-    if (gh->hot->InTeplSens[sensor].RCS  ==  0)
+    if (zone->hot->InTeplSens[sensor].RCS  ==  0)
     {
-        teplTmes[fnTepl][sensor] = gh->hot->InTeplSens[sensor].Value;
-        return gh->hot->InTeplSens[sensor].Value;
+        teplTmes[fnTepl][sensor] = zone->hot->InTeplSens[sensor].Value;
+        return zone->hot->InTeplSens[sensor].Value;
     }
 
-    if (gh->hot->InTeplSens[sensor].Value  ==  0)
+    if (zone->hot->InTeplSens[sensor].Value  ==  0)
         return 0;
     return teplTmes[fnTepl][sensor];
 }
@@ -36,7 +36,7 @@ static int16_t getTempSensor(const gh_t *gh, int fnTepl, int sensor)
 \brief Температура воздуха для вентиляци в зависимости от выбранного значение в Параметрах управления
 @return int16_t Температура
 */
-int16_t getTempVent(const gh_t *gh, int fnTepl)
+int16_t getTempVent(const zone_t *zone, int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -48,15 +48,15 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     char averageCount = 0;
-    calcType = _GD.Control.Tepl[fnTepl].sensT_vent >> 6;
-    mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
+    calcType = _GD.Control.Zones[fnTepl].sensT_vent >> 6;
+    mask = _GD.Control.Zones[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
     {
-        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(zone, fnTepl, i)))
         {
-            temp = getTempSensor(gh, fnTepl, i);
+            temp = getTempSensor(zone, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -74,13 +74,13 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
     average = average / averageCount;
     if (error)
     {
-        _GD.Hot.Tepl[fnTepl].tempParamVent=maskN+(calcType<<6); //GD.Control.Tepl[fnTepl].sensT_vent;
-        _GD.Hot.Tepl[fnTepl].tempVent = average;
+        _GD.Hot.Zones[fnTepl].tempParamVent=maskN+(calcType<<6); //GD.Control.Tepl[fnTepl].sensT_vent;
+        _GD.Hot.Zones[fnTepl].tempVent = average;
         if (calcType & 1)
-            _GD.Hot.Tepl[fnTepl].tempVent = min;
+            _GD.Hot.Zones[fnTepl].tempVent = min;
         if ((calcType >> 1) & 1)
-            _GD.Hot.Tepl[fnTepl].tempVent = max;
-        return _GD.Hot.Tepl[fnTepl].tempVent;
+            _GD.Hot.Zones[fnTepl].tempVent = max;
+        return _GD.Hot.Zones[fnTepl].tempVent;
     }
 }
 
@@ -89,7 +89,7 @@ int16_t getTempVent(const gh_t *gh, int fnTepl)
 @return int16_t Температура
 */
 
-int16_t getTempHeat(const gh_t *gh, int fnTepl)
+int16_t getTempHeat(const zone_t *zone, int fnTepl)
 {
     int16_t error = 0;
     int16_t temp = 0;
@@ -101,15 +101,15 @@ int16_t getTempHeat(const gh_t *gh, int fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    calcType = _GD.Control.Tepl[fnTepl].sensT_heat >> 6;
-    mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
+    calcType = _GD.Control.Zones[fnTepl].sensT_heat >> 6;
+    mask = _GD.Control.Zones[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
     error = 0;
     for (i=0;i<6;i++)
     {
-        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(zone, fnTepl, i)))
         {
-            temp = getTempSensor(gh, fnTepl, i);
+            temp = getTempSensor(zone, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -124,20 +124,20 @@ int16_t getTempHeat(const gh_t *gh, int fnTepl)
     average = average / averageCount;
     if (error)
     {
-        _GD.Hot.Tepl[fnTepl].tempParamHeat=maskN+(calcType<<6);
-        _GD.Hot.Tepl[fnTepl].tempHeat = average;
+        _GD.Hot.Zones[fnTepl].tempParamHeat=maskN+(calcType<<6);
+        _GD.Hot.Zones[fnTepl].tempHeat = average;
         if (calcType & 1)
-            _GD.Hot.Tepl[fnTepl].tempHeat = min;
+            _GD.Hot.Zones[fnTepl].tempHeat = min;
         if ((calcType >> 1) & 1)
-            _GD.Hot.Tepl[fnTepl].tempHeat = max;
-        return _GD.Hot.Tepl[fnTepl].tempHeat;
+            _GD.Hot.Zones[fnTepl].tempHeat = max;
+        return _GD.Hot.Zones[fnTepl].tempHeat;
     }
 }
 
 /*!
 \brief Авария датчика температуры воздуха вентиляции в зависимости от выбранного значение в Параметрах управления
 */
-int8_t getTempVentAlarm(const gh_t *gh, int fnTepl)
+int8_t getTempVentAlarm(const zone_t *zone, int fnTepl)
 {
     int16_t temp = 0;
     int16_t i;
@@ -147,13 +147,13 @@ int8_t getTempVentAlarm(const gh_t *gh, int fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    mask = _GD.Control.Tepl[fnTepl].sensT_vent << 2;
+    mask = _GD.Control.Zones[fnTepl].sensT_vent << 2;
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(zone, fnTepl, i)))
         {
-            temp = getTempSensor(gh, fnTepl, i);
+            temp = getTempSensor(zone, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -174,7 +174,7 @@ int8_t getTempVentAlarm(const gh_t *gh, int fnTepl)
 \brief Авария датчика температуры воздуха обогрева в зависимости от выбранного значение в Параметрах управления
 */
 
-int8_t getTempHeatAlarm(const gh_t *gh, int fnTepl)
+int8_t getTempHeatAlarm(const zone_t *zone, int fnTepl)
 {
     int16_t temp = 0;
     int16_t i;
@@ -184,13 +184,13 @@ int8_t getTempHeatAlarm(const gh_t *gh, int fnTepl)
     int16_t min = 5000;
     int16_t average = 0;
     int8_t averageCount = 0;
-    mask = _GD.Control.Tepl[fnTepl].sensT_heat << 2;
+    mask = _GD.Control.Zones[fnTepl].sensT_heat << 2;
     mask = mask >> 2;
     for (i=0;i<6;i++)
     {
-        if (((mask >> i) & 1) && (getTempSensor(gh, fnTepl, i)))
+        if (((mask >> i) & 1) && (getTempSensor(zone, fnTepl, i)))
         {
-            temp = getTempSensor(gh, fnTepl, i);
+            temp = getTempSensor(zone, fnTepl, i);
             if (min > temp)
                 min = temp;
             if (max < temp)
@@ -247,7 +247,7 @@ char CheckSeparate (const contour_t *ctx)
     if (! ctx->link.mech_cfg->RNum[ctx->cidx])
         return 0;
     t1 = 0;
-    for (t2 = 0;t2<cSTepl;t2++)
+    for (t2 = 0;t2<NZONES;t2++)
     {
         if (_GD.MechConfig[t2].RNum[ctx->cidx] == ctx->link.mech_cfg->RNum[ctx->cidx])
         {
@@ -260,12 +260,12 @@ char CheckSeparate (const contour_t *ctx)
 
 char CheckMain(const contour_t *ctr)
 {
-    int gh_idx = 0;
-    while (gh_idx < ctr->link.idx)
+    int zone_idx = 0;
+    while (zone_idx < ctr->link.idx)
     {
-        if ( (ctr->tcontrol->Separate >> gh_idx) & 1)
-            return gh_idx;
-        gh_idx++;
+        if ( (ctr->tcontrol->Separate >> zone_idx) & 1)
+            return zone_idx;
+        zone_idx++;
     }
     return ctr->link.idx;
 }
@@ -281,7 +281,7 @@ void InitGD(void)
            +sizeof(eTimer)*cSTimer);
 
     #warning "this one is fucked. we're cleaning too much"
-    memclr(&_GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
+    memclr(&_GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*NZONES+sizeof(eConstMech)*NZONES+sizeof(eMechConfig)*NZONES);
 
 
     #warning "meteo is not cleaned"
@@ -294,8 +294,8 @@ void InitGD(void)
 
     #warning "sizeof is fucked"
     // XXX: this sizeof is fucked, TStart[i] is fucked too
-    for (uint gh_idx  =0; gh_idx< sizeof(NameConst)/3; gh_idx++)
-        _GD.TuneClimate.s_TStart[gh_idx] = NameConst[gh_idx].StartZn;
+    for (uint zone_idx  =0; zone_idx< sizeof(NameConst)/3; zone_idx++)
+        _GD.TuneClimate.s_TStart[zone_idx] = NameConst[zone_idx].StartZn;
 
     for (int i=0; i<cConfSMetSens;i++)
     {
@@ -310,10 +310,10 @@ void InitGD(void)
         //eCS->nInput=OutPortsAndInputs[ByteX][1];
     }
 
-    for (int gh_idx=0;gh_idx<cSTepl;gh_idx++)
+    for (int zone_idx=0;zone_idx<NZONES;zone_idx++)
     {
         #warning "looks like this is fucked too"
-        eStrategy * Strategy_Tepl= _GD.Strategy[gh_idx];
+        eStrategy * Strategy_Tepl= _GD.Strategy[zone_idx];
 
         for (int int_x=0;int_x<cSStrategy;int_x++)
         {
@@ -321,26 +321,26 @@ void InitGD(void)
                 (*((&(Strategy_Tepl[int_x].TempPower))+byte_y))=(*((&DefStrategy[int_x].TempPower)+byte_y));
         }
 
-        bWaterReset[gh_idx]=1;
+        bWaterReset[zone_idx]=1;
 
-        eMechConfig *mech_cfg = &_GD.MechConfig[gh_idx];
+        eMechConfig *mech_cfg = &_GD.MechConfig[zone_idx];
 
         for (int int_x=0;int_x<SUM_NAME_CONF;int_x++)
-            mech_cfg->RNum[int_x]=MechC[gh_idx][int_x];
+            mech_cfg->RNum[int_x]=MechC[zone_idx][int_x];
 
         for (int int_x=0;int_x<cConfSSystem;int_x++)
-            mech_cfg->Systems[int_x]=InitSystems[gh_idx][int_x];
+            mech_cfg->Systems[int_x]=InitSystems[zone_idx][int_x];
 
         for (int int_x=0;int_x<cSRegCtrl;int_x++)
         {
-            eTControlTepl *dst = &_GD.TControl.Tepl[gh_idx];
+            eTControlZone *dst = &_GD.TControl.Zones[zone_idx];
 
             //pGD_TControl_Tepl->MechBusy[IntX].BlockRegs=1;
             dst->MechBusy[int_x].PauseMech=300;
             dst->MechBusy[int_x].Sens=0;
         }
 
-        eTeplControl *ctrl = &_GD.Control.Tepl[gh_idx];
+        eZoneControl *ctrl = &_GD.Control.Zones[zone_idx];
 
         #warning "sizeof is fucked"
         //PANIC_IF(countof(ctrl->c_MaxTPipe) != countof(DefControl));
@@ -350,7 +350,7 @@ void InitGD(void)
 
         for (int int_x=0;int_x<cSRegCtrl;int_x++)
         {
-            eConstMech *dst = &_GD.ConstMechanic[gh_idx];
+            eConstMech *dst = &_GD.ConstMechanic[zone_idx];
 
             dst->ConstMixVal[int_x].v_TimeMixVal=DefMechanic[0];
             dst->ConstMixVal[int_x].v_MinTim=(char)DefMechanic[3];
@@ -362,7 +362,7 @@ void InitGD(void)
 /* Первоначальна настройка калибровок */
         for (int byte_y=0;byte_y<cConfSSens;byte_y++)
         {
-            eCS=&caldata.Cal.InTeplSens[gh_idx][byte_y];
+            eCS=&caldata.Cal.InTeplSens[zone_idx][byte_y];
             eCS->V0=NameSensConfig[byte_y].vCal[0];
             eCS->V1=NameSensConfig[byte_y].vCal[1];
             eCS->U0=NameSensConfig[byte_y].uCal[0];
@@ -401,7 +401,7 @@ void WindDirect(void)
     int creg_z = _GD.TControl.MeteoSensing[cSmDWindSens]+_GD.TuneClimate.o_TeplPosition;
     creg_z %= 360;
 
-    const gh_t first_gh = make_gh_ctx(0);
+    const zone_t first_gh = make_zone_ctx(0);
 
     first_gh.tcontrol_tepl->CurrPozFluger = _GD.Hot.PozFluger;
     if (   (!_GD.Hot.PozFluger)

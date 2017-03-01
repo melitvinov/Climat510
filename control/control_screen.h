@@ -3,13 +3,13 @@
 
 #ifdef _FRIEND_OF_CONTROL_
 
-void SetPosScreen(const gh_t *gh, char screen_type);
-void SetReg(const gh_t *gh, char fHSmReg,int DoValue,int MeasValue);
-void LaunchVent(const gh_t *gh);
-void LaunchCalorifer(const gh_t *gh);
-void InitScreen(const gh_t *gh, char typScr);
+void SetPosScreen(const zone_t *zone, char screen_type);
+void SetReg(const zone_t *zone, char fHSmReg,int DoValue,int MeasValue);
+void LaunchVent(const zone_t *zone);
+void LaunchCalorifer(const zone_t *zone);
+void InitScreen(const zone_t *zone, char typScr);
 
-void RegWorkDiskr(const gh_t *gh, char fHSmReg);
+void RegWorkDiskr(const zone_t *zone, char fHSmReg);
 void MidlWindAndSr(void);
 
 #endif

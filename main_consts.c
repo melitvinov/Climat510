@@ -1,7 +1,7 @@
 #include "syntax.h"
 #include "405_ConfigEnRuSr.h"
 
-const uint16_t InitSystems[cSTepl][cConfSSystem]={
+const uint16_t InitSystems[NZONES][cConfSSystem]={
 //Зона1
     {5, //Отопление
         2, //Вентиляция
@@ -104,7 +104,7 @@ const uint16_t InitSystems[cSTepl][cConfSSystem]={
 
 };
 
-const const uint16_t MechC[cSTepl][SUM_NAME_CONF];
+const const uint16_t MechC[NZONES][SUM_NAME_CONF];
 
 //={
 //    {   /* Теплица 1*/

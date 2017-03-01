@@ -8,6 +8,8 @@
 
 #include "wtf.h"
 
+#include "hal_tty.h"
+
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
 
@@ -19,52 +21,52 @@ uchar nReset=25;
 
 void saveMech(char tCTepl)
 {
-    mecPosArray[0] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position;
-    mecPosArray[1] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position;
-    mecPosArray[2] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position;
-    mecPosArray[3] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position;
-    mecPosArray[4] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position;
-    mecPosArray[5] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position;
-    mecPosArray[6] = gd()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
+    mecPosArray[0] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrTH].Position;
+    mecPosArray[1] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrSH].Position;
+    mecPosArray[2] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S1].Position;
+    mecPosArray[3] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S2].Position;
+    mecPosArray[4] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S3].Position;
+    mecPosArray[5] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S4].Position;
+    mecPosArray[6] = gd()->Hot.Zones[tCTepl].HandCtrl[cHSmLight].Position;
 }
 
 void loadMech(char tCTepl)
 {
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].RCS = 1;
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrTH].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrSH].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S1].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S2].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S3].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S4].RCS = 1;
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmLight].RCS = 1;
 
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrTH].Position = mecPosArray[0];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrSH].Position = mecPosArray[1];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S1].Position = mecPosArray[2];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S2].Position = mecPosArray[3];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S3].Position = mecPosArray[4];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmScrV_S4].Position = mecPosArray[5];
-    gd_rw()->Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrTH].Position = mecPosArray[0];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrSH].Position = mecPosArray[1];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S1].Position = mecPosArray[2];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S2].Position = mecPosArray[3];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S3].Position = mecPosArray[4];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmScrV_S4].Position = mecPosArray[5];
+    gd_rw()->Hot.Zones[tCTepl].HandCtrl[cHSmLight].Position =  mecPosArray[6];
 }
 
 void loadKontur(char tCTepl)
 {
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0];
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1];
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2];
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3];
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4];
-    gd_rw()->Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[0] = konturMax[0];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[1] = konturMax[1];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[2] = konturMax[2];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[3] = konturMax[3];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[4] = konturMax[4];
+    gd_rw()->Control.Zones[tCTepl].c_MaxTPipe[5] = konturMax[5];
 }
 
 void saveKontur(char tCTepl)
 {
-    konturMax[0] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[0];
-    konturMax[1] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[1];
-    konturMax[2] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[2];
-    konturMax[3] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[3];
-    konturMax[4] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[4];
-    konturMax[5] = gd()->Control.Tepl[tCTepl].c_MaxTPipe[5];
+    konturMax[0] = gd()->Control.Zones[tCTepl].c_MaxTPipe[0];
+    konturMax[1] = gd()->Control.Zones[tCTepl].c_MaxTPipe[1];
+    konturMax[2] = gd()->Control.Zones[tCTepl].c_MaxTPipe[2];
+    konturMax[3] = gd()->Control.Zones[tCTepl].c_MaxTPipe[3];
+    konturMax[4] = gd()->Control.Zones[tCTepl].c_MaxTPipe[4];
+    konturMax[5] = gd()->Control.Zones[tCTepl].c_MaxTPipe[5];
 }
 
 
@@ -79,47 +81,47 @@ void initCheckConfig()
 
 void checkConfig(void)
 {
-    for (int gh_idx=0; gh_idx<cSTepl; gh_idx++)
+    for (int zone_idx=0; zone_idx<NZONES; zone_idx++)
     {
         bool checkKontur = 0;
         bool checkMech = 0;
         for (int sys=0;sys<6;sys++)
         {
-            if (gd()->Control.Tepl[gh_idx].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
+            if (gd()->Control.Zones[zone_idx].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
                 checkKontur = 1;
         }
         for (int sys=0;sys<6;sys++)
         {
-            if (gd()->Hot.Tepl[gh_idx].HandCtrl[cHSmScrTH+sys].RCS == 0)
+            if (gd()->Hot.Zones[zone_idx].HandCtrl[cHSmScrTH+sys].RCS == 0)
                 checkMech = 1;
         }
-        if (gd()->Hot.Tepl[gh_idx].HandCtrl[cHSmLight].RCS == 0)
+        if (gd()->Hot.Zones[zone_idx].HandCtrl[cHSmLight].RCS == 0)
             checkMech = 1;
 
         if (checkMech == 1)
         {
-            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0x0A;
-            loadMech(gh_idx);
-            repeatNews[gh_idx] = 4;
+            gd_rw()->Hot.Zones[zone_idx].newsZone = 0x0A;
+            loadMech(zone_idx);
+            repeatNews[zone_idx] = 4;
         }
         else
         {
-            saveMech(gh_idx);
+            saveMech(zone_idx);
         }
         if (checkKontur == 1)
         {
-            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0x0F;
-            loadKontur(gh_idx);
-            repeatNews[gh_idx] = 4;
+            gd_rw()->Hot.Zones[zone_idx].newsZone = 0x0F;
+            loadKontur(zone_idx);
+            repeatNews[zone_idx] = 4;
         }
         else
         {
-            saveKontur(gh_idx);
+            saveKontur(zone_idx);
         }
-        if (repeatNews[gh_idx])
-            repeatNews[gh_idx]--;
-        if (repeatNews[gh_idx] <= 0)
-            gd_rw()->Hot.Tepl[gh_idx].newsZone = 0;
+        if (repeatNews[zone_idx])
+            repeatNews[zone_idx]--;
+        if (repeatNews[zone_idx] <= 0)
+            gd_rw()->Hot.Zones[zone_idx].newsZone = 0;
     }
 
 }
@@ -204,6 +206,14 @@ static void periodic_task(void)
 
 static void init(void)
 {
+    HAL_tty_init();
+    SETEA;
+
+    while (1)
+    {
+        HAL_tty_puts("hellow !");
+    }
+
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();
@@ -272,6 +282,8 @@ void main(void)
 
         if (wtf0.bSec)
         {
+            HAL_tty_puts("hellow !");
+
             wtf0.bSec=0;
             periodic_task();
             should_show_video = 1;

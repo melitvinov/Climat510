@@ -9,13 +9,13 @@
 
 extern uchar       bNight;
 
-void CheckModeScreen(const gh_t *gh, char typScr,char chType)
+void CheckModeScreen(const zone_t *zone, char typScr,char chType)
 {
 //Оптимицация на typScr
     char ttyp,bZad;
     eScreen *pScr;
     int SunZClose;
-    pScr= &gh->tcontrol_tepl->Screen[typScr];
+    pScr= &zone->tcontrol_tepl->Screen[typScr];
     ttyp=typScr;
 
     if (ttyp>cHSmScrV_S1)
@@ -26,16 +26,16 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
     if (pScr->PauseMode)
         bZad=1;
 
-    if ((gh->hot->AllTask.Screen[ttyp]<2)&&(!bZad))
+    if ((zone->hot->AllTask.Screen[ttyp]<2)&&(!bZad))
     {
-        pScr->Mode=gh->hot->AllTask.Screen[ttyp];
+        pScr->Mode=zone->hot->AllTask.Screen[ttyp];
         bZad=1;
     }
 
 #warning CHECK THIS
     // NEW
     int creg_z;
-    int creg_y = getTempHeat(gh, gh->idx)-gh->hot->AllTask.DoTHeat;
+    int creg_y = getTempHeat(zone, zone->idx)-zone->hot->AllTask.DoTHeat;
     CorrectionRule(_GD.TuneClimate.sc_dTStart,
                    _GD.TuneClimate.sc_dTEnd,
                    _GD.TuneClimate.sc_dTSunFactor,
@@ -66,7 +66,7 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
             }
 
 #warning CHECK THIS
-            if (YesBit(gh->hot->InTeplSens[cSmTSens1].RCS, cbDownAlarmSens))
+            if (YesBit(zone->hot->InTeplSens[cSmTSens1].RCS, cbDownAlarmSens))
                 pScr->Mode=1;
 
 
@@ -76,22 +76,22 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
 
         if (pScr->Mode!=pScr->OldMode)
         {
-            ClrBit(gh->tcontrol_tepl->RCS1,cbSCCorrection);
+            ClrBit(zone->tcontrol_tepl->RCS1,cbSCCorrection);
             pScr->PauseMode=_GD.TuneClimate.sc_PauseMode;
             if (!pScr->Mode)
             {
                 //pGD_TControl_Tepl->TempStart5=pGD_TControl_Tepl->Kontur[cSmKontur5].DoT;
-                gh->tcontrol_tepl->ScrExtraHeat=_GD.TuneClimate.c_5ExtrHeat;
+                zone->tcontrol_tepl->ScrExtraHeat=_GD.TuneClimate.c_5ExtrHeat;
             }
         }
         pScr->OldMode=pScr->Mode;
-        gh->tcontrol_tepl->ScrExtraHeat--;
+        zone->tcontrol_tepl->ScrExtraHeat--;
 
-        if (gh->tcontrol_tepl->ScrExtraHeat > 0)
+        if (zone->tcontrol_tepl->ScrExtraHeat > 0)
             return;
 
-        gh->tcontrol_tepl->ScrExtraHeat=0;
-        creg_y = gh->hot->InTeplSens[cSmGlassSens].Value;
+        zone->tcontrol_tepl->ScrExtraHeat=0;
+        creg_y = zone->hot->InTeplSens[cSmGlassSens].Value;
         CorrectionRule(_GD.TuneClimate.sc_GlassStart,
                        _GD.TuneClimate.sc_GlassEnd,
                        _GD.TuneClimate.sc_GlassMax,
@@ -99,12 +99,12 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
                        creg_y,
                        &creg_z);
 
-        if ((YesBit(gh->hot->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens)))
+        if ((YesBit(zone->hot->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens)))
             creg_z = _GD.TuneClimate.sc_GlassMax;
 
         #warning "is it right ? strange C-block was here"
         {
-            pScr->Value=pScr->Mode * (gh->gh_ctrl->sc_TMaxOpen-(_GD.TuneClimate.sc_GlassMax - creg_z));     // итоговое значение открытия экрана
+            pScr->Value=pScr->Mode * (zone->gh_ctrl->sc_TMaxOpen-(_GD.TuneClimate.sc_GlassMax - creg_z));     // итоговое значение открытия экрана
             //if (pScr->Mode == 0) // если экран закрывается
             //	pScr->Value = pScr->Value * GD.TuneClimate.ScreenCloseSpeed;
         }
@@ -121,7 +121,7 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
         {
             if (creg_z < _GD.TuneClimate.sc_ZOutClose)
                 pScr->Mode=1;
-            if ((!gh->tcontrol_tepl->Screen[0].Mode)||(creg_z > _GD.TuneClimate.sc_ZOutClose+200)||(!_GD.TuneClimate.sc_ZOutClose))
+            if ((!zone->tcontrol_tepl->Screen[0].Mode)||(creg_z > _GD.TuneClimate.sc_ZOutClose+200)||(!_GD.TuneClimate.sc_ZOutClose))
                 pScr->Mode=0;
             if ((_GD.TuneClimate.sc_ZSRClose)&&(_GD.Hot.MidlSR>SunZClose))
                 pScr->Mode=1;
@@ -129,7 +129,7 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
         if (pScr->Mode!=pScr->OldMode)
             pScr->PauseMode=_GD.TuneClimate.sc_PauseMode;
         pScr->OldMode=pScr->Mode;
-        pScr->Value=pScr->Mode * gh->gh_ctrl->sc_ZMaxOpen;
+        pScr->Value=pScr->Mode * zone->gh_ctrl->sc_ZMaxOpen;
         break;
     default:
         if (!bZad)
@@ -149,26 +149,26 @@ void CheckModeScreen(const gh_t *gh, char typScr,char chType)
     }
 }
 
-void InitScreen(const gh_t *gh, char screen_type)
+void InitScreen(const zone_t *zone, char screen_type)
 {
-    eScreen *pScr = &gh->tcontrol_tepl->Screen[screen_type];
+    eScreen *pScr = &zone->tcontrol_tepl->Screen[screen_type];
 
-    if (! gh->mech_cfg->RNum[cHSmScrTH+screen_type])
+    if (! zone->mech_cfg->RNum[cHSmScrTH+screen_type])
         return;
     pScr->PauseMode--;
     if ((pScr->PauseMode<0) || (pScr->PauseMode>_GD.TuneClimate.sc_PauseMode))
         pScr->PauseMode=0;
-    CheckModeScreen(gh, screen_type, screen_type);
+    CheckModeScreen(zone, screen_type, screen_type);
 }
 
-void SetPosScreen(const gh_t *gh, char screen_type)
+void SetPosScreen(const zone_t *zone, char screen_type)
 {
-    eScreen *pScr = &gh->tcontrol_tepl->Screen[screen_type];
-    int8_t *pMech = &gh->hand[cHSmScrTH+screen_type].Position;
+    eScreen *pScr = &zone->tcontrol_tepl->Screen[screen_type];
+    int8_t *pMech = &zone->hand[cHSmScrTH+screen_type].Position;
 
     char step;
 
-    if (YesBit(gh->hand[cHSmScrTH+screen_type].RCS,/*(cbNoMech+*/cbManMech))
+    if (YesBit(zone->hand[cHSmScrTH+screen_type].RCS,/*(cbNoMech+*/cbManMech))
         return;
 
     if (pScr->Pause<0)
@@ -185,9 +185,9 @@ void SetPosScreen(const gh_t *gh, char screen_type)
 
     if (!screen_type) // Только если термический, то произвести коррекцию
     {
-        creg_z -= gh->hot->Kontur[cSmScreen].Do;//pGD_Hot_Tepl->OtherCalc.CorrScreen;
+        creg_z -= zone->hot->Kontur[cSmScreen].Do;//pGD_Hot_Tepl->OtherCalc.CorrScreen;
 
-        if (YesBit(gh->tcontrol_tepl->RCS1, cbSCCorrection))
+        if (YesBit(zone->tcontrol_tepl->RCS1, cbSCCorrection))
         {
             int creg_x =((int)(byte_x)) - creg_z;
             if ((! creg_z)||(creg_z == 100)||(ABS(creg_x)>_GD.TuneClimate.sc_MinDelta))
@@ -226,7 +226,7 @@ void SetPosScreen(const gh_t *gh, char screen_type)
         if (((*pMech)>=(char) creg_z)&&(pScr->Mode))
         {
             (*pMech)=(char) creg_z;
-            SetBit(gh->tcontrol_tepl->RCS1, cbSCCorrection);
+            SetBit(zone->tcontrol_tepl->RCS1, cbSCCorrection);
         }
         return;
     }
@@ -234,81 +234,81 @@ void SetPosScreen(const gh_t *gh, char screen_type)
 }
 
 
-void LaunchVent(const gh_t *gh)
+void LaunchVent(const zone_t *zone)
 {
-    if ((gh->hand[cHSmWinN].Position + gh->hand[cHSmWinS].Position > 0) && _GD.TuneClimate.cool_PFactor)
-        gh->tcontrol_tepl->OutFan = 1;
+    if ((zone->hand[cHSmWinN].Position + zone->hand[cHSmWinS].Position > 0) && _GD.TuneClimate.cool_PFactor)
+        zone->tcontrol_tepl->OutFan = 1;
     else
-        gh->tcontrol_tepl->OutFan = 0;
+        zone->tcontrol_tepl->OutFan = 0;
 
-    if (   (! gh->hot->AllTask.Vent)
-        || (gh->hand[cHSmWinN].Position + gh->hand[cHSmWinS].Position > _GD.TuneClimate.f_BlockFan))
+    if (   (! zone->hot->AllTask.Vent)
+        || (zone->hand[cHSmWinN].Position + zone->hand[cHSmWinS].Position > _GD.TuneClimate.f_BlockFan))
     {
-        gh->tcontrol_tepl->Vent = 0;
+        zone->tcontrol_tepl->Vent = 0;
         return;
     }
     // Вентиляторы перемешивания
     int creg_y = 0;
-    if (gh->hot->InTeplSens[cSmTSens2].Value)
+    if (zone->hot->InTeplSens[cSmTSens2].Value)
     {
         //IntY= getTempVent(fnTepl)-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
-        creg_y = gh->hot->InTeplSens[cSmTSens1].Value - gh->hot->InTeplSens[cSmTSens2].Value;
+        creg_y = zone->hot->InTeplSens[cSmTSens1].Value - zone->hot->InTeplSens[cSmTSens2].Value;
         if (creg_y < 0)
             creg_y =- creg_y;
     }
 
-    gh->hot->OtherCalc.TaskCritery=_GD.TuneClimate.vt_PFactor;
-    gh->hot->OtherCalc.CriteryNow = creg_y;
+    zone->hot->OtherCalc.TaskCritery=_GD.TuneClimate.vt_PFactor;
+    zone->hot->OtherCalc.CriteryNow = creg_y;
 
-    if (gh->tcontrol_tepl->PauseVent)
+    if (zone->tcontrol_tepl->PauseVent)
     {
-        gh->tcontrol_tepl->PauseVent--;
+        zone->tcontrol_tepl->PauseVent--;
         return;
     }
 
-    if (gh->tcontrol_tepl->Vent)
+    if (zone->tcontrol_tepl->Vent)
     {
-        gh->tcontrol_tepl->PauseVent=_GD.TuneClimate.vt_StopTime;
-        gh->tcontrol_tepl->Vent=0;
+        zone->tcontrol_tepl->PauseVent=_GD.TuneClimate.vt_StopTime;
+        zone->tcontrol_tepl->Vent=0;
         return;
     }
 
-    if ((creg_y < gh->hot->OtherCalc.TaskCritery) && (gh->hot->AllTask.Vent!=1))
+    if ((creg_y < zone->hot->OtherCalc.TaskCritery) && (zone->hot->AllTask.Vent!=1))
         return;
 
-    gh->tcontrol_tepl->Vent =1;
-    gh->tcontrol_tepl->PauseVent = _GD.TuneClimate.vt_WorkTime;
+    zone->tcontrol_tepl->Vent =1;
+    zone->tcontrol_tepl->PauseVent = _GD.TuneClimate.vt_WorkTime;
 }
 
-void LaunchCalorifer(const gh_t *gh)
+void LaunchCalorifer(const zone_t *zone)
 {
 //		if (!(pGD_MechConfig->RNum[cHSmHeat])) {pGD_TControl_Tepl->Calorifer=0;return;}
 
 #warning CHECK THIS
     // NEW
-    if (getTempHeat(gh, gh->idx)<(gh->hot->AllTask.DoTHeat - _GD.TuneClimate.vt_StartCalorifer))
-        SetBit(gh->tcontrol_tepl->Calorifer, 0x01);
+    if (getTempHeat(zone, zone->idx)<(zone->hot->AllTask.DoTHeat - _GD.TuneClimate.vt_StartCalorifer))
+        SetBit(zone->tcontrol_tepl->Calorifer, 0x01);
 
-    if ((getTempHeat(gh, gh->idx)>(gh->hot->AllTask.DoTHeat +_GD.TuneClimate.vt_EndCalorifer))
+    if ((getTempHeat(zone, zone->idx)>(zone->hot->AllTask.DoTHeat +_GD.TuneClimate.vt_EndCalorifer))
         ||(!_GD.TuneClimate.vt_StartCalorifer))
     {
-        ClrBit(gh->tcontrol_tepl->Calorifer,0x01);
+        ClrBit(zone->tcontrol_tepl->Calorifer,0x01);
     }
 //		pGD_TControl_Tepl->Calorifer=0;
-    if ((_GD.TControl.MeteoSensing[cSmOutTSens] > gh->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
-        SetBit(gh->tcontrol_tepl->Calorifer,0x02);
-    if (((_GD.TControl.MeteoSensing[cSmOutTSens] < gh->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
-        ClrBit(gh->tcontrol_tepl->Calorifer,0x02);
+    if ((_GD.TControl.MeteoSensing[cSmOutTSens] > zone->hot->AllTask.DoTVent + _GD.TuneClimate.cool_PFactor)&&(_GD.TuneClimate.cool_PFactor))
+        SetBit(zone->tcontrol_tepl->Calorifer,0x02);
+    if (((_GD.TControl.MeteoSensing[cSmOutTSens] < zone->hot->AllTask.DoTVent+_GD.TuneClimate.cool_PFactor-100))||(!_GD.TuneClimate.cool_PFactor))
+        ClrBit(zone->tcontrol_tepl->Calorifer,0x02);
 }
 
-void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
+void SetReg(const zone_t *zone, char fHSmReg, int DoValue, int MeasValue)
 {
-    eRegsSettings* fReg = &gh->tcontrol_tepl->SetupRegs[fHSmReg-cHSmCO2];
+    eRegsSettings* fReg = &zone->tcontrol_tepl->SetupRegs[fHSmReg-cHSmCO2];
 
-    if (! gh->mech_cfg->RNum[fHSmReg])
+    if (! zone->mech_cfg->RNum[fHSmReg])
         return;
 
-    if (YesBit(gh->hand[fHSmReg].RCS,cbManMech))
+    if (YesBit(zone->hand[fHSmReg].RCS,cbManMech))
     {
         fReg->IntVal=0;
         return;
@@ -317,11 +317,11 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
     {
         if (fHSmReg == cHSmCO2)
         {
-            gh->tcontrol_tepl->COPosition=0;
-            gh->tcontrol_tepl->COPause=_GD.TuneClimate.COPause;
+            zone->tcontrol_tepl->COPosition=0;
+            zone->tcontrol_tepl->COPause=_GD.TuneClimate.COPause;
         }
         fReg->IntVal=0;
-        gh->hand[fHSmReg].Position=0;
+        zone->hand[fHSmReg].Position=0;
         return;
     }
 
@@ -329,32 +329,32 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
     {
         //if (GD.Hot.blockCO2) return;
         if (DoValue > MeasValue)
-            gh->hot->NextTCalc.DiffCO2=DoValue-MeasValue;
+            zone->hot->NextTCalc.DiffCO2=DoValue-MeasValue;
         else
-            gh->hot->NextTCalc.DiffCO2 = 0;
-        if (!gh->hot->NextTCalc.DiffCO2)
-            gh->hot->NextTCalc.DiffCO2=-1;
+            zone->hot->NextTCalc.DiffCO2 = 0;
+        if (!zone->hot->NextTCalc.DiffCO2)
+            zone->hot->NextTCalc.DiffCO2=-1;
 //		if ((pGD_Hot_Tepl->NextTCalc.DiffCO2<=0))
 //		   pGD_Hot_Tepl->NextTCalc.DiffCO2 = 10;
 
         if (DoValue-MeasValue+((int)_GD.TuneClimate.co_Dif)<0)
         {
-            gh->tcontrol_tepl->COPosition=0;
-            gh->hand[fHSmReg].Position=0;
+            zone->tcontrol_tepl->COPosition=0;
+            zone->hand[fHSmReg].Position=0;
         }
-        if (gh->tcontrol_tepl->COPause<0) gh->tcontrol_tepl->COPause=0;
-        if (gh->tcontrol_tepl->COPause)
+        if (zone->tcontrol_tepl->COPause<0) zone->tcontrol_tepl->COPause=0;
+        if (zone->tcontrol_tepl->COPause)
         {
-            gh->tcontrol_tepl->COPause--;
+            zone->tcontrol_tepl->COPause--;
             return;
         }
     }
 
 
-    int creg_x=(((long)DoValue-MeasValue) * gh->const_mech->ConstMixVal[fHSmReg].v_PFactor/*GD.TuneClimate.reg_PFactor[fHSmReg-cHSmCO2]*/)/1000;
+    int creg_x=(((long)DoValue-MeasValue) * zone->const_mech->ConstMixVal[fHSmReg].v_PFactor/*GD.TuneClimate.reg_PFactor[fHSmReg-cHSmCO2]*/)/1000;
     int creg_y = fReg->IntVal / 100;
     int creg_z = 100;
-    if (gh->gh_ctrl->co_model>=2)
+    if (zone->gh_ctrl->co_model>=2)
         creg_z = 200;
     if (creg_y > creg_z-creg_x)
     {
@@ -368,17 +368,17 @@ void SetReg(const gh_t *gh, char fHSmReg, int DoValue, int MeasValue)
 //	   fReg->IntVal=IntY*100;
     }
     else
-        fReg->IntVal=fReg->IntVal+(int)((((long)DoValue-MeasValue) * gh->const_mech->ConstMixVal[fHSmReg].v_IFactor)/1000);
-    gh->tcontrol_tepl->COPosition=creg_x + creg_y;
-    if (gh->tcontrol_tepl->COPosition>100)
-        gh->hand[fHSmReg].Position=100;
+        fReg->IntVal=fReg->IntVal+(int)((((long)DoValue-MeasValue) * zone->const_mech->ConstMixVal[fHSmReg].v_IFactor)/1000);
+    zone->tcontrol_tepl->COPosition=creg_x + creg_y;
+    if (zone->tcontrol_tepl->COPosition>100)
+        zone->hand[fHSmReg].Position=100;
     else
-        gh->hand[fHSmReg].Position=gh->tcontrol_tepl->COPosition;
+        zone->hand[fHSmReg].Position=zone->tcontrol_tepl->COPosition;
 }
 
 
 //#warning CO2!!!!
-void RegWorkDiskr(const gh_t *gh, char fHSmReg)
+void RegWorkDiskr(const zone_t *zone, char fHSmReg)
 {
     eRegsSettings* fReg;
     int tMech;
@@ -386,21 +386,21 @@ void RegWorkDiskr(const gh_t *gh, char fHSmReg)
     int sum;
     int COset;
     int val = 0;
-    fReg= &gh->tcontrol_tepl->SetupRegs[fHSmReg-cHSmCO2];
-    tMech=gh->tcontrol_tepl->COPosition;
-    if ((!gh->gh_ctrl->co_model)||(fHSmReg!=cHSmCO2)) return;
+    fReg= &zone->tcontrol_tepl->SetupRegs[fHSmReg-cHSmCO2];
+    tMech=zone->tcontrol_tepl->COPosition;
+    if ((!zone->gh_ctrl->co_model)||(fHSmReg!=cHSmCO2)) return;
     //if (pGD_Control_Tepl->co_model == 2)
-    if (gh->gh_ctrl->co_model>=2)
+    if (zone->gh_ctrl->co_model>=2)
         tMech-=100;
     if (tMech<0)
         tMech=0;
 
 
-    if (gh->gh_ctrl->co_model == 3)
+    if (zone->gh_ctrl->co_model == 3)
     {
-        COset = gh->hot->AllTask.DoCO2;
+        COset = zone->hot->AllTask.DoCO2;
 
-        sum =  gh->hand[cHSmWinN].Position + gh->hand[cHSmWinS].Position;
+        sum =  zone->hand[cHSmWinN].Position + zone->hand[cHSmWinS].Position;
         if ((sum >= _GD.TuneClimate.co2Fram1) && (sum <= _GD.TuneClimate.co2Fram2))
         {
             if (COset > _GD.TuneClimate.co2Off)
@@ -417,11 +417,11 @@ void RegWorkDiskr(const gh_t *gh, char fHSmReg)
         {
             COset = COset - _GD.TuneClimate.co2Off;
         }
-        gh->hot->CO2valveTask = 0;
-        if (COset > gh->hot->InTeplSens[cSmCOSens].Value)
+        zone->hot->CO2valveTask = 0;
+        if (COset > zone->hot->InTeplSens[cSmCOSens].Value)
         {
-            delta = COset - gh->hot->InTeplSens[cSmCOSens].Value;
-            gh->hot->CO2valveTask = delta;
+            delta = COset - zone->hot->InTeplSens[cSmCOSens].Value;
+            zone->hot->CO2valveTask = delta;
             if (delta < _GD.TuneClimate.co2On)
                 tMech = 0;
         }

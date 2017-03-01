@@ -38,8 +38,8 @@ void InitBlockEEP(void)
 
 
     #warning "WTF: +15 ?"
-    BlockEEP[0].AdrCopyRAM=&gd()->Control.Tepl;
-    BlockEEP[0].Size = sizeof(gd()->Control.Tepl)+15;
+    BlockEEP[0].AdrCopyRAM=&gd()->Control.Zones;
+    BlockEEP[0].Size = sizeof(gd()->Control.Zones)+15;
 
     BlockEEP[1].AdrCopyRAM=&gd_rw()->Timers;
     BlockEEP[1].Size = sizeof(gd()->Timers);

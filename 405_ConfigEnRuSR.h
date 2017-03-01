@@ -49,7 +49,7 @@
 #define cSmWaterSens	20
 
 // number of greenhouses
-#define cSTepl			8
+#define NZONES			8
 
 #define cConfSSystem		10
 
