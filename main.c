@@ -11,6 +11,7 @@
 #include "debug.h"
 
 #include "hal_tty.h"
+#include "hal_rtc.h"
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
@@ -286,6 +287,8 @@ void main(void)
 {
     init();
 
+    u32 prev_time = 0;
+
     while (1)
     {
         do_sound_stuff();
@@ -293,8 +296,13 @@ void main(void)
 
         bool should_show_video = 0;
 
-        if (wtf0.bSec)
+        u32 time = HAL_rtc_get_timestamp();
+        if (time != prev_time)
         {
+            LOG("time: %d", time);
+            prev_time = time;
+            wtf0.Second++;
+
             LOG("hellow !");
 
             wtf0.bSec=0;

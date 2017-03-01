@@ -2,7 +2,6 @@
 
 #include "syntax.h"
 #include "stm32f10x.h"
-#include "stm32f10x_rcc.h"
 
 #include "hal_tty.h"
 #include "hal_sys.h"
@@ -27,7 +26,7 @@ static tty_rt_t rt;
 
 void HAL_tty_init(void)
 {
-    RCC->APB2ENR |= RCC_APB2Periph_GPIOB;
+    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 //  if (pin_idx < 8)
 //      port->CRL |= 1 << (pin_idx * 4);    // output, 10 MHz
 //  else
@@ -35,7 +34,7 @@ void HAL_tty_init(void)
     port->CRH = (port->CRH & 0xF0) | 0x10;
     port->BSRR = 1 << pin_idx;
 
-    RCC->APB1ENR |= RCC_APB1Periph_TIM4;
+    RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 
     timer->PSC = 0; // 1:1 prescaler
     timer->ARR = HAL_SYS_F_CPU / 9600.;

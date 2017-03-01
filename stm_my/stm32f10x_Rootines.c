@@ -65,10 +65,6 @@ void Init_STM32(void)
     //I2CRel_MEM_Configuration();
 
     //I2C_BLOCK_Configuration();
-    GPIO_PinRemapConfig(GPIO_Remap_SWJ_NoJTRST, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB| RCC_APB2Periph_GPIOD| RCC_APB2Periph_GPIOC, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-    GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
     i2_fm_Init();
 
     LOG("reading from fram");
@@ -94,7 +90,8 @@ void Init_STM32(void)
 
     LOG("inited keyboard");
 
-    InitRTC();
+    HAL_rtc_init();
+    //InitRTC();
 
     LOG("inited rtc");
     wtf0.PORTNUM=DEF_PORTNUM;
@@ -185,7 +182,7 @@ char CheckKeyboardSTM()
 
 void InitIPCTimer(void)
 {
-    RCC->APB1ENR |= RCC_APB1Periph_TIM3;
+    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
 
     TIM3->PSC = 8000-1; // Clock prescaler;
@@ -215,7 +212,7 @@ void TIM3_IRQHandler(void)
 
 void InitMainTimer(void)
 {
-    RCC->APB1ENR |= RCC_APB1Periph_TIM2;
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
 
     TIM2->PSC = 8000-1; // Clock prescaler;

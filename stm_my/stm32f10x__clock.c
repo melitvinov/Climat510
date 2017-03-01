@@ -1,5 +1,7 @@
+#include "syntax.h"
 #include "stm32f10x_clock.h"
-#include "stm32f10x_pwr.h"
+
+#include "hal_rtc.h"
 
 static const uint8_t DaysInMonth[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
@@ -188,46 +190,27 @@ static uint32_t struct_to_counter( const eDateTime *t )
 
 char ReadDateTime(eDateTime *fDateTime)
 {
-    uint32_t t;
+    u32 ts = HAL_rtc_get_timestamp();
 
-    while (( t = RTC_GetCounter() ) != RTC_GetCounter())
-    {
-        ;
-    }
-    counter_to_struct( t, fDateTime ); // get non DST time
+    counter_to_struct( ts, fDateTime ); // get non DST time
     adjustDST( fDateTime );
     return 0;
 }
 
-static void my_RTC_SetCounter(uint32_t cnt)
-{
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-    /* Change the current time */
-    RTC_SetCounter(cnt);
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-}
-
 void WriteDateTime(eDateTime *fDateTime)
 {
-    uint32_t cnt;
+    uint32_t ts;
 
-    eDateTime ts;
+    eDateTime datetime;
 
-    cnt = struct_to_counter( fDateTime ); // non-DST counter-value
-    counter_to_struct( cnt, &ts );  // normalize struct (for weekday)
-    if (isDST( &ts ))
+    ts = struct_to_counter( fDateTime ); // non-DST counter-value
+    counter_to_struct( ts, &datetime );  // normalize struct (for weekday)
+    if (isDST( &datetime ))
     {
-        cnt -= 60*60; // Subtract one hour
+        ts -= 60*60; // Subtract one hour
     }
-    PWR_BackupAccessCmd(ENABLE);
-    my_RTC_SetCounter( cnt );
-    PWR_BackupAccessCmd(DISABLE);
+
+    HAL_rtc_set_timestamp(ts);
 }
-
-
-
-//---------------------- end рассчет дня недели ---------------------
 
 
