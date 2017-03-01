@@ -306,7 +306,6 @@ void USART_PC_Configuration(const uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostR
 {
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
-    NVIC_InitTypeDef NVIC_InitStructure;
 
     USART_PC_STARTUP;
 
@@ -316,11 +315,9 @@ void USART_PC_Configuration(const uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostR
     pNumBlock=fNumBlock;
 
     /* Enable the USARTx Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = USART_PC_IRQ;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_SetPriority(USART_PC_IRQ, 5);
+    NVIC_ClearPendingIRQ(USART_PC_IRQ);
+    NVIC_EnableIRQ(USART_PC_IRQ);
 
     /* Configure USART1 Tx (PA.09) as alternate function push-pull */
     GPIO_InitStructure.GPIO_Pin = USART_PC_TX_PIN;

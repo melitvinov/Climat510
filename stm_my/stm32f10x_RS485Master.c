@@ -149,7 +149,6 @@ void USART_OUT2_Configuration(uint16_t fbrate)
 {
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
-    NVIC_InitTypeDef NVIC_InitStructure;
 
     USART_OUT2_STARTUP;
 
@@ -211,15 +210,12 @@ void USART_OUT_Configuration(uint16_t fbrate)
 {
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
-    NVIC_InitTypeDef NVIC_InitStructure;
 
     USART_OUT_STARTUP;
 
-    NVIC_InitStructure.NVIC_IRQChannel = USART_OUT_IRQ;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_SetPriority(USART_OUT_IRQ, 5);
+    NVIC_ClearPendingIRQ(USART_OUT_IRQ);
+    NVIC_EnableIRQ(USART_OUT_IRQ);
 
 
     /* Configure USART1 Tx (PA.09) as alternate function push-pull */

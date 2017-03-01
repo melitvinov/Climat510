@@ -49,6 +49,8 @@ void HAL_tty_init(void)
     NVIC_EnableIRQ(TIM4_IRQn);
 
     rt.shiftreg = 0;
+    rt.r = 0;
+    rt.w = 0;
 }
 
 void timer4_handler(void)
@@ -70,9 +72,9 @@ void timer4_handler(void)
         }
         else
         {
-            uint r = (rt.r + 1) % countof(rt.buf);
-            rt.r = r;
+            uint r = rt.r;
             uint chr = rt.buf[r];
+            rt.r = (r + 1) % countof(rt.buf);
             rt.shiftreg = 0x0200 | (chr << 1);  // embed start bit, stop bit
         }
     }

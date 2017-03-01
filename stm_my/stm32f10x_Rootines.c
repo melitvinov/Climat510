@@ -27,6 +27,7 @@
 #include "stm32f10x_LCD240x64.h"
 #include "unsorted.h"
 
+#include "debug.h"
 
 #define GetSensConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INSENS])
 #define GetInputConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INPUTS])
@@ -70,23 +71,36 @@ void Init_STM32(void)
     GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
     i2_fm_Init();
 
+    LOG("reading from fram");
+
     ReadFromFRAM();
 
+    LOG("read from fram");
+
     InitLCD();
+
+    LOG("inited lcd");
 
 
 //		USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
 
 
     InitMainTimer();
-    SETEA;
+
+    LOG("inited main timer");
 
 
     Keyboard_Init();
+
+    LOG("inited keyboard");
+
     InitRTC();
+
+    LOG("inited rtc");
     wtf0.PORTNUM=DEF_PORTNUM;
 
     simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
+    LOG("started web");
 
 
     w1Init();
@@ -94,8 +108,10 @@ void Init_STM32(void)
 //    Init_IWDG(&GD.TControl.Tepl[0].nReset);
     Check_IWDG();
     USART_OUT_Configuration(9600);
+    LOG("inited uart0");
 
     USART_OUT2_Configuration(9600);
+    LOG("inited uart1");
     //I2C_DMAMem_Transfer(I2C1_Buffer_Tx,8,DMA_DIR_PeripheralDST);
     //Музыка
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -106,7 +122,9 @@ void Init_STM32(void)
     GPIO_WriteBit(GPIOA,GPIO_Pin_4,Bit_RESET);
 
     CheckInputConfig();
+    LOG("checked input config");
     InitIPCTimer();
+    LOG("inited ipc timer");
 }
 
 /***************************************************************************//**
@@ -167,8 +185,6 @@ char CheckKeyboardSTM()
 
 void InitIPCTimer(void)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
-
     RCC->APB1ENR |= RCC_APB1Periph_TIM3;
 
 
@@ -179,12 +195,9 @@ void InitIPCTimer(void)
 
     TIM3->DIER = TIM_DIER_UIE; // Enable update interrupts
 
-    /* NVIC_SetPriority & NVIC_EnableIRQ defined in core_cm3.h */
-    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 10;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 10;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_SetPriority(TIM3_IRQn, 10);
+    NVIC_ClearPendingIRQ(TIM3_IRQn);
+    NVIC_EnableIRQ(TIM3_IRQn);
 
     TIM3->EGR = TIM_EGR_UG;
     TIM3->CR1 |= TIM_CR1_CEN; // Enable timer
@@ -196,13 +209,12 @@ void TIM3_IRQHandler(void)
     Reg48ToI2C();
 
     TIM3->SR=0;
-
+    asm volatile ("dmb":::);
+    asm volatile ("dmb":::);
 }
 
 void InitMainTimer(void)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
-
     RCC->APB1ENR |= RCC_APB1Periph_TIM2;
 
 
@@ -213,12 +225,9 @@ void InitMainTimer(void)
 
     TIM2->DIER = TIM_DIER_UIE; // Enable update interrupts
 
-    /* NVIC_SetPriority & NVIC_EnableIRQ defined in core_cm3.h */
-    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_SetPriority(TIM2_IRQn, 3);
+    NVIC_ClearPendingIRQ(TIM2_IRQn);
+    NVIC_EnableIRQ(TIM2_IRQn);
 
     TIM2->EGR = TIM_EGR_UG;
     TIM2->CR1 |= TIM_CR1_CEN; // Enable timer
@@ -252,23 +261,17 @@ void TIM2_IRQHandler(void)
     else
         GPIO_WriteBit(GPIOC, GPIO_Pin_9, Bit_RESET);*/
     TIM2->SR=0;
-
+    asm volatile ("dmb":::);
+    asm volatile ("dmb":::);
 }
 
 void InitRTC(void)
 {
     int i;
-    NVIC_InitTypeDef NVIC_InitStructure;
 
-    /* Configure one bit for preemption priority */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-
-    /* Enable the RTC Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = RTC_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+    NVIC_SetPriority(RTC_IRQn, 4);
+    NVIC_ClearPendingIRQ(RTC_IRQn);
+    NVIC_EnableIRQ(RTC_IRQn);
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
 
@@ -389,6 +392,8 @@ void WriteToFRAM()
 
 static void ReadFromFRAM()
 {
+    return;
+
     InitBlockEEP();
     #warning "maybe these addresses are wrong"
     RecvBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM), &gd_rw()->Hot, sizeof(gd()->Hot));

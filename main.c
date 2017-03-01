@@ -8,6 +8,8 @@
 
 #include "wtf.h"
 
+#include "debug.h"
+
 #include "hal_tty.h"
 
 static int16_t konturMax[6];
@@ -207,19 +209,27 @@ static void periodic_task(void)
 static void init(void)
 {
     HAL_tty_init();
+
+    LOG("inited tty :-)");
+    LOG("and again");
 //    SETEA;
 
-    while (1)
-    {
-        HAL_tty_puts("hellow !");
-    }
+//  while (1)
+//  {
+//      HAL_tty_puts("hellow !");
+//  }
 
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();
+
     Init_STM32();
 
+    LOG("initing lcd");
+
     InitLCD();
+
+    LOG("inited lcd");
 
 //#ifdef SumExtCG
     SendFirstScreen(1);
@@ -242,6 +252,9 @@ static void init(void)
 
     wtf0.Second=38;
     control_init();
+
+    LOG("inited control");
+
     initCheckConfig();
 }
 
@@ -282,7 +295,7 @@ void main(void)
 
         if (wtf0.bSec)
         {
-            HAL_tty_puts("hellow !");
+            LOG("hellow !");
 
             wtf0.bSec=0;
             periodic_task();
@@ -307,4 +320,9 @@ void main(void)
 
         simple_servercycle();
     }
+}
+
+void assert_param(bool wtf)
+{
+    ;
 }

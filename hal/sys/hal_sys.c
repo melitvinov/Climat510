@@ -1,6 +1,9 @@
 #include "syntax.h"
 #include "stm32f10x.h"
 
+#include "hal_debug.h"
+#include "hal_sys.h"
+
 //-- linker symbols
 extern u32 __data;
 extern u32 __data_end;
@@ -24,7 +27,11 @@ typedef struct __packed
     void (*isr_vectors[68])(void);
 } vector_table_t;
 
-__naked extern void timer4_handler(void);
+extern void timer4_handler(void);
+extern void TIM2_IRQHandler(void);
+extern void TIM3_IRQHandler(void);
+extern void RTC_IRQHandler(void);
+extern void UART4_IRQHandler(void);
 
 // flash-based vector table
 static const __attribute__ ((section(".initvectors"), used)) vector_table_t initvects =
@@ -38,6 +45,10 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
     .isr_vectors =
     {
         [TIM4_IRQn] = timer4_handler,
+        [TIM2_IRQn] = TIM2_IRQHandler,
+        [TIM3_IRQn] = TIM3_IRQHandler,
+        [RTC_IRQn] = RTC_IRQHandler,
+        [UART4_IRQn] = UART4_IRQHandler,
     }
 };
 
@@ -61,8 +72,7 @@ __naked static void nmi_handler(void)
         pc = *(sp + 6);
     }
 
-    #warning "exceptions are disabled for now"
-    //hal_exception(pc, sp);
+    hal_exception(pc, sp);
 }
 
 static void init_sys(void)

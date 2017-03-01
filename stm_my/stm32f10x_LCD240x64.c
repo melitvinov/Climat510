@@ -299,9 +299,15 @@ void LCD_DATA_OUT(uint8_t u8Tmp)
     u16Temp = GPIO_ReadOutputData(PORT_IND2)&(~MASK_IND2);
     u16Temp |=  (u8Tmp&0xf0)<<N_IND2;//¬нимательно если маска не 0xff нужно преобразование
     GPIO_Write(PORT_IND2, u16Temp);*/
-    PORT_IND1->ODR=(PORT_IND1->IDR&(~MASK_IND1))|((u8Tmp&0x0f)<<N_IND1);
-    PORT_IND2->ODR=(PORT_IND2->IDR&(~MASK_IND2))|((u8Tmp&0xf0)<<N_IND2);
 
+    u32 lnib = u8Tmp & 0x0F;
+    u32 hnib = u8Tmp & 0xF0;
+
+    PORT_IND1->BSRR = ((lnib << N_IND1) & MASK_IND1) | (((~lnib << N_IND1) & MASK_IND1) << 16);
+    PORT_IND2->BSRR = ((hnib << N_IND2) & MASK_IND2) | (((~hnib << N_IND2) & MASK_IND2) << 16);
+
+//  PORT_IND1->ODR=(PORT_IND1->IDR&(~MASK_IND1))|((u8Tmp&0x0f)<<N_IND1);
+//  PORT_IND2->ODR=(PORT_IND2->IDR&(~MASK_IND2))|((u8Tmp&0xf0)<<N_IND2);
 }
 
 
