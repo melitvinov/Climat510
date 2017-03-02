@@ -3,6 +3,7 @@ SRC += hal/rtc/hal_rtc.c
 SRC += hal/sys/hal_sys.c
 SRC += hal/systimer/hal_systimer.c
 SRC += hal/tty/hal_tty.c
+SRC += hal/pincfg/hal_pincfg.c
 
 HAL_CINCS :=
 HAL_CINCS += hal/tty
@@ -19,6 +20,7 @@ HAL_PRIVATE_CINCS += env
 HAL_PRIVATE_CINCS += hal/sys
 HAL_PRIVATE_CINCS += hal/core
 HAL_PRIVATE_CINCS += hal/debug
+HAL_PRIVATE_CINCS += hal/pincfg
 HAL_PRIVATE_CINCS += fwlib
 
 HAL_PRIVATE_CINCS += stm_lib/inc

@@ -3,8 +3,9 @@
 #include "syntax.h"
 #include "stm32f10x.h"
 
-#include "hal_tty.h"
+#include "hal_pincfg.h"
 #include "hal_sys.h"
+#include "hal_tty.h"
 
 // bit-bang uart 9600-n-1 on pb7 (i2c1_sda_master)
 
@@ -26,12 +27,7 @@ static tty_rt_t rt;
 
 void HAL_tty_init(void)
 {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-//  if (pin_idx < 8)
-//      port->CRL |= 1 << (pin_idx * 4);    // output, 10 MHz
-//  else
-//      port->CRH |= 1 << ((pin_idx - 8) * 4);    // output, 10 MHz
-    port->CRH = (port->CRH & 0xF0) | 0x10;
+    hal_pincfg_out(port, pin_idx);
     port->BSRR = 1 << pin_idx;
 
     RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;

@@ -34,14 +34,12 @@
 #define GetInputConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INPUTS])
 
 // XXX: this stuff is from climdef.h
-static uchar   nSensor;
 static uint8_t* mymac = 0x1FFFF7EE;
 static unsigned char myip[4] = {192,168,1,231};
 static uint16_t    NMinPCOut;
 static uint16_t* IWDG_Reset;
 
 static void ReadFromFRAM(void);
-static void Init_MEAS_INPUT(void);
 
 void stm32f10x_Rootines_reset_NMinPCOut()
 {
