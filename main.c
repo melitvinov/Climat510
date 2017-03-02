@@ -297,6 +297,7 @@ void main(void)
     {
         do_sound_stuff();
         process_pc_input();
+        process_legacy_timers();
 
         bool should_show_video = 0;
 

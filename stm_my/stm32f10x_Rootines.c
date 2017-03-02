@@ -26,6 +26,8 @@
 #include "stm32f10x_LCD240x64.h"
 #include "unsorted.h"
 
+#include "hal_systimer.h"
+
 #include "debug.h"
 
 #define GetSensConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[nSens+SUM_NAME_INSENS])
@@ -94,8 +96,6 @@ void Init_STM32(void)
     simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
     LOG("started web");
 
-
-    w1Init();
 //    Init_MEAS_INPUT();
 //    Init_IWDG(&GD.TControl.Tepl[0].nReset);
     Check_IWDG();
@@ -115,169 +115,26 @@ void Init_STM32(void)
 
     CheckInputConfig();
     LOG("checked input config");
-    //InitIPCTimer();
-    LOG("inited ipc timer");
 }
 
-/***************************************************************************//**
- * @brief  Setting MEASUREMENTS
- ******************************************************************************/
-
-
-
-/***************************************************************************//**
- * @brief  Setting DATA pins to input mode
- ******************************************************************************/
-/*void Keyboard_Init(void)
+void process_legacy_timers(void)
 {
-    KEYB_STARTUP;
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = KEYB_OUT;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(PORT_KEYB_OUT, &GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Pin = KEYB_IN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-    GPIO_Init(PORT_KEYB_IN, &GPIO_InitStructure);
+    static u32 keyb_timestamp = 0;
+    static u32 ipc_timestamp = 0;
 
-}*/
+    u32 time = HAL_systimer_get();
 
-/*
-char CheckKeyboardSTM()
-{
-    int i;
-    uint16_t sendB;
-    uint16_t u16Temp=0;
-    Keyboard_Init();
-    if(KeyDelay>1) {KeyDelay--;return 0;}
-
-    for (i=0;i<16;i++)
+    if (time - keyb_timestamp > 100) // was 100ms in legacy code
     {
-
-        //GPIO_Write(PORT_KEYB_OUT, u16Temp);
-        u16Temp = GPIO_ReadOutputData(PORT_KEYB_OUT)&(~KEYB_OUT);
-        u16Temp |=  0x000f&~(1<<(i%4));//Внимательно если маска не 0xff нужно преобразование
-        GPIO_Write(PORT_KEYB_OUT, u16Temp);
-        NOP;NOP;
-
-        sendB=i/4;
-        sendB=0x01<<sendB;
-        u16Temp= GPIO_ReadInputData(PORT_KEYB_IN)&KEYB_IN;
-        if (!(u16Temp&sendB))
-        {
-            SIM=i; BITKL=1;
-            KeyDelay=4;
-            return 1;
-        }
-
+        keyb_timestamp = time;
+        KeyboardProcess();
     }
-    return 0;
-}
-*/
 
-void InitIPCTimer(void)
-{
-    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-
-
-    TIM3->PSC = 8000-1; // Clock prescaler;
-
-    // 50 ms
-    TIM3->ARR = 50;//33 // Auto reload value
-    TIM3->SR = 0; // Clean interrups & events flag
-
-    TIM3->DIER = TIM_DIER_UIE; // Enable update interrupts
-
-    NVIC_SetPriority(TIM3_IRQn, 10);
-    NVIC_ClearPendingIRQ(TIM3_IRQn);
-    NVIC_EnableIRQ(TIM3_IRQn);
-
-    TIM3->EGR = TIM_EGR_UG;
-    TIM3->CR1 |= TIM_CR1_CEN; // Enable timer
-}
-
-void TIM3_IRQHandler(void)
-{
-
-    Reg48ToI2C();
-
-    TIM3->SR=0;
-    asm volatile ("dmb":::);
-    asm volatile ("dmb":::);
-}
-
-void InitMainTimer(void)
-{
-    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-
-
-    TIM2->PSC = 8000-1; // Clock prescaler;
-    // 8MHz / 8000 = 1kHz (1 ms)
-
-    TIM2->ARR = 100; // Auto reload value
-    // 100 ms
-    TIM2->SR = 0; // Clean interrups & events flag
-
-    TIM2->DIER = TIM_DIER_UIE; // Enable update interrupts
-
-    NVIC_SetPriority(TIM2_IRQn, 3);
-    NVIC_ClearPendingIRQ(TIM2_IRQn);
-    NVIC_EnableIRQ(TIM2_IRQn);
-
-    TIM2->EGR = TIM_EGR_UG;
-    TIM2->CR1 |= TIM_CR1_CEN; // Enable timer
-}
-
-void TIM2_IRQHandler(void)
-{
-    //SumAnswers=IntCount;
-/*	CLREA;
-    Mes=IntCount;
-    //SumAnswers++;
-    //nPort=0;
-    GPIOB->ODR=(GPIOB->ODR&(~0x100))|((nPort%2)<<8);
-    nPort>>=1;
-    GPIOA->ODR=(GPIOA->ODR&(~0x800))|((nPort%2)<<11);
-    nPort>>=1;
-    GPIOA->ODR=(GPIOA->ODR&(~0x700))|((nPort%8)<<8);
-    IntCount=0;
-    SETEA;
-    ReadyIZ=1;*/
-
-#warning !!!!!!!!!!!!!!!!!!!!!!!!!!!! ON
-    //CheckKeyboardSTM();
-    KeyboardProcess();
-
-
-    //Reg48ToI2C();
-    //SendCharPC(22);
-    /*if (Second%2)
-        GPIO_WriteBit(GPIOC, GPIO_Pin_9, Bit_SET);
-    else
-        GPIO_WriteBit(GPIOC, GPIO_Pin_9, Bit_RESET);*/
-    TIM2->SR=0;
-    asm volatile ("dmb":::);
-    asm volatile ("dmb":::);
-}
-
-#define PORT1WIRE	GPIOB
-#define PIN1WIRE	GPIO_Pin_12
-
-void w1Init()
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = PIN1WIRE;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(PORT1WIRE, &GPIO_InitStructure);
-}
-
-void Reg48ToI2C()
-{
-    uint16_t i;
-//	for (i=0;i<8;i++)
-//		I2C_Rel_Write(OutR[i],i);
-    SendIPC(&gd_rw()->Hot.Zones[0].ConnectionStatus);
+    if (time - ipc_timestamp > 50)  // was 50ms in legacy code
+    {
+        ipc_timestamp = time;
+        SendIPC(&gd_rw()->Hot.Zones[0].ConnectionStatus);
+    }
 }
 
 void OutReg()
@@ -327,58 +184,6 @@ void GetRTC(uint16_t *time, uint16_t *date, uint8_t *year, u8 *day_of_week)
     *year = fDateTime.year-2000;
     *day_of_week = fDateTime.wday;
 }
-
-void Init_MEAS_INPUT()
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-    EXTI_InitTypeDef EXTI_InitStructure;
-    NVIC_InitTypeDef NVIC_InitStructure;
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
-
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    // Настройка прерывания:
-    GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource9);
-
-    EXTI_InitStructure.EXTI_Line = EXTI_Line9;
-    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-
-
-}
-
-void EXTI9_5_IRQHandler(void)
-{
-    if (EXTI_GetITStatus(EXTI_Line9) != RESET)
-    {
-
-    }
-    // Да если и нет, то всё равно:
-
-    EXTI_ClearITPendingBit(EXTI_Line9);
-}
-
 
 void Init_IWDG(uint16_t* fIWDG_Reset)
 {

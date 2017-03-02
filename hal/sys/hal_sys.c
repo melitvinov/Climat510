@@ -43,8 +43,6 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
     },
     .isr_vectors =
     {
-        [TIM2_IRQn] = TIM2_IRQHandler,
-        [TIM3_IRQn] = TIM3_IRQHandler,
         [TIM4_IRQn] = timer4_handler,
         [UART4_IRQn] = UART4_IRQHandler,
     }

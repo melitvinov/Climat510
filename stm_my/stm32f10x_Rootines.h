@@ -20,6 +20,8 @@ void InitMainTimer(void);
 
 void InitIPCTimer(void);
 
+void process_legacy_timers(void);
+
 void w1Init(void);
 void w1_check(void);
 int16_t w1reset(void);
