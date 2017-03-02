@@ -5,7 +5,6 @@
 #include "stm32f10x_Rootines.h"
 #include "misc.h"
 #include "stm32f10x_tim.h"
-#include "stm32f10x_rtc.h"
 #include "stm32f10x_i2c.h"
 #include "stm32f10x_bkp.h"
 #include "stm32f10x_pwr.h"
@@ -91,7 +90,6 @@ void Init_STM32(void)
     LOG("inited keyboard");
 
     HAL_rtc_init();
-    //InitRTC();
 
     LOG("inited rtc");
     wtf0.PORTNUM=DEF_PORTNUM;
@@ -261,98 +259,6 @@ void TIM2_IRQHandler(void)
     asm volatile ("dmb":::);
     asm volatile ("dmb":::);
 }
-
-void InitRTC(void)
-{
-    int i;
-
-    NVIC_SetPriority(RTC_IRQn, 4);
-    NVIC_ClearPendingIRQ(RTC_IRQn);
-    NVIC_EnableIRQ(RTC_IRQn);
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-
-    // XXX: here was an unworking delay
-
-//	RCC_LSEConfig(RCC_LSE_ON);
-//	while (RCC_GetFlagStatus(RCC_FLAG_LSERDY)  ==  RESET) { ; }
-//	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
-
-    RCC_LSICmd(ENABLE);  // устанавливаем бит разрешения работы
-
-//	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
-
-
-
-    if (BKP_ReadBackupRegister(BKP_DR1) != 0xA5A6)
-    {
-        /* Backup data register value is not correct or not yet programmed (when
-           the first time the program is executed) */
-
-        /* Allow access to BKP Domain */
-        PWR_BackupAccessCmd(ENABLE);
-
-        /* Reset Backup Domain */
-        BKP_DeInit();
-
-        RCC_LSEConfig(RCC_LSE_OFF);
-
-        RCC_LSICmd(ENABLE);  // устанавливаем бит разрешения работы
-        while (RCC_GetFlagStatus(RCC_FLAG_LSIRDY)  ==  RESET);
-        RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
-
-/*		// Enable LSE
-        RCC_LSEConfig(RCC_LSE_ON);
-        while (RCC_GetFlagStatus(RCC_FLAG_LSERDY)  ==  RESET) { ; }
-        RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);*/
-        /* Enable RTC Clock */
-        RCC_RTCCLKCmd(ENABLE);
-        /* Wait for RTC registers synchronization */
-        RTC_WaitForSynchro();
-        /* Wait until last write operation on RTC registers has finished */
-        RTC_WaitForLastTask();
-        /* Set RTC prescaler: set RTC period to 1sec */
-        RTC_SetPrescaler(40000); /* RTC period = RTCCLK/RTC_PR = (32.768 KHz)/(32767+1) */
-        /* Wait until last write operation on RTC registers has finished */
-        RTC_WaitForLastTask();
-        /* Set initial value */
-        RTC_SetCounter( (uint32_t)((11*60+55)*60) ); // here: 1st January 2000 11:55:00
-        /* Wait until last write operation on RTC registers has finished */
-        RTC_WaitForLastTask();
-        BKP_WriteBackupRegister(BKP_DR1, 0xA5A6);
-        /* Lock access to BKP Domain */
-        PWR_BackupAccessCmd(DISABLE);
-
-    }
-    else
-    {
-
-        /* Wait for RTC registers synchronization */
-        RTC_WaitForSynchro();
-    }
-    RTC_ITConfig(RTC_IT_SEC, ENABLE);
-
-
-
-
-}
-
-
-void RTC_IRQHandler(void)
-{
-    if (RTC_GetITStatus(RTC_IT_SEC) != RESET)
-    {
-        RTC_ClearITPendingBit(RTC_IT_SEC);
-        RTC_WaitForLastTask();
-        #warning "this baby should be volatile !"
-        wtf0.bSec=1;
-        wtf0.Second++;
-        //SumAnswers=IntCount;
-        //IntCount=0;
-    }
-}
-
-
 
 #define PORT1WIRE	GPIOB
 #define PIN1WIRE	GPIO_Pin_12

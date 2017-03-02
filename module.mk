@@ -6,7 +6,6 @@ SRC += stm_lib/stm32f10x_gpio.c
 SRC += stm_lib/stm32f10x_exti.c
 SRC += stm_lib/stm32f10x_bkp.c
 SRC += stm_lib/stm32f10x_pwr.c
-SRC += stm_lib/stm32f10x_rtc.c
 SRC += stm_lib/stm32f10x_spi.c
 SRC += stm_lib/stm32f10x_usart.c
 SRC += stm_lib/misc.c

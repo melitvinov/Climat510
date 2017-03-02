@@ -1,8 +1,3 @@
-/* Работа с часами*/
-
-#include "stm32f10x_rtc.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_bkp.h"
 
 #define FIRSTYEAR   2000		// start year
 #define FIRSTDAY    6			// 0 = Sunday

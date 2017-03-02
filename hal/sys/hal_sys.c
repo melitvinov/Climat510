@@ -30,7 +30,6 @@ typedef struct __packed
 extern void timer4_handler(void);
 extern void TIM2_IRQHandler(void);
 extern void TIM3_IRQHandler(void);
-extern void RTC_IRQHandler(void);
 extern void UART4_IRQHandler(void);
 
 // flash-based vector table
@@ -47,7 +46,6 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
         [TIM4_IRQn] = timer4_handler,
         [TIM2_IRQn] = TIM2_IRQHandler,
         [TIM3_IRQn] = TIM3_IRQHandler,
-        [RTC_IRQn] = RTC_IRQHandler,
         [UART4_IRQn] = UART4_IRQHandler,
     }
 };

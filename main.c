@@ -305,7 +305,6 @@ void main(void)
 
             LOG("hellow !");
 
-            wtf0.bSec=0;
             periodic_task();
             should_show_video = 1;
         }

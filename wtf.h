@@ -6,7 +6,6 @@
 
 typedef struct
 {
-    bool    bSec;
     bool    Menu;
 
     unsigned char   Second;
