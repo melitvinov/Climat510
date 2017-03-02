@@ -1,15 +1,18 @@
-SRC += hal/tty/hal_tty.c
-SRC += hal/sys/hal_sys.c
 SRC += hal/debug/hal_debug.c
 SRC += hal/rtc/hal_rtc.c
+SRC += hal/sys/hal_sys.c
+SRC += hal/systimer/hal_systimer.c
+SRC += hal/tty/hal_tty.c
 
 HAL_CINCS :=
 HAL_CINCS += hal/tty
 
 # just for now
 HAL_CINCS += hal/core
+
 HAL_CINCS += hal/debug
 HAL_CINCS += hal/rtc
+HAL_CINCS += hal/systimer
 
 HAL_PRIVATE_CINCS := hal
 HAL_PRIVATE_CINCS += env

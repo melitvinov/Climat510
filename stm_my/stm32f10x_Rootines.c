@@ -80,7 +80,7 @@ void Init_STM32(void)
 //		USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
 
 
-    InitMainTimer();
+//    InitMainTimer();
 
     LOG("inited main timer");
 
@@ -89,9 +89,6 @@ void Init_STM32(void)
 
     LOG("inited keyboard");
 
-    HAL_rtc_init();
-
-    LOG("inited rtc");
     wtf0.PORTNUM=DEF_PORTNUM;
 
     simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
@@ -118,7 +115,7 @@ void Init_STM32(void)
 
     CheckInputConfig();
     LOG("checked input config");
-    InitIPCTimer();
+    //InitIPCTimer();
     LOG("inited ipc timer");
 }
 
@@ -185,6 +182,7 @@ void InitIPCTimer(void)
 
     TIM3->PSC = 8000-1; // Clock prescaler;
 
+    // 50 ms
     TIM3->ARR = 50;//33 // Auto reload value
     TIM3->SR = 0; // Clean interrups & events flag
 
@@ -214,8 +212,10 @@ void InitMainTimer(void)
 
 
     TIM2->PSC = 8000-1; // Clock prescaler;
+    // 8MHz / 8000 = 1kHz (1 ms)
 
     TIM2->ARR = 100; // Auto reload value
+    // 100 ms
     TIM2->SR = 0; // Clean interrups & events flag
 
     TIM2->DIER = TIM_DIER_UIE; // Enable update interrupts

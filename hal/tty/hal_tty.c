@@ -67,7 +67,7 @@ void timer4_handler(void)
     {
         if (rt.w == rt.r)   // buf is empty, stop
         {
-            timer->CR1 = 0;
+            timer->CR1 &= ~TIM_CR1_CEN;
         }
         else
         {
@@ -98,7 +98,7 @@ void HAL_tty_putc(u8 chr)
         // flush
         while (rt.shiftreg)
         {
-            timer->CR1 = TIM_CR1_CEN;
+            timer->CR1 |= TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
             timer4_handler();
         }
@@ -110,7 +110,7 @@ void HAL_tty_putc(u8 chr)
 
         do
         {
-            timer->CR1 = TIM_CR1_CEN;
+            timer->CR1 |= TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
             timer4_handler();
         }
@@ -125,7 +125,7 @@ void HAL_tty_putc(u8 chr)
         rt.buf[w] = chr;            // put byte on hold in buffer
         rt.w = new_w;
 
-        timer->CR1 = TIM_CR1_CEN;
+        timer->CR1 |= TIM_CR1_CEN;
     }
 }
 

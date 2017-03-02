@@ -40,8 +40,9 @@ COMMON_CFLAGS += -Wa,-adlmns=$(@:.o=.lst)
 # Warnings
 
 # these are disabled, since amount of legacy warnings is INSANE
-#COMMON_CFLAGS += -Wall -Wcast-align -Wimplicit -Wstrict-prototypes -Wuninitialized
-#COMMON_CFLAGS += -Wpointer-arith -Wswitch -Wredundant-decls -Wreturn-type -Wunused
+COMMON_CFLAGS += -Wall -Wcast-align -Wimplicit -Wuninitialized
+#COMMON_CFLAGS += -Wstrict-prototypes
+COMMON_CFLAGS += -Wpointer-arith -Wswitch -Wredundant-decls -Wreturn-type -Wunused
 
 COMMON_CFLAGS += -Wno-char-subscripts
 

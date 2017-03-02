@@ -12,6 +12,7 @@
 
 #include "hal_tty.h"
 #include "hal_rtc.h"
+#include "hal_systimer.h"
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
@@ -156,6 +157,7 @@ static void periodic_task(void)
 {
     if (wtf0.Second == 58)
     {
+        LOG("checking pc link");
         CheckWithoutPC();
         CheckInputConfig();
     }
@@ -168,6 +170,7 @@ static void periodic_task(void)
 
     // so control is firing every second
 
+    LOG("running periodic control");
     // XXX: moved here from control.c
     LoadDiscreteInputs();
     GetRTC(&gd_rw()->Hot.Time, &gd_rw()->Hot.Date, &gd_rw()->Hot.Year, &NowDayOfWeek);
@@ -184,6 +187,7 @@ static void periodic_task(void)
     // xxx: sweet as a fuck
     if (wtf0.Second == 20)
     {
+        LOG("reiniting lcd");
         InitLCD();
     }
 
@@ -203,7 +207,10 @@ static void periodic_task(void)
     else
     {
         if (!(wtf0.Second%9))
+        {
+            LOG("doing measure");
             Measure();
+        }
     }
 }
 
@@ -211,14 +218,11 @@ static void init(void)
 {
     HAL_tty_init();
 
-    LOG("inited tty :-)");
-    LOG("and again");
-//    SETEA;
+    LOG("initing RTC...");
+    HAL_rtc_init();
 
-//  while (1)
-//  {
-//      HAL_tty_puts("hellow !");
-//  }
+    LOG("initing sys timer...");
+    HAL_systimer_init();
 
     keyboardSetBITKL(0);
 
@@ -302,8 +306,6 @@ void main(void)
             LOG("time: %d", time);
             prev_time = time;
             wtf0.Second++;
-
-            LOG("hellow !");
 
             periodic_task();
             should_show_video = 1;

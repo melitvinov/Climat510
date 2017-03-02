@@ -60,22 +60,19 @@ void HAL_rtc_init(void)
 
 static u32 read_counter(void)
 {
-    u32 low = RTC->CNTL;
-    u32 high = RTC->CNTH;
-    return (high << 16) | low;
+    // avoid wrong result if read is coincident the low hword overflow
+    while (1)
+    {
+        u32 high = RTC->CNTH;
+        u32 low = RTC->CNTL;
+        if (RTC->CNTH == high)
+            return (high << 16) | low;
+    }
 }
 
 u32 HAL_rtc_get_timestamp(void)
 {
-    u32 sample0 = read_counter();
-    while (1)
-    {
-        u32 sample1 = read_counter();
-        if (sample1 == sample0)
-            break;
-        sample0 = sample1;
-    }
-    return sample0;
+    return read_counter();
 }
 
 
