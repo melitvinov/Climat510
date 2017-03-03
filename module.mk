@@ -15,7 +15,7 @@ SRC += stm_my/stm32f10x_RS485Master.c
 SRC += stm_my/stm32f10x_RS485.c
 SRC += stm_my/i2csoft.c
 SRC += stm_my/stm32f10x__clock.c
-SRC += keyboard/keyboard.c
+SRC += keyboard.c
 
 # these are 'coarse fixed'
 SRC += 405_Memory.c
@@ -39,7 +39,7 @@ SRC += unsorted.c
 
 SRC += main.c
 
-CINCS += . stm_my stm_lib cmsis_boot cmsis keyboard
+CINCS += . stm_my stm_lib cmsis_boot cmsis
 
 # C sources which are #included (ugly !)
 CINCS += stm_my/src

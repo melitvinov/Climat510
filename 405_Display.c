@@ -172,7 +172,7 @@ void KeyBoard(void)
         B_input = 0;
         switch (keyboardGetSIM())
         {
-        case KEY_10 : if (!Form) break;
+        case KEY_EDIT : if (!Form) break;
             if (!wtf0.Menu)
             {
                 wtf0.Menu = 1;

@@ -3,6 +3,6 @@
 
 void HAL_systimer_init(void);
 u32 HAL_systimer_get(void);
-void HAL_systimer_sleep_us(u32 us);
+void hal_systimer_sleep_us(u32 us);
 
 #endif

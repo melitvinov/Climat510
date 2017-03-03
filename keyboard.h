@@ -1,5 +1,3 @@
-#include "stm32f10x_Define.h"
-
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
@@ -8,10 +6,7 @@
 */
 typedef enum
 {
-    KEY_UP      = 13,
-    KEY_RIGHT   = 14,
-    KEY_LEFT    = 12,
-    KEY_DOWN    = 15,
+    KEY_0       = 0,
     KEY_1       = 1,
     KEY_2_UP    = 2,
     KEY_3       = 3,
@@ -21,8 +16,11 @@ typedef enum
     KEY_7       = 7,
     KEY_8_DOWN  = 8,
     KEY_9       = 9,
-    KEY_10      = 10,
-    KEY_11      = 0
+    KEY_EDIT      = 10,
+    KEY_UP      = 13,
+    KEY_RIGHT   = 14,
+    KEY_LEFT    = 12,
+    KEY_DOWN    = 15,
 } KEY_PRESSED;
 
 
@@ -35,7 +33,7 @@ void Keyboard_Init(void);
 \brief Процесс опроса клавиатуры
 @return char 0 - кнопка не нажата, 1 кнопка нажата
 */
-char KeyboardProcess(void);
+void KeyboardProcess(void);
 
 /*!
 \brief Установка флага нажатия кнопки

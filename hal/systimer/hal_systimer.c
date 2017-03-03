@@ -55,7 +55,7 @@ void HAL_systimer_sleep(u32 ms)
     while ((HAL_systimer_get() - start) < ms);
 }
 
-void HAL_systimer_sleep_us(u32 us)
+void hal_systimer_sleep_us(u32 us)
 {
     const u32 scale = HAL_SYS_F_CPU / 1E6;
 

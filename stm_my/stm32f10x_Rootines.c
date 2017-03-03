@@ -82,13 +82,6 @@ void Init_STM32(void)
 
 //    InitMainTimer();
 
-    LOG("inited main timer");
-
-
-    Keyboard_Init();
-
-    LOG("inited keyboard");
-
     wtf0.PORTNUM=DEF_PORTNUM;
 
     simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);

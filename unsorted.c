@@ -11,6 +11,8 @@
 #include "wtf.h"
 #include "unsorted.h"
 
+#include "stm32f10x_Define.h"
+
 #include "defs.h"
 
 extern uchar nReset;

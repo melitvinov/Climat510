@@ -6,6 +6,8 @@
 #include "control_gd.h"
 #include "unsorted.h"
 
+#include "stm32f10x_Define.h"
+
 #include "wtf.h"
 
 #include "debug.h"
@@ -224,6 +226,9 @@ static void init(void)
     LOG("initing sys timer...");
     HAL_systimer_init();
 
+    LOG("initing keyboard...");
+    Keyboard_Init();
+
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();
@@ -249,7 +254,7 @@ static void init(void)
 
     int byte_x=1;
     wtf0.SostRS=OUT_UNIT;
-    KeyboardProcess();
+    //KeyboardProcess();
 
     if (keyboardGetBITKL())
         byte_x=6;
