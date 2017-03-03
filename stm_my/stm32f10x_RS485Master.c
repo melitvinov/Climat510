@@ -4,7 +4,6 @@
 
 #include "syntax.h"
 
-#include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_usart.h"
 #include "stm32f10x_Define.h"
@@ -150,7 +149,7 @@ void USART_OUT2_Configuration(uint16_t fbrate)
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    USART_OUT2_STARTUP;
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
 
 
@@ -211,7 +210,7 @@ void USART_OUT_Configuration(uint16_t fbrate)
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    USART_OUT_STARTUP;
+    RCC->APB1ENR |= RCC_APB1ENR_UART4EN;
 
     NVIC_SetPriority(USART_OUT_IRQ, 5);
     NVIC_ClearPendingIRQ(USART_OUT_IRQ);

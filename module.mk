@@ -39,10 +39,7 @@ SRC += unsorted.c
 
 SRC += main.c
 
-CINCS += . stm_my stm_lib cmsis_boot cmsis
-
-# C sources which are #included (ugly !)
-CINCS += stm_my/src
+CINCS += . stm_my stm_lib
 
 # from coocox
-CDEFS += -DSTM32F105RC -DSTM32F10X_CL -D__ASSEMBLY__
+CDEFS += -DSTM32F10X_CL

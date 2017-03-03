@@ -1,4 +1,3 @@
-#include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_usart.h"
 #include "stm32f10x_RS485.h"
@@ -34,96 +33,7 @@
 #define USART_PC_TX_PORT			GPIOA
 
 #define USART_PC_RX_PORT			GPIOA
-//Инициализационная строка USART
-#define USART_PC_STARTUP    	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE)
 #endif
-
-#ifdef USART_PC2
-#define USART_PC				USART2
-//Ножка передатчика USART
-#define USART_PC_TX_PIN			GPIO_Pin_2
-//Ножка приемника USART
-#define USART_PC_RX_PIN			GPIO_Pin_3
-//Ножка направления данных USART
-#define USART_PC_DIR_PIN		GPIO_Pin_4
-//Обработчик прерывания USART
-#define USART_PC_INT_VECT		void USART2_IRQHandler(void)
-//Вектор прерывания USART
-#define USART_PC_IRQ			USART2_IRQn
-//Имя порта, на котором находится USART
-#define USART_PC_PORT			GPIOA
-//Инициализационная строка USART
-#define USART_PC_STARTUP    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE)
-
-#endif
-
-#ifdef USART_PC3
-#define USART_PC				USART3
-
-//Ножка передатчика USART
-#define USART_PC_TX_PIN			GPIO_Pin_10
-//Ножка приемника USART
-#define USART_PC_RX_PIN			GPIO_Pin_11
-//Ножка направления данных USART
-#define USART_PC_DIR_PIN		GPIO_Pin_12
-//Обработчик прерывания USART
-#define USART_PC_INT_VECT		void USART3_IRQHandler(void)
-//Вектор прерывания USART
-#define USART_PC_IRQ			USART3_IRQn
-//Имя порта, на котором находится USART
-#define USART_PC_PORT			GPIOB
-//Инициализационная строка USART
-#define USART_PC_STARTUP    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE)
-
-#endif
-
-#ifdef USART_PC4
-#define USART_PC				UART4
-//Ножка передатчика USART
-#define USART_PC_TX_PIN			GPIO_Pin_10
-//Ножка приемника USART
-#define USART_PC_RX_PIN			GPIO_Pin_11
-//Ножка направления данных USART
-#define USART_PC_DIR_PIN		GPIO_Pin_12
-//Обработчик прерывания USART
-#define USART_PC_INT_VECT		void UART4_IRQHandler(void)
-//Вектор прерывания USART
-#define USART_PC_IRQ			UART4_IRQn
-//Имя порта, на котором находится USART
-#define USART_PC_DIR_PORT			GPIOC
-
-#define USART_PC_TX_PORT			GPIOC
-
-#define USART_PC_RX_PORT			GPIOC
-
-//Инициализационная строка USART
-#define USART_PC_STARTUP		RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
-#endif
-
-
-#ifdef USART_PC5
-#define USART_PC				UART5
-//Ножка передатчика USART
-#define USART_PC_TX_PIN			GPIO_Pin_12
-//Ножка приемника USART
-#define USART_PC_RX_PIN			GPIO_Pin_2
-//Ножка направления данных USART
-#define USART_PC_DIR_PIN		GPIO_Pin_4
-//Обработчик прерывания USART
-#define USART_PC_INT_VECT		void UART5_IRQHandler(void)
-//Вектор прерывания USART
-#define USART_PC_IRQ			UART5_IRQn
-//Имя порта, на котором находится USART
-#define USART_PC_DIR_PORT			GPIOB
-
-#define USART_PC_TX_PORT			GPIOC
-
-#define USART_PC_RX_PORT			GPIOD
-
-//Инициализационная строка USART
-#define USART_PC_STARTUP    	GPIO_PinRemapConfig(GPIO_Remap_SWJ_NoJTRST, ENABLE); RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB| RCC_APB2Periph_GPIOD| RCC_APB2Periph_GPIOC, ENABLE)
-#endif
-
 
 #define USART_PC_STOPSEND			GPIO_WriteBit(USART_PC_DIR_PORT,USART_PC_DIR_PIN,Bit_RESET);
 
@@ -307,7 +217,7 @@ void USART_PC_Configuration(const uint8_t *fNFCtr,eAdrGD* fADRGD,uint8_t* fSostR
     USART_InitTypeDef USART_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    USART_PC_STARTUP;
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
     pSostRS485=fSostRS;
     pADRGD=fADRGD;

@@ -9,10 +9,7 @@ void    SPI1_Init(void)
     GPIO_InitTypeDef GPIO_InitStructure;
 
     /* Enable SPI1 and GPIOA clocks */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
 
     /* Configure SPI1 pins: NSS, SCK, MISO and MOSI */
