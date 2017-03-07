@@ -2,7 +2,7 @@
 
 #include "syntax.h"
 #include "405_memory.h"
-#include "I2CSoft.h"
+#include "hal_nvmem.h"
 
 eBlockEEP BlockEEP[SUM_BLOCK_EEP];
 
@@ -32,7 +32,7 @@ void SendBlockFRAM(uint16_t fStartAddr, const void *AdrBlock,uint16_t sizeBlock)
         fSS = 2000;
         if (i == sizeBlock/2000)
             fSS = sizeBlock%2000;
-        fm_Write(fStartAddr+i*2000, (const u8 *)AdrBlock+i*2000,fSS);
+        HAL_nvmem_write(fStartAddr+i*2000, (const u8 *)AdrBlock+i*2000,fSS);
     }
 
 //	I2C_MainLoad(0,AdrBlock,AdrBlock,I2C_TP_MEM,sizeBlock,I2C_Direction_Transmitter);
@@ -50,7 +50,7 @@ void RecvBlockFRAM(uint16_t fStartAddr, void *AdrBlock,uint16_t sizeBlock)
         if (i == sizeBlock/2000)
             fSS = sizeBlock%2000;
 
-        fm_Read(fStartAddr+i*2000, (u8 *)AdrBlock+i*2000,fSS);
+        HAL_nvmem_read(fStartAddr+i*2000, (u8 *)AdrBlock+i*2000,fSS);
     }
 }
 

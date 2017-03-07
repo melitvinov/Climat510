@@ -12,7 +12,6 @@
 #include "stm32f10x_exti.h"
 #include "stm32f10x_iwdg.h"
 #include "stm32f10x_RS485.h"
-#include "I2CSoft.h"
 
 // XXX: isolation
 #include "405_memory.h"

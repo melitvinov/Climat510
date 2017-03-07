@@ -14,6 +14,7 @@
 
 #include "hal_tty.h"
 #include "hal_rtc.h"
+#include "hal_nvmem.h"
 #include "hal_systimer.h"
 
 static int16_t konturMax[6];
@@ -229,8 +230,8 @@ static void init(void)
     LOG("initing keyboard...");
     Keyboard_Init();
 
-    LOG("trying i2c ...");
-    HAL_nvmem_smoke();
+    LOG("initing nvmem ...");
+    HAL_nvmem_init();
 
     keyboardSetBITKL(0);
 

@@ -13,7 +13,6 @@ SRC += stm_lib/stm32f10x_iwdg.c
 
 SRC += stm_my/stm32f10x_RS485Master.c
 SRC += stm_my/stm32f10x_RS485.c
-SRC += stm_my/i2csoft.c
 SRC += stm_my/stm32f10x__clock.c
 SRC += keyboard.c
 
