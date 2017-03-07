@@ -5,17 +5,19 @@
 #include "stm32f10x_LCD240x64.h"
 #include "stm32f10x_i2c.h"
 
-#define SetCE	PORT_IND_CMD_CE->BSRR=CE_ind // GPIO_WriteBit(PORT_IND_CMD_CE, CE_ind, Bit_SET)
-#define ClrCE	PORT_IND_CMD_CE->BRR=CE_ind //GPIO_WriteBit(PORT_IND_CMD_CE, CE_ind, Bit_RESET)
+#include "hal_systimer.h"
 
-#define SetCMD	PORT_IND_CMD_CE->BSRR=Cmd_Dat // GPIO_WriteBit(PORT_IND_CMD_CE, Cmd_Dat, Bit_SET)
-#define ClrCMD	PORT_IND_CMD_CE->BRR=Cmd_Dat //GPIO_WriteBit(PORT_IND_CMD_CE, Cmd_Dat, Bit_RESET)
+#define SetCE	PORT_IND_CMD_CE->BSRR=CE_ind; hal_systimer_sleep_us(1) // GPIO_WriteBit(PORT_IND_CMD_CE, CE_ind, Bit_SET)
+#define ClrCE	PORT_IND_CMD_CE->BRR=CE_ind; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_CMD_CE, CE_ind, Bit_RESET)
 
-#define SetRD	PORT_IND_WR_RD->BSRR=RD_ind //GPIO_WriteBit(PORT_IND_WR_RD, RD_ind, Bit_SET)
-#define ClrRD	PORT_IND_WR_RD->BRR=RD_ind //GPIO_WriteBit(PORT_IND_WR_RD, RD_ind, Bit_RESET)
+#define SetCMD	PORT_IND_CMD_CE->BSRR=Cmd_Dat; hal_systimer_sleep_us(1) // GPIO_WriteBit(PORT_IND_CMD_CE, Cmd_Dat, Bit_SET)
+#define ClrCMD	PORT_IND_CMD_CE->BRR=Cmd_Dat; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_CMD_CE, Cmd_Dat, Bit_RESET)
 
-#define SetWR	PORT_IND_WR_RD->BSRR=WR_ind //GPIO_WriteBit(PORT_IND_WR_RD, WR_ind, Bit_SET)
-#define ClrWR	PORT_IND_WR_RD->BRR=WR_ind //GPIO_WriteBit(PORT_IND_WR_RD, WR_ind, Bit_RESET)
+#define SetRD	PORT_IND_WR_RD->BSRR=RD_ind; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_WR_RD, RD_ind, Bit_SET)
+#define ClrRD	PORT_IND_WR_RD->BRR=RD_ind; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_WR_RD, RD_ind, Bit_RESET)
+
+#define SetWR	PORT_IND_WR_RD->BSRR=WR_ind; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_WR_RD, WR_ind, Bit_SET)
+#define ClrWR	PORT_IND_WR_RD->BRR=WR_ind; hal_systimer_sleep_us(1) //GPIO_WriteBit(PORT_IND_WR_RD, WR_ind, Bit_RESET)
 
 #define Tire	0xAC	//0x8D
 #define DTire	0x82
@@ -317,7 +319,7 @@ void LCD_DATA_OUT(uint8_t u8Tmp)
  ******************************************************************************/
 void Delay(vu32 nCount)
 {
-    for (; nCount != 0; nCount--);
+    hal_systimer_sleep_us(1);
 }
 
 uint8_t  ReadStatus (char Need)

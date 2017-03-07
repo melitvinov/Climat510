@@ -64,11 +64,11 @@ void Init_STM32(void)
     //I2CRel_MEM_Configuration();
 
     //I2C_BLOCK_Configuration();
-    i2_fm_Init();
+    //i2_fm_Init();
 
     LOG("reading from fram");
 
-    ReadFromFRAM();
+    //ReadFromFRAM();
 
     LOG("read from fram");
 
@@ -135,6 +135,8 @@ void OutReg()
 
 void WriteToFRAM()
 {
+    return;
+
     InitBlockEEP();
     #warning "maybe these addresses are wrong"
     SendBlockFRAM((uint32_t)(&gd()->TControl)-(uint32_t)(BlockEEP[0].AdrCopyRAM), &gd()->Hot, sizeof(gd()->Hot));

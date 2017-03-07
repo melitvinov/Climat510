@@ -229,6 +229,9 @@ static void init(void)
     LOG("initing keyboard...");
     Keyboard_Init();
 
+    LOG("trying i2c ...");
+    HAL_nvmem_smoke();
+
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();
