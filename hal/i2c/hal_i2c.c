@@ -51,12 +51,9 @@ static bool i2c_start( void)
     wait_100ns();   // 300 ns
     wait_100ns();
     wait_100ns();
+
     scl_down();
-    wait_100ns();   // provide a 500 ns before a data setup
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
+    wait_100ns();   // provide a 100 ns before a data
 
     return 1;
 }
@@ -64,32 +61,39 @@ static bool i2c_start( void)
 static void i2c_stop( void)
 {
     sda_down();
+    wait_100ns();   //
+    wait_100ns();   //
+    wait_100ns();   //
+    wait_100ns();   //
+
     scl_up();
     wait_100ns();   // 300 ns stop time
     wait_100ns();
     wait_100ns();
+
     sda_up();
 }
 
 static void i2c_restart( void)
 {
-    scl_down();
-    sda_up();
-    wait_100ns();   // 100 ns setup time
+    wait_100ns();   // data setup, low time - 500 ns
+    wait_100ns();   //
+    wait_100ns();   //
+    wait_100ns();   //
+
     scl_up();
     wait_100ns();   // 300 ns stop time
     wait_100ns();
     wait_100ns();
+
     sda_down();
     wait_100ns();   // 300 ns start time
+
     wait_100ns();
     wait_100ns();
+
     scl_down();
-    wait_100ns();   // provide a 500 ns before a data setup
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
+    wait_100ns();   // provide a 100 ns before a data
 }
 
 static uint i2c_send( uint Data)
@@ -107,31 +111,34 @@ static uint i2c_send( uint Data)
 
         Data <<= 1;
 
-        wait_100ns();   // data setup time > 50 ns. take 100 ns
+        wait_100ns();   // clock low - 500 ns + data setup (100 ns)
+        wait_100ns();   //
+        wait_100ns();   //
+        wait_100ns();   //
+
         scl_up();
         wait_100ns();   // clock high > 260 ns. take 300 ns
         wait_100ns();   //
         wait_100ns();   //
+
         scl_down();
-        wait_100ns();   // clock low > 500 ns - data setup time. take 500 ns to get 600 ns low time
-        wait_100ns();   //
-        wait_100ns();   //
-        wait_100ns();   //
-        wait_100ns();   //
+        wait_100ns();   // provide a 100 ns before a data
+
     } while ( --cnt );
 
     sda_up();       // prepairing for ack
-    wait_100ns();   // setup time, 100 ns
+    wait_100ns();   // clock low - 500 ns
+    wait_100ns();   //
+    wait_100ns();   //
+    wait_100ns();       // data setup time, 100 ns
+
     scl_up();
     wait_100ns();   // clock high = 300 ns
     wait_100ns();   //
     ack = sda_is_hold();    // take ack sample
+
     scl_down();
-    wait_100ns();   // clock low 500 ns
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
+    wait_100ns();   // wait 100 ns before a data
 
     return ack;
 }
@@ -143,19 +150,20 @@ static uint i2c_receive(uint should_ack)
     uint cnt = 8;
     do
     {
-        wait_100ns();   // data hold time
-        scl_up();
-        wait_100ns();   // wait ~300 ns
-        data <<= 1;
-        data |= sda_is_hold() ? 0 : 1;
-        wait_100ns();
-        scl_down();
-
         wait_100ns(); // wait 500 ns to get 600 ns low time
         wait_100ns();
         wait_100ns();
         wait_100ns();
         wait_100ns();
+
+        scl_up();
+        wait_100ns();   // wait ~300 ns
+        wait_100ns();
+        data <<= 1;
+        data |= sda_is_hold() ? 0 : 1;
+
+        scl_down();
+        wait_100ns();   // data hold time
     } while ( --cnt);   // 8 bits shifted in allright
 
     if ( should_ack)
@@ -163,20 +171,20 @@ static uint i2c_receive(uint should_ack)
     else
         sda_up();
 
-    wait_100ns();       // data setup time, 100 ns
+    wait_100ns();       // clock low - 500 ns
+    wait_100ns();       //
+    wait_100ns();       //
+    wait_100ns();       //
+
     scl_up();
     wait_100ns();   // wait 300 ns
     wait_100ns();
     wait_100ns();
+
     scl_down();
-
     wait_100ns();
+
     sda_up();
-    wait_100ns();   // wait 500 ns
-    wait_100ns();
-    wait_100ns();
-    wait_100ns();
-
     return data;
 }
 
