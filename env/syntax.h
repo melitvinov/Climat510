@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef NULL
+    #define NULL	((void*) 0)
+#endif
+
 // convinience macros
 #define countof( arg)       ( sizeof(arg)/sizeof(arg[0]))
 #define lastof( arg)        ( countof(arg) - 1)
@@ -57,6 +61,7 @@ typedef int8_t s8;
 #define memset(a, c, l)   __builtin_memset(a, c, l)
 #define strcpy(d, s)      __builtin_strcpy(d, s)
 #define strcat(d, s)      __builtin_strcat(d, s)
+#define strlen(s)         __builtin_strlen(s)
 #define memclr(d, size)   __builtin_memset(d, 0, size)
 
 // range clamp, abs

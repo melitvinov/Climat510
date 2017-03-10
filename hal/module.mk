@@ -1,6 +1,7 @@
 SRC += hal/debug/hal_debug.c
 SRC += hal/i2c/hal_i2c.c
 SRC += hal/keyb/hal_keyb.c
+SRC += hal/lcd/hal_lcd.c
 SRC += hal/nvmem/hal_nvmem.c
 SRC += hal/pincfg/hal_pincfg.c
 SRC += hal/rtc/hal_rtc.c
@@ -11,6 +12,7 @@ SRC += hal/tty/hal_tty.c
 HAL_CINCS :=
 HAL_CINCS += hal/debug
 HAL_CINCS += hal/keyb
+HAL_CINCS += hal/lcd
 HAL_CINCS += hal/nvmem
 HAL_CINCS += hal/rtc
 HAL_CINCS += hal/systimer

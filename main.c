@@ -233,6 +233,11 @@ static void init(void)
     LOG("initing nvmem ...");
     HAL_nvmem_init();
 
+    while (1)
+    {
+       HAL_lcd_smoke();
+    }
+
     keyboardSetBITKL(0);
 
     ClrAllOutIPCDigit();

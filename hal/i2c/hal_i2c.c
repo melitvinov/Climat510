@@ -27,7 +27,7 @@ static inline void sda_down(void)   {port->BSRR = 1 << (sda_pin_idx + 16);}
 static inline bool scl_is_hold(void)    {return ! (port->IDR & (1 << (scl_pin_idx)));}
 static inline bool sda_is_hold(void)    {return ! (port->IDR & (1 << (sda_pin_idx)));}
 
-static void wait_100ns(void)
+__always_inline static inline void wait_100ns(void)
 {
     __NOP();
     __NOP();
@@ -88,7 +88,6 @@ static void i2c_restart( void)
 
     sda_down();
     wait_100ns();   // 300 ns start time
-
     wait_100ns();
     wait_100ns();
 

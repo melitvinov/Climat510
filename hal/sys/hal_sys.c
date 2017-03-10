@@ -115,8 +115,9 @@ static void init_sys(void)
     // but enable port and alternate function clocks
     RCC->APB2ENR |= RCC_APB2ENR_IOPDEN | RCC_APB2ENR_IOPCEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPAEN | RCC_APB2ENR_AFIOEN;
 
-    // leave jtag running for now, but without njreset
-    AFIO->MAPR |= (AFIO->MAPR & ~AFIO_MAPR_SWJ_CFG) | AFIO_MAPR_SWJ_CFG_NOJNTRST;
+    // leave jtag running for now, but without njreset and trace pins.
+    // this will free pa15, pb3, pb4
+    AFIO->MAPR |= (AFIO->MAPR & ~AFIO_MAPR_SWJ_CFG) | AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
 }
 
 __naked static void reset_handler(void)
