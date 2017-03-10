@@ -156,15 +156,12 @@ static bool verify_status(uint val, uint mask)
 
 static bool exec_cmd(uint cmd, const void *data, uint len)
 {
-    if (len)
+    const u8 *p = data;
+    for (; len; len--)
     {
-        const u8 *p = data;
-        while (len--)
-        {
-            if (! verify_status(3, 3))
-                return 0;
-            write_data(*p++);
-        }
+        if (! verify_status(3, 3))
+            return 0;
+        write_data(*p++);
     }
 
     if (! verify_status(3, 3))
@@ -217,7 +214,7 @@ static bool write_mem(uint addr, const void *data, uint len)
 }
 
 
-static bool write_mem_from_generator(uint addr, int (*gen)(int index))
+static bool write_mem_from_generator(uint addr, int (*gen)(void))
 {
     if (! exec_cmd(SET_ADDRRESS_POINTER, &addr, 2))
         return 0;
@@ -225,16 +222,12 @@ static bool write_mem_from_generator(uint addr, int (*gen)(int index))
     if (! exec_cmd(SET_DATA_AUTO_WRITE, NULL, 0))
         return 0;
 
-    int i = 0;
-    while (1)
+    int val;
+    while ((val = gen()) >= 0)
     {
-        int val = gen(i);
-        if (val < 0)
-            break;
         if (! verify_status(8, 8))
             return 0;
         write_data(val);
-        i++;
     }
 
     if (! exec_cmd(AUTO_RESET, NULL, 0))
@@ -243,20 +236,21 @@ static bool write_mem_from_generator(uint addr, int (*gen)(int index))
     return 1;
 }
 
+
 static bool configure(void)
 {
-    #warning "no check for fails"
     LCD_XFER
     {
         if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_OFF, NULL, 0)) return 0;
 
         uint data;
-        data = TEXT_PAGE_ADDR;
-        if (! exec_cmd(SET_TEXT_HOME_ADDRESS, &data, 2)) return 0;
-
         data = GRAPHIC_PAGE_ADDR;
         if (! exec_cmd(SET_GRAPHIC_HOME_ADDRESS, &data, 2)) return 0;
 
+        data = TEXT_PAGE_ADDR;
+        if (! exec_cmd(SET_TEXT_HOME_ADDRESS, &data, 2)) return 0;
+
+        PANIC_IF(CG_BASE_ADDR % 0x800);
         data = CG_BASE_ADDR / 0x800;
         if (! exec_cmd(SET_OFFSET_REGISTER, &data, 2)) return 0;
 
@@ -265,36 +259,27 @@ static bool configure(void)
         if (! exec_cmd(SET_TEXT_AREA, &data, 2)) return 0;
         if (! exec_cmd(SET_MODE_PREFIX | F_MODE_EXOR, NULL, 0)) return 0;
 
-        // clear ram
-        int graphic_cleaner(int idx)
+        int gen_idx;
+        int ram_cleaner(void)
         {
-            if (idx < HAL_LCD_NCOLS * HAL_LCD_YSIZE)
-                return 0x00;
+            if (gen_idx++ < LCD_RAM_SIZE)
+                return 0;
             return -1;
         }
 
-        if (! write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_cleaner)) return 0;
-
-        int text_cleaner(int idx)
+        int cg_loader(void)
         {
-            if (idx < HAL_LCD_NCOLS * HAL_LCD_NROWS)
-                return 0x00;
+            extern const uchar ExtCG[];
+            if (gen_idx < 96 * 8)
+                return ExtCG[gen_idx++] - 0x20;
             return -1;
         }
 
-        if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_cleaner)) return 0;
+        gen_idx = 0;
+        if (! write_mem_from_generator(0, ram_cleaner)) return 0;
 
-        int cg_loader(int idx)
-        {
-            extern const char ExtCG[];
-            if (idx < 96*8)
-                return ExtCG[idx];
-            return -1;
-        }
-
-        if (! write_mem_from_generator(CG_BASE_ADDR, cg_loader)) return 0;
-
-//      if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_cleaner)) return 0;
+        gen_idx = 0;
+        if (! write_mem_from_generator(CG_BASE_ADDR + 128 * 8, cg_loader)) return 0;
 
         if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF , NULL, 0)) return 0;
     }
@@ -332,33 +317,45 @@ void HAL_lcd_smoke(void)
 
     LCD_XFER
     {
-        int len = 13;
-
-        int graphic_filler(int idx)
+        int gen_idx;
+        int graphic_filler(void)
         {
-            if (idx < len)
+            if (gen_idx++ < 40)
                 return 0xFF;
             return -1;
         }
 
+        gen_idx = 0;
         write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_filler);
 
         const char *str = "\240\24112345678901234567890123456789012345678a";
 
-        len = strlen(str);
+        int len = strlen(str);
 
-        int text_filler(int idx)
+        int text_filler(void)
         {
-            if (idx < 20)
-                return str[idx] - 0x20;
+            if (gen_idx < len)
+                return str[gen_idx++] - 0x20;
             return -1;
         }
 
+        gen_idx = 0;
         write_mem_from_generator(TEXT_PAGE_ADDR, text_filler);
+
+//        exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0);
+
+//      while (1)
+//      {
+//          HAL_systimer_sleep(1000);
+//          for (uint i = 0; i < LCD_SRAM_SIZE - 40 * 64; i += 40)
+//          {
+//              exec_cmd(SET_GRAPHIC_HOME_ADDRESS, &i, 2);
+//              HAL_systimer_sleep(100);
+//          }
+//      }
 
         while (1)
         {
-            exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0);
             HAL_systimer_sleep(1000);
             exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0);
             HAL_systimer_sleep(1000);

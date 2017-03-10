@@ -416,28 +416,6 @@ void SendBlock(const char *Src, int Dst, int Size)
     SendCmd(cmdOffAuto);
 }
 
-void SendBlockPM(char *Src, int Dst, int Size)
-{
-    char ch;
-    Send2(cmdAddrPtr,Dst);
-    SendCmd(cmdOnAutoWr);
-    while (Size--)
-    {
-        ch=Src - 0x20;
-        Src++;
-        ReadStatus(8);
-//		CLREA;
-        LCD_DATA_OUT(ch);
-        ClrCMD;
-        ClrCE;              //–азрешение записи в дисплей
-        ClrWR;
-        Delay(1);
-        SetWR;
-        SetCE;              //«апрещение записи в дисплей
-//		SETEA;
-    }
-    SendCmd(cmdOffAuto);
-}
 
 void SendSim(char vSim, char NumStr)
 {
@@ -561,8 +539,10 @@ void Video(void)
 
     SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
     SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
-    if (wtf0.Menu) SendCmd(cmd8LineCurs);
-    else  SendCmd(cmd3LineCurs);
+    if (wtf0.Menu)
+        SendCmd(cmd8LineCurs);
+    else
+        SendCmd(cmd3LineCurs);
 //-- установить курсор --
     CurCol=(AdinB+Mark) % DisplCols;
     CurRow=(AdinB+Mark) / DisplCols;// + 2;

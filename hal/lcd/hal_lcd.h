@@ -13,10 +13,15 @@ void HAL_lcd_init(void);
 
 #ifdef _HAL_LCD_C_
 
-#define LCD_SRAM_SIZE        0x8000
-#define TEXT_PAGE_ADDR       0
-#define GRAPHIC_PAGE_ADDR    0x1000
-#define CG_BASE_ADDR         0x2000
+// NOTE: there is strange aliasing in memory.
+// 0x1000-0x1FFF maps to 0x0000-0x0FFF
+// so runtime data is placed in the region below first 8k.
+// characted generator, being a const data, is placed above 16k
+#define LCD_RAM_SIZE        0x2000
+#define GRAPHIC_PAGE_ADDR   0x0000
+#define ATTRIBUTE_PAGE_ADDR 0x0A00
+#define TEXT_PAGE_ADDR      0x1400
+#define CG_BASE_ADDR        0x4000
 
 #define STATUS_CHECK_N_TRIES 1024
 #define CONFIGURE_ATTEMPTS 5
