@@ -66,7 +66,9 @@ static uchar nBlEEP;
 void GMenu(void) {
     uchar   numRow;
     //NowDigCal = 0;
-    if (GrafView) return;
+    if (GrafView)
+        return;
+
     clear_d();
     Form = 0;
     Ad_Buf = 0;
@@ -87,9 +89,14 @@ void GMenu(void) {
         NewCurRow = Y_menu - StartMenuY + 1;
         lcdbuf[NewCurRow*DisplCols-19]='\312';
 //			buf[NewCurRow*DisplCols-18]='\312';
-        if (wtf0.Second & 1) lcdbuf[NewCurRow*DisplCols-18]='\312';   //'\076';
-        else lcdbuf[NewCurRow*DisplCols-20]='\312';
+        if (wtf0.Second & 1)
+            lcdbuf[NewCurRow*DisplCols-18]='\312';   //'\076';
+        else
+            lcdbuf[NewCurRow*DisplCols-20]='\312';
+
+        // xxx: render menu caption ?
         SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
+
 //---- Вывести инверсный фон -----
         if (NewCurRow !=NowCurRow)
         {

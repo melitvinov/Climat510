@@ -417,7 +417,7 @@ void SendBlock(const char *Src, int Dst, int Size)
 }
 
 
-void SendSim(char vSim, char NumStr)
+void FillLine(char vSim, char NumStr)
 {
     char vDisplCols;
     vDisplCols=DisplCols;
@@ -453,9 +453,10 @@ void IniLCDMem(void)
     SendCmd(cmdTxtOnGrafOff);
 //	SendCmd(cmdTxtOnGrafOn);
 
-    SendSim(DTire,(SUM_LINE_DISP-2));   //=
+    FillLine(DTire,(SUM_LINE_DISP-2));   //=
 
-    if (x_menu) SendSim(Tire,1);
+    if (x_menu)
+        FillLine(Tire,1);
 
 }
 void InitLCD(void)
@@ -467,8 +468,8 @@ void InitLCD(void)
     SetCE;
     IniLCDMem();
     SendBlock(&(ExtCG[0]),CGHomeAddr,SumExtCG*8);
-    SendSim(Tire,1);    //-
-    SendSim(0x00,7);    //Пробел
+    FillLine(Tire,1);    //-
+    FillLine(0x00,7);    //Пробел
 }
 /*---------------------------------------------------
         Очистка буфера
@@ -532,13 +533,17 @@ void Video(void)
         else return;
     }
 
+    // draw hbars at line 1, line 6
     IniLCDMem();
+
+    // draw line 0 - time etc
     TimeToBuf();
-
-//---- output CharSet ----------------
-
     SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
+
+    // draw line 2, 3, 4, 5
     SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
+
+    // choose cursor type
     if (wtf0.Menu)
         SendCmd(cmd8LineCurs);
     else
@@ -547,6 +552,8 @@ void Video(void)
     CurCol=(AdinB+Mark) % DisplCols;
     CurRow=(AdinB+Mark) / DisplCols;// + 2;
     Send2(cmdPozCurs,((int)CurRow * 256)+ CurCol); //0x0101);
+
+    // draw line 6 (last line) - sensors values
     VideoSost();
 
 

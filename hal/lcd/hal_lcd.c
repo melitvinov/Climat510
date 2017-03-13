@@ -133,22 +133,26 @@ static bool verify_status(uint val, uint mask)
     wait_50ns();
     wait_50ns();
 
+    uint result;
     uint tries = STATUS_CHECK_N_TRIES;
-    while (tries--)
+    do
     {
-        uint result = sample_data();
+        result = sample_data();
         if ((result & mask) == val)
         {
             is_ok = 1;
             break;
         }
-    }
+    } while (--tries);
 
-    //LOG("tries remain = %d",  tries);
     deassert_rd();
     wait_50ns();
 
     switch_to_output();
+
+    if (! is_ok)
+        WARN("failed to verify lcd status %d %d %d", result,  val, mask);
+
     return is_ok;
 }
 
@@ -271,7 +275,7 @@ static bool configure(void)
         {
             extern const uchar ExtCG[];
             if (gen_idx < 96 * 8)
-                return ExtCG[gen_idx++] - 0x20;
+                return (ExtCG[gen_idx++] - 0x20) & 0x3F;
             return -1;
         }
 
@@ -286,6 +290,104 @@ static bool configure(void)
 
     return 1;
 }
+
+// TODO: do some rollback in case of errors ? Now we just fail
+bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
+{
+    LCD_XFER
+    {
+        if (! write_mem(TEXT_PAGE_ADDR, buf->raw, sizeof(buf->raw)))
+            return 0;
+
+        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0))
+            return 0;
+    }
+
+    return 1;
+}
+
+
+bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf)
+{
+    uint gen_idx;
+
+    int text_sender(void)
+    {
+        if (gen_idx >= countof(buf->raw))
+            return -1;
+
+        int result = (buf->raw[gen_idx] - 0x20) & 0x3F;
+        gen_idx++;
+
+        return result;
+    }
+
+    gen_idx = 0;
+    LCD_XFER
+    {
+        if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_sender))
+            return 0;
+
+        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0))
+            return 0;
+    }
+
+    return 1;
+}
+
+
+bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
+{
+    int gen_idx;
+    int buf_idx;
+    // lcd memory is packed by 6 bits per column.
+    // so we should unpack 240 / 8 = 30 bytes to 240 / 6 = 40 bytes.
+    // each 3 bytes are unpacked to 4 bytes
+    // sequence is: 0: byte[0] >> 2
+    //              1: byte[0] << 4 | byte[1] >> 4
+    //              2: byte[1] << 2 | byte[2] >> 6
+    //              3: byte[2]
+    int graphic_sender(void)
+    {
+        if (gen_idx >= HAL_LCD_YSIZE * HAL_LCD_XSIZE / 6)
+            return -1;
+
+        int result;
+
+        switch (gen_idx & 0x03)
+        {
+        case 0:
+            result = buf->raw[buf_idx] >> 2;
+            break;
+        case 1:
+            result = (buf->raw[buf_idx] << 4) | (buf->raw[buf_idx + 1] >> 4);
+            break;
+        case 2:
+            result = (buf->raw[buf_idx + 1] << 2) | (buf->raw[buf_idx + 2] >> 6);
+            break;
+        case 3:
+            result = buf->raw[buf_idx + 2];
+            buf_idx += 3;
+            break;
+        }
+        gen_idx++;
+        return result & 0x3F;
+    }
+
+    gen_idx = 0;
+    buf_idx = 0;
+
+    LCD_XFER
+    {
+        write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_sender);
+
+        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0))
+            return 0;
+    }
+
+    return 1;
+}
+
 
 void HAL_lcd_init(void)
 {
@@ -310,6 +412,7 @@ void HAL_lcd_init(void)
     REQUIRE(0);
 }
 
+#include "testpic.h"
 
 void HAL_lcd_smoke(void)
 {
@@ -320,7 +423,7 @@ void HAL_lcd_smoke(void)
         int gen_idx;
         int graphic_filler(void)
         {
-            if (gen_idx++ < 40)
+            if (gen_idx++ < 80)
                 return 0xFF;
             return -1;
         }
@@ -328,21 +431,43 @@ void HAL_lcd_smoke(void)
         gen_idx = 0;
         write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_filler);
 
-        const char *str = "\240\24112345678901234567890123456789012345678a";
-
-        int len = strlen(str);
+//      const char *str = "\240\24112345678901234567890123456789012345678a";
+//
+//      int len = strlen(str);
 
         int text_filler(void)
         {
-            if (gen_idx < len)
-                return str[gen_idx++] - 0x20;
+            if (gen_idx < 0x5F)
+                return gen_idx++;
             return -1;
         }
 
         gen_idx = 0;
         write_mem_from_generator(TEXT_PAGE_ADDR, text_filler);
 
-//        exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0);
+        exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0);
+
+        HAL_lcd_render_graphic(testpic);
+
+        HAL_systimer_sleep(1000);
+
+        hal_lcd_text_buf_t buf;
+        memset(&buf, 0, sizeof(buf));
+        for (uint i = 0; i < countof(buf.raw); i++)
+        {
+            buf.raw[i] = i;
+        }
+
+        HAL_lcd_render_text_with_strange_encoding(&buf);
+
+        HAL_systimer_sleep(1000);
+
+        HAL_lcd_render_text(&buf);
+
+        while (1);
+        {
+        }
+
 
 //      while (1)
 //      {
