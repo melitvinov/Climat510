@@ -129,6 +129,7 @@ void ButtonReset(void)
     gd_rw()->Control.rModification=cModification;
     gd_rw()->Control.rSInTeplSens=cConfSSens;
     gd_rw()->Control.rSMechanic=cSRegCtrl;
+    gd_rw()->Control.Language=1;
 
     gd_rw()->Control.rSTepl=gd_rw()->Control.ConfSTepl;//cNowSTepl;
     gd_rw()->Control.rVersion=cVersion;

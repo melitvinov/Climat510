@@ -27,6 +27,18 @@ static const uint rd_pin_idx = 7;
 static const uint ce_pin_idx = 8;
 static const uint cd_pin_idx = 9;
 
+#define F_IS_ON                 0x01
+#define F_IS_GRAPHIC            0x02
+#define F_CURSOR_IS_DISPLAYED   0x04
+#define F_CURSOR_IS_BLINKING    0x08
+
+typedef struct
+{
+    u32 flags;
+} ldc_rt_t;
+
+static ldc_rt_t rt;
+
 // NOTE: default pin state is: command, no chip enable, no read, no write, databus is output
 
 static inline int assert_ce(void)               { ctrlport->BRR = (1 << ce_pin_idx); return 1;}
@@ -241,11 +253,48 @@ static bool write_mem_from_generator(uint addr, int (*gen)(void))
 }
 
 
+static bool update_display_mode(void)
+{
+    uint mode;
+    if (! (rt.flags & F_IS_ON))
+    {
+        mode = F_DISPLAY_MODE_OFF;
+    }
+    else
+    {
+        if (rt.flags & F_IS_GRAPHIC)
+        {
+            mode = F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON;
+        }
+        else
+        {
+            mode = F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF;
+            if (rt.flags & F_CURSOR_IS_DISPLAYED)
+            {
+                if (rt.flags & F_CURSOR_IS_BLINKING)
+                    mode |= F_DISPLAY_MODE_CURSOR_ON_BLINK_ON;
+                else
+                    mode |= F_DISPLAY_MODE_CURSOR_ON_BLINK_OFF;
+            }
+
+        }
+    }
+
+    if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | mode, NULL, 0))
+        return 0;
+
+    return 1;
+}
+
+
 static bool configure(void)
 {
+    rt.flags &= ~F_IS_ON;
+
     LCD_XFER
     {
-        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_OFF, NULL, 0)) return 0;
+        if (! update_display_mode())
+            return 0;
 
         uint data;
         data = GRAPHIC_PAGE_ADDR;
@@ -261,6 +310,7 @@ static bool configure(void)
         data = HAL_LCD_NCOLS;
         if (! exec_cmd(SET_GRAPHIC_AREA, &data, 2)) return 0;
         if (! exec_cmd(SET_TEXT_AREA, &data, 2)) return 0;
+
         if (! exec_cmd(SET_MODE_PREFIX | F_MODE_EXOR, NULL, 0)) return 0;
 
         int gen_idx;
@@ -284,14 +334,13 @@ static bool configure(void)
 
         gen_idx = 0;
         if (! write_mem_from_generator(CG_BASE_ADDR + 128 * 8, cg_loader)) return 0;
-
-        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF , NULL, 0)) return 0;
     }
 
     return 1;
 }
 
-// TODO: do some rollback in case of errors ? Now we just fail
+
+// TODO: add some rollback in case of errors ? Now we just fail
 bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
 {
     LCD_XFER
@@ -299,7 +348,9 @@ bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
         if (! write_mem(TEXT_PAGE_ADDR, buf->raw, sizeof(buf->raw)))
             return 0;
 
-        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0))
+        rt.flags &= ~F_IS_GRAPHIC;
+        rt.flags |= F_IS_ON;
+        if (! update_display_mode())
             return 0;
     }
 
@@ -307,7 +358,7 @@ bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
 }
 
 
-bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf)
+bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf)
 {
     uint gen_idx;
 
@@ -316,10 +367,11 @@ bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf)
         if (gen_idx >= countof(buf->raw))
             return -1;
 
-        int result = (buf->raw[gen_idx] - 0x20) & 0x3F;
+        int result = buf->raw[gen_idx] - 0x20;
+
         gen_idx++;
 
-        return result;
+        return result < 0 ? 0 : result;
     }
 
     gen_idx = 0;
@@ -328,7 +380,9 @@ bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf)
         if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_sender))
             return 0;
 
-        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0))
+        rt.flags &= ~F_IS_GRAPHIC;
+        rt.flags |= F_IS_ON;
+        if (! update_display_mode())
             return 0;
     }
 
@@ -336,17 +390,18 @@ bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf)
 }
 
 
+// lcd memory is packed as 6 bits per column.
+// so we should unpack 240 / 8 = 30 bytes to 240 / 6 = 40 bytes.
+// each 3 bytes are unpacked to 4 bytes
+// sequence is: 0: byte[0] >> 2
+//              1: byte[0] << 4 | byte[1] >> 4
+//              2: byte[1] << 2 | byte[2] >> 6
+//              3: byte[2]
 bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
 {
     int gen_idx;
     int buf_idx;
-    // lcd memory is packed by 6 bits per column.
-    // so we should unpack 240 / 8 = 30 bytes to 240 / 6 = 40 bytes.
-    // each 3 bytes are unpacked to 4 bytes
-    // sequence is: 0: byte[0] >> 2
-    //              1: byte[0] << 4 | byte[1] >> 4
-    //              2: byte[1] << 2 | byte[2] >> 6
-    //              3: byte[2]
+
     int graphic_sender(void)
     {
         if (gen_idx >= HAL_LCD_YSIZE * HAL_LCD_XSIZE / 6)
@@ -381,7 +436,46 @@ bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
     {
         write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_sender);
 
-        if (! exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0))
+        rt.flags |= F_IS_GRAPHIC;
+        rt.flags |= F_IS_ON;
+        if (! update_display_mode())
+            return 0;
+    }
+
+    return 1;
+}
+
+
+
+bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking)
+{
+    REQUIRE(col < HAL_LCD_NCOLS && row < HAL_LCD_NROWS && size <= 8);
+
+    uint data = (row << 8) | col;
+
+    LCD_XFER
+    {
+        if (! exec_cmd(SET_CURSOR_POINTER, &data, 2))
+            return 0;
+
+        if (size)
+            rt.flags |= F_CURSOR_IS_DISPLAYED;
+        else
+            rt.flags &= ~F_CURSOR_IS_DISPLAYED;
+
+        if (is_blinking)
+            rt.flags |= F_CURSOR_IS_BLINKING;
+        else
+            rt.flags &= ~F_CURSOR_IS_BLINKING;
+
+
+        if (size)
+        {
+            if (! exec_cmd(SET_CURSOR_SIZE_PREFIX | (size - 1), NULL, 0))
+                return 0;
+        }
+
+        if (! update_display_mode())
             return 0;
     }
 
@@ -418,75 +512,28 @@ void HAL_lcd_smoke(void)
 {
     HAL_lcd_init();
 
-    LCD_XFER
+    HAL_lcd_render_graphic(testpic);
+
+    HAL_systimer_sleep(1000);
+
+    hal_lcd_text_buf_t buf;
+    memset(&buf, 0, sizeof(buf));
+    for (uint i = 0; i < countof(buf.raw); i++)
     {
-        int gen_idx;
-        int graphic_filler(void)
-        {
-            if (gen_idx++ < 80)
-                return 0xFF;
-            return -1;
-        }
+        buf.raw[i] = i;
+    }
 
-        gen_idx = 0;
-        write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_filler);
+    HAL_lcd_render_ugly_encoded_text(&buf);
 
-//      const char *str = "\240\24112345678901234567890123456789012345678a";
+//  HAL_systimer_sleep(1000);
 //
-//      int len = strlen(str);
+//  HAL_lcd_render_text(&buf);
+//
+//  HAL_lcd_position_cursor(3, 4, 1, 1);
+//  HAL_systimer_sleep(1000);
+//  HAL_lcd_position_cursor(5, 6, 8, 0);
 
-        int text_filler(void)
-        {
-            if (gen_idx < 0x5F)
-                return gen_idx++;
-            return -1;
-        }
-
-        gen_idx = 0;
-        write_mem_from_generator(TEXT_PAGE_ADDR, text_filler);
-
-        exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON, NULL, 0);
-
-        HAL_lcd_render_graphic(testpic);
-
-        HAL_systimer_sleep(1000);
-
-        hal_lcd_text_buf_t buf;
-        memset(&buf, 0, sizeof(buf));
-        for (uint i = 0; i < countof(buf.raw); i++)
-        {
-            buf.raw[i] = i;
-        }
-
-        HAL_lcd_render_text_with_strange_encoding(&buf);
-
-        HAL_systimer_sleep(1000);
-
-        HAL_lcd_render_text(&buf);
-
-        while (1);
-        {
-        }
-
-
-//      while (1)
-//      {
-//          HAL_systimer_sleep(1000);
-//          for (uint i = 0; i < LCD_SRAM_SIZE - 40 * 64; i += 40)
-//          {
-//              exec_cmd(SET_GRAPHIC_HOME_ADDRESS, &i, 2);
-//              HAL_systimer_sleep(100);
-//          }
-//      }
-
-        while (1)
-        {
-            HAL_systimer_sleep(1000);
-            exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF, NULL, 0);
-            HAL_systimer_sleep(1000);
-            exec_cmd(SET_DISPLAY_MODE_PREFIX | F_DISPLAY_MODE_TEXT_ON_GRAPHIC_ON, NULL, 0);
-            HAL_systimer_sleep(1000);
-        }
-
+    while (1);
+    {
     }
 }

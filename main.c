@@ -233,10 +233,8 @@ static void init(void)
     LOG("initing nvmem ...");
     HAL_nvmem_init();
 
-    while (1)
-    {
-       HAL_lcd_smoke();
-    }
+    LOG("initing lcd ...");
+    HAL_lcd_init();
 
     keyboardSetBITKL(0);
 
@@ -257,7 +255,7 @@ static void init(void)
     wtf0.Menu=0;
     nReset=3;
     w_txt("\252\245TO F405 (c)APL&DAL");
-    Delay(1000000);
+    //Delay(1000000);
     Video();
     gd_rw()->Hot.News |= bKlTest;
 
@@ -268,6 +266,8 @@ static void init(void)
     if (keyboardGetBITKL())
         byte_x=6;
     TestMem(byte_x);
+
+    ButtonReset();
 
     wtf0.Second=38;
     control_init();

@@ -23,8 +23,9 @@ typedef union
 
 void HAL_lcd_init(void);
 bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf);
-bool HAL_lcd_render_text_with_strange_encoding(const hal_lcd_text_buf_t *buf);
+bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf);
 bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf);
+bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking);
 
 #ifdef _HAL_LCD_C_
 
@@ -54,10 +55,12 @@ enum ra6963_cmd_e
 
     SET_MODE_PREFIX = 0x80,         // 4 msbits
     SET_DISPLAY_MODE_PREFIX = 0x90, // 4 msbits
-                                    //
+
     SET_DATA_AUTO_WRITE = 0xB0,
     SET_DATA_AUTO_READ = 0xB1,
     AUTO_RESET = 0xB2,
+
+    SET_CURSOR_SIZE_PREFIX = 0xA0,  // 5 msbits
 };
 
 enum ra6932_set_mode_flags_e
