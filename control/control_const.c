@@ -49,35 +49,6 @@ const int DefMechanic[]={
 };
 
 
-
-/*eNameLev  NameLev[5]={
-        {"Hop\274a\000"},
-        {"H\270\266\275 c\270\264\275a\273\000"},
-        {"Bepx c\270\264\275a\273\000"},
-        {"H\270\266\275 a\263ap\270\307\000"},
-        {"Bepx a\263ap\270\307\000"},
-        };
-*/
-
-
-
-
-
-/*eNameDSens   NameDSens[STDSens+SCDSens]={
-         {"Hacoc \272o\275\277yp1",SbOnOff,uB,TipBit,34,1},
-         {"Hacoc \272o\275\277yp2",SbOnOff,uB,TipBit,34,2},
-         {"Hacoc \272o\275\277yp3",SbOnOff,uB,TipBit,34,3},
-         {"Hacoc \272o\275\277yp4",SbOnOff,uB,TipBit,34,4},
-         {"\252p \274a\272c C",SbYesNo,uB,TipBit,0,1},
-         {"\252p \274\270\275 C",SbYesNo,uB,TipBit,0,1},
-         {"\252p \274a\272c \260",SbYesNo,uB,TipBit,0,1},
-         {"\252p \274\270\275 \260",SbYesNo,uB,TipBit,0,1},
-         {"\340oc\263e\277\272a",SbOnOff,uB,TipBit,33,1},
-         {"\250o\273\270\263",SbYesNo,uB,TipBit,33,2},
-
-         {"Pe\267ep\263 CD1",SbYesNo,uB,TipBit,0,1},
-         };*/
-
 const eNameConst NameConst[]={
 /*-----------------------------------
                 Параметры-солнце

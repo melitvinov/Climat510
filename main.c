@@ -254,7 +254,7 @@ static void init(void)
     clear_d();
     wtf0.Menu=0;
     nReset=3;
-    w_txt("\252\245TO F405 (c)APL&DAL");
+    w_txt("FITO F405 (c)APL&DAL");
     //Delay(1000000);
     Video();
     gd_rw()->Hot.News |= bKlTest;

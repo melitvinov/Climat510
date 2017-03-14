@@ -57,7 +57,15 @@ extern uint16_t ctx__fnSIOvelvOut[8];
 extern uint16_t ctx__fnSIOpause[8];
 
 static const uchar DayOfWeek[][10]=
-{"Mon#\276o\275e\343","Tue#\263\277o\310\275","Wed#c\310e\343a","Thu#\300e\277\263","Fri#\276\307\277\275","Sat#c\311\262\262","Sun#\263oc\272\310"};
+{
+    "Mon#понед",
+    "Tue#вторн",
+    "Wed#среда",
+    "Thu#четв",
+    "Fri#пятн",
+    "Sat#субб",
+    "Sun#воскр"
+};
 
 static int16_t SaveInt2;
 static uchar nBlEEP;
@@ -87,12 +95,12 @@ void GMenu(void) {
             YMenu(numRow+StartMenuY);
         }
         NewCurRow = Y_menu - StartMenuY + 1;
-        lcdbuf[NewCurRow*DisplCols-19]='\312';
-//			buf[NewCurRow*DisplCols-18]='\312';
+        // looks like this is 'the menu cursor'
+        lcdbuf[NewCurRow*DisplCols-19]=0xCA;
         if (wtf0.Second & 1)
-            lcdbuf[NewCurRow*DisplCols-18]='\312';   //'\076';
+            lcdbuf[NewCurRow*DisplCols-18]=0xCA;
         else
-            lcdbuf[NewCurRow*DisplCols-20]='\312';
+            lcdbuf[NewCurRow*DisplCols-20]=0xCA;
 
         // xxx: render menu caption ?
         SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
@@ -333,7 +341,7 @@ void pmParam() {
             lcdbuf[Ad_Buf++]=':';
             w_int(&gd()->MechConfig[byte_z].RNum[byte_w],SpSSpSS, 0);
             if (Y_menu2  ==  byte_y) BlkW = 1;
-            //w_txt(Mes87); //-rela\321
+            //w_txt(Mes87); //-rela
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
         }
         if (!gd()->TControl.NowCod) Form = 0;
@@ -363,7 +371,7 @@ void pmParam() {
             lcdbuf[Ad_Buf++]=':';
             w_int(&gd()->MechConfig[byte_z].Systems[byte_w],SSSi, 0);
             if (Y_menu2  ==  byte_y) BlkW = 1;
-            //w_txt(Mes87); //-rela\321
+            //w_txt(Mes87); //-rela
             Ad_Buf=((Ad_Buf / DisplCols)+1)*DisplCols;
         }
         if (!gd()->TControl.NowCod)
@@ -517,7 +525,7 @@ void pmHand(void) {
         int gh_num = zone_idx+1;
         w_int(&gh_num,SS, 0);
         Ad_Buf++;
-        w_txt(NameOutputConfig[contour_idx].Name); /* Клап бойлера*/ //Boiler val \310ost~
+        w_txt(NameOutputConfig[contour_idx].Name); /* Клап бойлера*/ //Boiler val
         Ad_Buf = Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
 
@@ -532,7 +540,7 @@ void pmHand(void) {
         lcdbuf[Ad_Buf++]='(';
 
         w_int(&gh_ctrl->MechBusy[contour_idx].TimeRealMech,SSSi, 0);
-        w_txt("s) #c) ");
+        w_txt("s) #с) ");
         if (gh_ctrl->MechBusy[contour_idx].Sens)
         {
             lcdbuf[Ad_Buf++]='(';
@@ -570,7 +578,7 @@ void pmHand(void) {
         int gh_num = zone_idx+1;
         w_int(&gh_num, SS, 0);
         Ad_Buf++;
-        w_txt(NameOutputConfig[contour_idx].Name); /* Клап бойлера*/ //Boiler val \310ost~
+        w_txt(NameOutputConfig[contour_idx].Name); /* Клап бойлера*/ //Boiler val
         Ad_Buf = Str3;
         w_txt(Mes134); /* Ход клап */ //Boiler val time~~
 
