@@ -8,8 +8,8 @@
 #include "debug.h"
 
 
-#define Tire	0xAC	//0x8D
-#define DTire	0x82
+#define Tire	128	//0x8D
+#define DTire	129
 
 
 #include "control_gd.h"
@@ -206,7 +206,7 @@ void SendBlock(const char *Src, int offset, int Size)
 
 void FillLine(char vSim, char NumStr)
 {
-    memset(&textbuf.lines[NumStr], vSim + 0x20, sizeof(textbuf.lines[0]));
+    memset(&textbuf.lines[NumStr], vSim, sizeof(textbuf.lines[0]));
 }
 
 void SendFirstScreen(char tmSec)
@@ -317,5 +317,5 @@ void Video(void)
     // draw line 6 (last line) - sensors values
     VideoSost();
 
-    HAL_lcd_render_ugly_encoded_text(&textbuf);
+    HAL_lcd_render_text(&textbuf);
 }

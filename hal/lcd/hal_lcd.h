@@ -24,7 +24,6 @@ typedef union
 
 void HAL_lcd_init(void);
 bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf);
-bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf);
 bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf);
 bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking);
 

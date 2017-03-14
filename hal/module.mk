@@ -39,3 +39,8 @@ CINCS += $(HAL_CINCS)
 $(BUILD_DIR)/hal/%.o : CINCS := $(HAL_CINCS) $(HAL_PRIVATE_CINCS)
 #$(BUILD_DIR)/hal/%.o : CDEFS += -DSTM32F10X_CL
 
+AUTOGENS += hal/lcd/lcd_font.h
+
+hal/lcd/lcd_font.h: $(TOOLS_DIR)/genfont/font.png
+	@echo 'Generating lcd font' $@
+	$(CMDP) $(PY) $(TOOLS_DIR)/genfont/genfont.py $< $@

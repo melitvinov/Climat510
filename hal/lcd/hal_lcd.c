@@ -6,6 +6,8 @@
 
 #include "hal_pincfg.h"
 #include "hal_lcd.h"
+#include "lcd_font.h"
+
 
 #include "debug.h"
 
@@ -29,25 +31,7 @@ static const uint cd_pin_idx = 9;
 
 static ldc_rt_t rt;
 
-// symbol code to lcd character generator code
-static const u8 remap_lut[256] =
-{
-    [' '] = 0x00, ['!'] = 0x01, ['"'] = 0x02, ['#'] = 0x03, ['$'] = 0x04, ['%'] = 0x05, ['&'] = 0x06, ['\''] = 0x07,
-    ['('] = 0x08, [')'] = 0x09, ['*'] = 0x0A, ['+'] = 0x0B, [','] = 0x0C, ['-'] = 0x0D, ['.'] = 0x0E, ['/'] = 0x0F,
-    ['0'] = 0x10, ['1'] = 0x11, ['2'] = 0x12, ['3'] = 0x13, ['4'] = 0x14, ['5'] = 0x15, ['6'] = 0x16, ['7'] = 0x17,
-    ['8'] = 0x18, ['9'] = 0x19, [':'] = 0x1A, [';'] = 0x1B, ['<'] = 0x1C, ['='] = 0x1D, ['>'] = 0x1E, ['?'] = 0x1F,
-    ['@'] = 0x20, ['A'] = 0x21, ['B'] = 0x22, ['C'] = 0x23, ['D'] = 0x24, ['E'] = 0x25, ['F'] = 0x26, ['G'] = 0x27,
-    ['H'] = 0x28, ['I'] = 0x29, ['J'] = 0x2A, ['K'] = 0x2B, ['L'] = 0x2C, ['M'] = 0x2D, ['N'] = 0x2E, ['O'] = 0x2F,
-    ['P'] = 0x30, ['Q'] = 0x31, ['R'] = 0x32, ['S'] = 0x33, ['T'] = 0x34, ['U'] = 0x35, ['V'] = 0x36, ['W'] = 0x37,
-    ['X'] = 0x38, ['Y'] = 0x39, ['Z'] = 0x3A, ['['] = 0x3B, ['\\'] = 0x3C, [']'] = 0x3D, ['^'] = 0x3E, ['_'] = 0x3F,
-    ['`'] = 0x40, ['a'] = 0x41, ['b'] = 0x42, ['c'] = 0x43, ['d'] = 0x44, ['e'] = 0x45, ['f'] = 0x46, ['g'] = 0x47,
-    ['h'] = 0x48, ['i'] = 0x49, ['j'] = 0x4A, ['k'] = 0x4B, ['l'] = 0x4C, ['m'] = 0x4D, ['n'] = 0x4E, ['o'] = 0x4F,
-    ['p'] = 0x50, ['q'] = 0x51, ['r'] = 0x52, ['s'] = 0x53, ['t'] = 0x54, ['u'] = 0x55, ['v'] = 0x56, ['w'] = 0x57,
-    ['x'] = 0x58, ['y'] = 0x59, ['z'] = 0x5A, ['{'] = 0x5B, ['|'] = 0x5C, ['}'] = 0x5D, ['~'] = 0x5E,
-};
-
 // NOTE: default pin state is: command, no chip enable, no read, no write, databus is output
-
 static inline int assert_ce(void)               { ctrlport->BRR = (1 << ce_pin_idx); return 1;}
 static inline void deassert_ce(int *dummy)      { ctrlport->BSRR = (1 << ce_pin_idx); }
 
@@ -281,9 +265,9 @@ static bool configure(void)
         if (! exec_cmd(SET_GRAPHIC_AREA, &data, 2)) return 0;
         if (! exec_cmd(SET_TEXT_AREA, &data, 2)) return 0;
 
-        if (! exec_cmd(SET_MODE_PREFIX | F_MODE_EXOR, NULL, 0)) return 0;
+        if (! exec_cmd(SET_MODE_PREFIX | F_MODE_EXOR | F_MODE_EXT_CG, NULL, 0)) return 0;
 
-        int gen_idx;
+        uint gen_idx;
         int ram_cleaner(void)
         {
             if (gen_idx++ < LCD_RAM_SIZE)
@@ -293,9 +277,8 @@ static bool configure(void)
 
         int cg_loader(void)
         {
-            extern const uchar ExtCG[];
-            if (gen_idx < 96 * 8)
-                return (ExtCG[gen_idx++] - 0x20) & 0x3F;
+            if (gen_idx < sizeof(lcd_font))
+                return (lcd_font[gen_idx++]);
             return -1;
         }
 
@@ -303,7 +286,7 @@ static bool configure(void)
         if (! write_mem_from_generator(0, ram_cleaner)) return 0;
 
         gen_idx = 0;
-        if (! write_mem_from_generator(CG_BASE_ADDR + 128 * 8, cg_loader)) return 0;
+        if (! write_mem_from_generator(CG_BASE_ADDR, cg_loader)) return 0;
     }
 
     return 1;
@@ -316,39 +299,6 @@ bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
     LCD_XFER
     {
         if (! write_mem(TEXT_PAGE_ADDR, buf->raw, sizeof(buf->raw)))
-            return 0;
-
-        rt.flags &= ~F_LCD_IS_GRAPHIC;
-        rt.flags |= F_LCD_IS_ON;
-        if (! update_display_mode())
-            return 0;
-    }
-
-    return 1;
-}
-
-
-bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf)
-{
-    uint gen_idx;
-
-    int text_sender(void)
-    {
-        if (gen_idx >= countof(buf->raw))
-            return -1;
-
-        //int result = remap_lut[buf->raw[gen_idx]];
-        int result = buf->raw[gen_idx] - 0x20;
-
-        gen_idx++;
-
-        return result < 0 ? 0 : result;
-    }
-
-    gen_idx = 0;
-    LCD_XFER
-    {
-        if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_sender))
             return 0;
 
         rt.flags &= ~F_LCD_IS_GRAPHIC;
@@ -492,19 +442,13 @@ void HAL_lcd_smoke(void)
     hal_lcd_text_buf_t buf;
     memset(&buf, 0, sizeof(buf));
     for (uint i = 0; i < countof(buf.raw); i++)
-    {
         buf.raw[i] = i;
-    }
 
-    HAL_lcd_render_ugly_encoded_text(&buf);
+    HAL_lcd_render_text(&buf);
 
-//  HAL_systimer_sleep(1000);
-//
-//  HAL_lcd_render_text(&buf);
-//
-//  HAL_lcd_position_cursor(3, 4, 1, 1);
-//  HAL_systimer_sleep(1000);
-//  HAL_lcd_position_cursor(5, 6, 8, 0);
+    HAL_lcd_position_cursor(3, 4, 1, 1);
+    HAL_systimer_sleep(1000);
+    HAL_lcd_position_cursor(5, 6, 8, 0);
 
     while (1);
     {

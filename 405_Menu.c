@@ -96,11 +96,11 @@ void GMenu(void) {
         }
         NewCurRow = Y_menu - StartMenuY + 1;
         // looks like this is 'the menu cursor'
-        lcdbuf[NewCurRow*DisplCols-19]=0xCA;
+        lcdbuf[NewCurRow*DisplCols-19]=130;
         if (wtf0.Second & 1)
-            lcdbuf[NewCurRow*DisplCols-18]=0xCA;
+            lcdbuf[NewCurRow*DisplCols-18]=130;
         else
-            lcdbuf[NewCurRow*DisplCols-20]=0xCA;
+            lcdbuf[NewCurRow*DisplCols-20]=130;
 
         // xxx: render menu caption ?
         SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str

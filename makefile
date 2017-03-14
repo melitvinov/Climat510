@@ -117,7 +117,7 @@ STLINK := st-link_cli
 
 GREP := grep
 TR := tr
-PY := python
+PY := py
 REMOVE := rm -f -r
 COPY := cp
 MD := mkdir -p

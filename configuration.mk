@@ -41,7 +41,7 @@ BUILD_DIR := $(CFG)/build
 # Target directory. Final binary will be placed there.
 TARG_DIR := $(CFG)/out
 # Tools directory. Python scripts are hosted there
-TOOLS_DIR := ../tools
+TOOLS_DIR := tools
 # Path to stlink
 STLINK_DIR := d:/winp/dev/stlink/ST-LINK Utility
 
