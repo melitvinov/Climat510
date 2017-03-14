@@ -27,17 +27,24 @@ static const uint rd_pin_idx = 7;
 static const uint ce_pin_idx = 8;
 static const uint cd_pin_idx = 9;
 
-#define F_IS_ON                 0x01
-#define F_IS_GRAPHIC            0x02
-#define F_CURSOR_IS_DISPLAYED   0x04
-#define F_CURSOR_IS_BLINKING    0x08
-
-typedef struct
-{
-    u32 flags;
-} ldc_rt_t;
-
 static ldc_rt_t rt;
+
+// symbol code to lcd character generator code
+static const u8 remap_lut[256] =
+{
+    [' '] = 0x00, ['!'] = 0x01, ['"'] = 0x02, ['#'] = 0x03, ['$'] = 0x04, ['%'] = 0x05, ['&'] = 0x06, ['\''] = 0x07,
+    ['('] = 0x08, [')'] = 0x09, ['*'] = 0x0A, ['+'] = 0x0B, [','] = 0x0C, ['-'] = 0x0D, ['.'] = 0x0E, ['/'] = 0x0F,
+    ['0'] = 0x10, ['1'] = 0x11, ['2'] = 0x12, ['3'] = 0x13, ['4'] = 0x14, ['5'] = 0x15, ['6'] = 0x16, ['7'] = 0x17,
+    ['8'] = 0x18, ['9'] = 0x19, [':'] = 0x1A, [';'] = 0x1B, ['<'] = 0x1C, ['='] = 0x1D, ['>'] = 0x1E, ['?'] = 0x1F,
+    ['@'] = 0x20, ['A'] = 0x21, ['B'] = 0x22, ['C'] = 0x23, ['D'] = 0x24, ['E'] = 0x25, ['F'] = 0x26, ['G'] = 0x27,
+    ['H'] = 0x28, ['I'] = 0x29, ['J'] = 0x2A, ['K'] = 0x2B, ['L'] = 0x2C, ['M'] = 0x2D, ['N'] = 0x2E, ['O'] = 0x2F,
+    ['P'] = 0x30, ['Q'] = 0x31, ['R'] = 0x32, ['S'] = 0x33, ['T'] = 0x34, ['U'] = 0x35, ['V'] = 0x36, ['W'] = 0x37,
+    ['X'] = 0x38, ['Y'] = 0x39, ['Z'] = 0x3A, ['['] = 0x3B, ['\\'] = 0x3C, [']'] = 0x3D, ['^'] = 0x3E, ['_'] = 0x3F,
+    ['`'] = 0x40, ['a'] = 0x41, ['b'] = 0x42, ['c'] = 0x43, ['d'] = 0x44, ['e'] = 0x45, ['f'] = 0x46, ['g'] = 0x47,
+    ['h'] = 0x48, ['i'] = 0x49, ['j'] = 0x4A, ['k'] = 0x4B, ['l'] = 0x4C, ['m'] = 0x4D, ['n'] = 0x4E, ['o'] = 0x4F,
+    ['p'] = 0x50, ['q'] = 0x51, ['r'] = 0x52, ['s'] = 0x53, ['t'] = 0x54, ['u'] = 0x55, ['v'] = 0x56, ['w'] = 0x57,
+    ['x'] = 0x58, ['y'] = 0x59, ['z'] = 0x5A, ['{'] = 0x5B, ['|'] = 0x5C, ['}'] = 0x5D, ['~'] = 0x5E,
+};
 
 // NOTE: default pin state is: command, no chip enable, no read, no write, databus is output
 
@@ -116,24 +123,6 @@ static void write_data(uint data)
 }
 
 
-static uint read_cmd(void)
-{
-    switch_to_input();
-
-    assert_rd();
-    wait_50ns();
-    wait_50ns();
-    wait_50ns();
-    wait_50ns();
-    uint result = sample_data();
-    deassert_rd();
-    wait_50ns();
-
-    switch_to_output();
-    return result;
-}
-
-
 static bool verify_status(uint val, uint mask)
 {
     bool is_ok = 0;
@@ -188,25 +177,6 @@ static bool exec_cmd(uint cmd, const void *data, uint len)
 }
 
 
-static uint read_data(void)
-{
-    switch_to_input();
-
-    assert_data_mode();
-    wait_50ns();
-    assert_rd();
-    wait_50ns();
-    wait_50ns();
-    wait_50ns();
-    uint result = sample_data();
-    deassert_rd();
-    wait_50ns();
-    deassert_data_mode();
-    switch_to_output();
-    return result;
-}
-
-
 static bool write_mem(uint addr, const void *data, uint len)
 {
     if (! exec_cmd(SET_ADDRRESS_POINTER, &addr, 2))
@@ -256,22 +226,22 @@ static bool write_mem_from_generator(uint addr, int (*gen)(void))
 static bool update_display_mode(void)
 {
     uint mode;
-    if (! (rt.flags & F_IS_ON))
+    if (! (rt.flags & F_LCD_IS_ON))
     {
         mode = F_DISPLAY_MODE_OFF;
     }
     else
     {
-        if (rt.flags & F_IS_GRAPHIC)
+        if (rt.flags & F_LCD_IS_GRAPHIC)
         {
             mode = F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON;
         }
         else
         {
             mode = F_DISPLAY_MODE_TEXT_ON_GRAPHIC_OFF;
-            if (rt.flags & F_CURSOR_IS_DISPLAYED)
+            if (rt.flags & F_LCD_CURSOR_IS_DISPLAYED)
             {
-                if (rt.flags & F_CURSOR_IS_BLINKING)
+                if (rt.flags & F_LCD_CURSOR_IS_BLINKING)
                     mode |= F_DISPLAY_MODE_CURSOR_ON_BLINK_ON;
                 else
                     mode |= F_DISPLAY_MODE_CURSOR_ON_BLINK_OFF;
@@ -289,7 +259,7 @@ static bool update_display_mode(void)
 
 static bool configure(void)
 {
-    rt.flags &= ~F_IS_ON;
+    rt.flags &= ~F_LCD_IS_ON;
 
     LCD_XFER
     {
@@ -348,8 +318,8 @@ bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
         if (! write_mem(TEXT_PAGE_ADDR, buf->raw, sizeof(buf->raw)))
             return 0;
 
-        rt.flags &= ~F_IS_GRAPHIC;
-        rt.flags |= F_IS_ON;
+        rt.flags &= ~F_LCD_IS_GRAPHIC;
+        rt.flags |= F_LCD_IS_ON;
         if (! update_display_mode())
             return 0;
     }
@@ -367,6 +337,7 @@ bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf)
         if (gen_idx >= countof(buf->raw))
             return -1;
 
+        //int result = remap_lut[buf->raw[gen_idx]];
         int result = buf->raw[gen_idx] - 0x20;
 
         gen_idx++;
@@ -380,8 +351,8 @@ bool HAL_lcd_render_ugly_encoded_text(const hal_lcd_text_buf_t *buf)
         if (! write_mem_from_generator(TEXT_PAGE_ADDR, text_sender))
             return 0;
 
-        rt.flags &= ~F_IS_GRAPHIC;
-        rt.flags |= F_IS_ON;
+        rt.flags &= ~F_LCD_IS_GRAPHIC;
+        rt.flags |= F_LCD_IS_ON;
         if (! update_display_mode())
             return 0;
     }
@@ -436,8 +407,8 @@ bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
     {
         write_mem_from_generator(GRAPHIC_PAGE_ADDR, graphic_sender);
 
-        rt.flags |= F_IS_GRAPHIC;
-        rt.flags |= F_IS_ON;
+        rt.flags |= F_LCD_IS_GRAPHIC;
+        rt.flags |= F_LCD_IS_ON;
         if (! update_display_mode())
             return 0;
     }
@@ -459,14 +430,14 @@ bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking)
             return 0;
 
         if (size)
-            rt.flags |= F_CURSOR_IS_DISPLAYED;
+            rt.flags |= F_LCD_CURSOR_IS_DISPLAYED;
         else
-            rt.flags &= ~F_CURSOR_IS_DISPLAYED;
+            rt.flags &= ~F_LCD_CURSOR_IS_DISPLAYED;
 
         if (is_blinking)
-            rt.flags |= F_CURSOR_IS_BLINKING;
+            rt.flags |= F_LCD_CURSOR_IS_BLINKING;
         else
-            rt.flags &= ~F_CURSOR_IS_BLINKING;
+            rt.flags &= ~F_LCD_CURSOR_IS_BLINKING;
 
 
         if (size)
@@ -506,6 +477,8 @@ void HAL_lcd_init(void)
     REQUIRE(0);
 }
 
+#if 0
+
 #include "testpic.h"
 
 void HAL_lcd_smoke(void)
@@ -537,3 +510,4 @@ void HAL_lcd_smoke(void)
     {
     }
 }
+#endif

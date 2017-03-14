@@ -1,11 +1,12 @@
 #ifndef _HAL_LCD_H_
 #define _HAL_LCD_H_
+// public
 
 // for the graphic mode
 #define HAL_LCD_XSIZE   240
 #define HAL_LCD_YSIZE   64
 
-// for text mode
+// for the text mode
 #define HAL_LCD_NCOLS   (HAL_LCD_XSIZE / 6)
 #define HAL_LCD_NROWS   (HAL_LCD_YSIZE / 8)
 
@@ -28,6 +29,7 @@ bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf);
 bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking);
 
 #ifdef _HAL_LCD_C_
+// private
 
 // NOTE: there is strange aliasing in memory.
 // 0x1000-0x1FFF maps to 0x0000-0x0FFF
@@ -56,11 +58,11 @@ enum ra6963_cmd_e
     SET_MODE_PREFIX = 0x80,         // 4 msbits
     SET_DISPLAY_MODE_PREFIX = 0x90, // 4 msbits
 
+    SET_CURSOR_SIZE_PREFIX = 0xA0,  // 5 msbits
+
     SET_DATA_AUTO_WRITE = 0xB0,
     SET_DATA_AUTO_READ = 0xB1,
     AUTO_RESET = 0xB2,
-
-    SET_CURSOR_SIZE_PREFIX = 0xA0,  // 5 msbits
 };
 
 enum ra6932_set_mode_flags_e
@@ -81,6 +83,19 @@ enum ra6932_set_display_mode_flags_e
     F_DISPLAY_MODE_TEXT_OFF_GRAPHIC_ON = 0x08,
     F_DISPLAY_MODE_TEXT_ON_GRAPHIC_ON = 0x0C,
 };
+
+enum lcd_rt_flags_e
+{
+    F_LCD_IS_ON = 0x01,
+    F_LCD_IS_GRAPHIC = 0x02,
+    F_LCD_CURSOR_IS_DISPLAYED = 0x04,
+    F_LCD_CURSOR_IS_BLINKING = 0x08,
+};
+
+typedef struct
+{
+    u32 flags;
+} ldc_rt_t;
 
 #endif
 #endif
