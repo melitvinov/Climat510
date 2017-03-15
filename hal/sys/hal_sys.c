@@ -17,7 +17,6 @@ extern void main(void) __noreturn;
 
 __naked static void reset_handler(void);
 __naked static void nmi_handler(void);
-__naked static void unhandled_isr(void);
 
 typedef struct __packed
 {
@@ -27,10 +26,16 @@ typedef struct __packed
     void (*isr_vectors[68])(void);
 } vector_table_t;
 
-extern void timer4_handler(void);
-extern void TIM2_IRQHandler(void);
-extern void TIM3_IRQHandler(void);
+
 extern void UART4_IRQHandler(void);
+
+__weak void timer4_isr(void)    {    HAL_assert("unhandled timer4 isr");}
+__weak void usart1_isr(void)    {    HAL_assert("unhandled usart1 isr");}
+
+static void unhandled_isr(void)
+{
+    HAL_assert("unhandled isr");
+}
 
 // flash-based vector table
 static const __attribute__ ((section(".initvectors"), used)) vector_table_t initvects =
@@ -43,7 +48,9 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
     },
     .isr_vectors =
     {
-        [TIM4_IRQn] = timer4_handler,
+        [0 ... 67] = unhandled_isr,
+        [TIM4_IRQn] = timer4_isr,
+        [USART1_IRQn] = usart1_isr,
         [UART4_IRQn] = UART4_IRQHandler,
     }
 };

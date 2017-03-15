@@ -280,7 +280,7 @@ bool hal_i2c_write(uint addr, const void *preamble, uint preamble_len, const voi
 
 void hal_i2c_init(void)
 {
-    REQUIRE((uint) HAL_SYS_F_CPU == 36000000);
+    PANIC_IF(HAL_SYS_F_CPU != 36000000);
 
     const u32 scl_pin_mask = 1 << scl_pin_idx;
     const u32 sda_pin_mask = 1 << sda_pin_idx;

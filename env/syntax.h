@@ -85,6 +85,7 @@ typedef int8_t s8;
 #define __hot               __attribute__ ((hot))
 #define __unused            __attribute__ ((unused))
 #define __used              __attribute__ ((used))
+#define __weak              __attribute__ ((weak))
 #define __optimize(level)   __attribute__ ((optimize(level)))
 
 #endif

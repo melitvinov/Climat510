@@ -50,7 +50,8 @@ void CheckWithoutPC(void)
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
+        #warning "init of pc uart is diabled"
+        //USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
         simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
         gd_rw()->TControl.Zones[0].WithoutPC++;
     }
@@ -92,8 +93,9 @@ void Init_STM32(void)
     USART_OUT_Configuration(9600);
     LOG("inited uart0");
 
-    USART_OUT2_Configuration(9600);
-    LOG("inited uart1");
+    #warning" init of usart2 is disabled"
+//    USART_OUT2_Configuration(9600);
+//    LOG("inited uart1");
     //I2C_DMAMem_Transfer(I2C1_Buffer_Tx,8,DMA_DIR_PeripheralDST);
     //Музыка
     GPIO_InitTypeDef GPIO_InitStructure;

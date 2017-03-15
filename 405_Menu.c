@@ -103,7 +103,7 @@ void GMenu(void) {
             lcdbuf[NewCurRow*DisplCols-20]=130;
 
         // xxx: render menu caption ?
-        SendBlock(&lcdbuf[Str2d],TxtHomeAddr+Str2d,23);   //send tu str
+        SendBlock(&lcdbuf[Str2d], Str2d,23);   //send tu str
 
 //---- Вывести инверсный фон -----
         if (NewCurRow !=NowCurRow)

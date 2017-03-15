@@ -427,6 +427,7 @@ void HAL_lcd_init(void)
     REQUIRE(0);
 }
 
+
 #if 0
 
 #include "testpic.h"

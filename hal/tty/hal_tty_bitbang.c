@@ -12,9 +12,9 @@
 typedef struct
 {
     volatile u16 shiftreg;
-    u8 buf[HAL_TTY_TX_BUF_SIZE];
     volatile uint r;
     volatile uint w;
+    u8 buf[HAL_TTY_TX_BUF_SIZE];
 } tty_rt_t;
 
 static GPIO_TypeDef * const port = GPIOB;
@@ -48,7 +48,7 @@ void HAL_tty_init(void)
     rt.w = 0;
 }
 
-void timer4_handler(void)
+void timer4_isr(void)
 {
     uint shiftreg = rt.shiftreg;
     if (shiftreg != 0)
@@ -96,7 +96,7 @@ void HAL_tty_putc(u8 chr)
         {
             timer->CR1 |= TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
-            timer4_handler();
+            timer4_isr();
         }
 
         uint w = rt.w;
@@ -108,7 +108,7 @@ void HAL_tty_putc(u8 chr)
         {
             timer->CR1 |= TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
-            timer4_handler();
+            timer4_isr();
         }
         while (rt.shiftreg);
     }

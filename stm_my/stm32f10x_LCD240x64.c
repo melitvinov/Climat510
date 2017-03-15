@@ -11,6 +11,10 @@
 #define Tire	128	//0x8D
 #define DTire	129
 
+#define BufSize			240	//160
+
+#define PozTime			23
+
 
 #include "control_gd.h"
 #include "wtf.h"
@@ -98,24 +102,11 @@ void VideoSost(void)
 
     BlkW=1;
     Ad_Buf=Str2d;
-    for (ic=Str2d; ic < Str2; ic++) lcdbuf[ic]=' ';
-    // Ad_Buf=Str4;
-/*    if (ds18b20_ReadROM())
-        Ad_Buf+=2;
-    w_int(&Buf1W[0],StStStS, 0);
-        buf[Ad_Buf++]='-';
-    w_int(&Buf1W[4],StStStS, 0);
-    w_int(&SumAnswers,SSSS, 0);*/
+    for (ic=Str2d; ic < Str2; ic++)
+        lcdbuf[ic]=' ';
+
     pmInfoProg405();
-    SendBlock(&lcdbuf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
-//    pmInfoProg405();
-
-//	w_txt(I2C1_Buffer_Tx);
-//    w_txt(I2C1_Buffer_Rx);
-
-//    w_int(&GlobData,SSSS, 0);
-    //w_txt()
-    //SendBlock(&buf[Str2d],TxtHomeAddr+DisplCols*(SUM_LINE_DISP-1),DisplCols);
+    SendBlock(&lcdbuf[Str2d], DisplCols*(SUM_LINE_DISP-1),DisplCols);
 }
 
 void Video(void)
@@ -136,10 +127,10 @@ void Video(void)
 
     // draw line 0 - time etc
     TimeToBuf();
-    SendBlock(&lcdbuf[0],TxtHomeAddr,DisplCols);
+    SendBlock(&lcdbuf[0], 0,DisplCols);
 
     // draw line 2, 3, 4, 5
-    SendBlock(&lcdbuf[Str2],TxtHomeAddr+DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
+    SendBlock(&lcdbuf[Str2], DisplCols*2,DisplCols*(SUM_LINE_DISP-4));
 
 //-- установить курсор --
     CurCol=(AdinB+Mark) % DisplCols;
