@@ -3,13 +3,12 @@
 #include "syntax.h"
 #include "stm32f10x.h"
 
-#include "hal_pincfg.h"
+#include "hal_priorities.h"
 #include "hal_sys.h"
+#include "hal_pincfg.h"
 #include "hal_tty.h"
 
 // hardware uart 115200 on pa9 tx (usart1_tx_slave), pa10 rx (usart1_rx_slave)
-
-#define TTY_PRIORITY    1
 
 typedef struct
 {
@@ -29,10 +28,23 @@ typedef struct
 } tty_rt_t;
 
 static USART_TypeDef *const uart = USART1;
-static const uint baudrate = 230400;
+static const uint baudrate = 115200;
 static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TXEIE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
 
 static tty_rt_t rt;
+
+
+static bool is_isr_blocked(uint priority)
+{
+    u32 primask;
+    u32 basepri;
+    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
+    __asm__ volatile("mrs %0, primask" : "=r" (primask));
+    basepri >>= 8 - __NVIC_PRIO_BITS;
+
+    return (primask & 0x01) || (basepri && basepri <= priority);
+}
+
 
 void usart1_isr(void)
 {
@@ -73,11 +85,6 @@ void usart1_isr(void)
             rt.tx.r = (r + 1) % countof(rt.tx.buf);
         }
     }
-
-    // nvic may lag behind due to the lame syncronization of stm.
-    // give it a chance to sync and not fire another interrupt
-    asm volatile ("dmb":::);
-    asm volatile ("dmb":::);
 }
 
 static void flush_buf(void)
@@ -114,9 +121,7 @@ void HAL_tty_init(void)
     GPIOA->BSRR = 1 << 10;      // rx with pull-up
     hal_pincfg_in(GPIOA, 10);
 
-    #warning "refactor the priorities !"
-
-    NVIC_SetPriority(USART1_IRQn, TTY_PRIORITY);
+    NVIC_SetPriority(USART1_IRQn, HAL_IRQ_PRIORITY_LOWEST);
     NVIC_ClearPendingIRQ(USART1_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
 
@@ -127,20 +132,10 @@ void HAL_tty_init(void)
     uart->CR1 = active_cr1;
 }
 
-static bool is_isr_blocked(uint priority)
-{
-    u32 primask;
-    u32 basepri;
-    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
-    __asm__ volatile("mrs %0, primask" : "=r" (primask));
-    basepri >>= 8 - __NVIC_PRIO_BITS;
-
-    return (primask & 0x01) || (basepri && basepri <= priority);
-}
 
 void HAL_tty_putc(u8 chr)
 {
-    if (is_isr_blocked(TTY_PRIORITY))
+    if (is_isr_blocked(HAL_IRQ_PRIORITY_LOWEST))
     {
         // proceed in polling mode
         flush_buf();

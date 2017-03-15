@@ -23,7 +23,18 @@ static TIM_TypeDef * const timer = TIM4;
 
 static tty_rt_t rt;
 
-#define TTY_PRIORITY    1
+
+static bool is_isr_blocked(uint priority)
+{
+    u32 primask;
+    u32 basepri;
+    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
+    __asm__ volatile("mrs %0, primask" : "=r" (primask));
+    basepri >>= 8 - __NVIC_PRIO_BITS;
+
+    return (primask & 0x01) || (basepri && basepri <= priority);
+}
+
 
 void HAL_tty_init(void)
 {
@@ -39,8 +50,7 @@ void HAL_tty_init(void)
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
 
-    #warning "refactor the priorities !"
-    NVIC_SetPriority(TIM4_IRQn, TTY_PRIORITY);
+    NVIC_SetPriority(TIM7_IRQn, HAL_IRQ_PRIORITY_HIGHEST);
     NVIC_ClearPendingIRQ(TIM4_IRQn);
     NVIC_EnableIRQ(TIM4_IRQn);
 
@@ -82,15 +92,10 @@ void timer4_isr(void)
     asm volatile ("dmb":::);
 }
 
+
 void HAL_tty_putc(u8 chr)
 {
-    u32 primask;
-    u32 basepri;
-    __asm__ volatile("mrs %0, primask" : "=r" (primask));
-    __asm__ volatile ("MRS  %0, basepri_max" : "=r" (basepri));
-    basepri >>= 8 - __NVIC_PRIO_BITS;
-
-    if (unlikely((primask & 0x01) || (basepri && basepri <= TTY_PRIORITY))) // we're running with disabled interrupts. proceed in polling mode
+    if (unlikely(is_isr_blocked(HAL_IRQ_PRIORITY_HIGHEST))) // we're running with disabled interrupts. proceed in polling mode
     {
         // flush
         while (rt.shiftreg)

@@ -1,13 +1,11 @@
 #include "syntax.h"
 #include "stm32f10x.h"
-
+#include "hal_priorities.h"
 #include "hal_pincfg.h"
 #include "hal_sys.h"
 #include "hal_beep.h"
 
 // piezo beeper on pa4, 4 kHz resonant freq
-
-#define BEEPER_PRIORITY 4
 
 static GPIO_TypeDef * const port = GPIOA;
 static const uint pin_idx = 4;
@@ -26,8 +24,7 @@ void hal_beep_init(void)
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
 
-    #warning "refactor the priorities !"
-    NVIC_SetPriority(TIM6_IRQn, BEEPER_PRIORITY);
+    NVIC_SetPriority(TIM6_IRQn, HAL_IRQ_PRIORITY_NORMAL - 1);   // a little above normal
     NVIC_ClearPendingIRQ(TIM6_IRQn);
     NVIC_EnableIRQ(TIM6_IRQn);
 }

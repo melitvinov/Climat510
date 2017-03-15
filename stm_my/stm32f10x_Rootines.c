@@ -72,16 +72,6 @@ void Init_STM32(void)
 
     LOG("read from fram");
 
-    InitLCD();
-
-    LOG("inited lcd");
-
-
-//		USART_PC_Configuration(&GD.Control.NFCtr,AdrGD,&GD.SostRS,&NumBlock,9600);
-
-
-//    InitMainTimer();
-
     wtf0.PORTNUM=DEF_PORTNUM;
 
     simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
@@ -96,7 +86,6 @@ void Init_STM32(void)
     #warning" init of usart2 is disabled"
 //    USART_OUT2_Configuration(9600);
 //    LOG("inited uart1");
-    //I2C_DMAMem_Transfer(I2C1_Buffer_Tx,8,DMA_DIR_PeripheralDST);
 
     CheckInputConfig();
     LOG("checked input config");
@@ -368,7 +357,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
 //			if(Mes>5000)
 //				Mes=0;
             long long_x = ((long)fCalSens->V1-(long)fCalSens->V0)
-                 *((long)Mes-(long)fCalSens->U0);
+                          *((long)Mes-(long)fCalSens->U0);
             Mes=(int16_t)(long_x/((long)fCalSens->U1-(long)fCalSens->U0));
             Mes=Mes+fCalSens->V0;
             CheckSensLevsNew(nTepl,nSens,1,met,Mes);

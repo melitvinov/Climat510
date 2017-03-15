@@ -2,14 +2,13 @@
 #include "stm32f10x.h"
 
 #include "hal_sys.h"
+#include "hal_priorities.h"
 #include "hal_beep.h"
 #include "hal_sound.h"
 
 #include "debug.h"
 
 // simple sound sequencer for driving beeper
-
-#define SOUND_SEQ_PRIORITY 6
 
 typedef struct
 {
@@ -36,8 +35,7 @@ void HAL_sound_init(void)
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
 
-    #warning "refactor the priorities !"
-    NVIC_SetPriority(TIM7_IRQn, SOUND_SEQ_PRIORITY);
+    NVIC_SetPriority(TIM7_IRQn, HAL_IRQ_PRIORITY_LOW);
     NVIC_ClearPendingIRQ(TIM7_IRQn);
     NVIC_EnableIRQ(TIM7_IRQn);
 }
