@@ -20,9 +20,9 @@ static const uint sda_pin_idx = 11;
 //
 // NOTE: the used fram is not clock stretching, so it is not analyzed
 
-static inline void scl_up(void)   {port->BSRR = 1 << scl_pin_idx;}
+static inline void scl_up(void)     {port->BSRR = 1 << scl_pin_idx;}
 static inline void scl_down(void)   {port->BSRR = 1 << (scl_pin_idx + 16);}
-static inline void sda_up(void)   {port->BSRR = 1 << sda_pin_idx;}
+static inline void sda_up(void)     {port->BSRR = 1 << sda_pin_idx;}
 static inline void sda_down(void)   {port->BSRR = 1 << (sda_pin_idx + 16);}
 static inline bool scl_is_hold(void)    {return ! (port->IDR & (1 << (scl_pin_idx)));}
 static inline bool sda_is_hold(void)    {return ! (port->IDR & (1 << (sda_pin_idx)));}

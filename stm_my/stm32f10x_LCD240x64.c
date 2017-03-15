@@ -30,7 +30,7 @@ extern char GrafView;
 
 char lcdbuf[BufSize+10];  //TempEnd+6];
 
-static hal_lcd_text_buf_t textbuf;
+static hal_lcd_text_screen_t textbuf;
 
 // refactoring for hal abstraction
 
@@ -141,5 +141,5 @@ void Video(void)
     // draw line 6 (last line) - sensors values
     VideoSost();
 
-    HAL_lcd_render_text(&textbuf);
+    HAL_lcd_render_text_screen(&textbuf);
 }

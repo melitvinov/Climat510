@@ -30,6 +30,8 @@ typedef struct __packed
 extern void UART4_IRQHandler(void);
 
 __weak void timer4_isr(void)    {    HAL_assert("unhandled timer4 isr");}
+__weak void timer6_isr(void)    {    HAL_assert("unhandled timer6 isr");}
+__weak void timer7_isr(void)    {    HAL_assert("unhandled timer7 isr");}
 __weak void usart1_isr(void)    {    HAL_assert("unhandled usart1 isr");}
 
 static void unhandled_isr(void)
@@ -50,6 +52,8 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
     {
         [0 ... 67] = unhandled_isr,
         [TIM4_IRQn] = timer4_isr,
+        [TIM6_IRQn] = timer6_isr,
+        [TIM7_IRQn] = timer7_isr,
         [USART1_IRQn] = usart1_isr,
         [UART4_IRQn] = UART4_IRQHandler,
     }

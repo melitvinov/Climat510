@@ -46,12 +46,12 @@ static void print_u32(char *str, u32 val)
 
 static void __noinline show_lcd_assert(const char *prefix, const char *str)
 {
-    hal_lcd_text_buf_t buf;
+    hal_lcd_text_screen_t buf;
     memset(&buf, 0,  sizeof(buf));
     strcpy((char *)buf.lines[0], prefix);
     strcpy((char *)buf.lines[2], str);
 
-    HAL_lcd_render_text(&buf);
+    HAL_lcd_render_text_screen(&buf);
 }
 
 

@@ -14,17 +14,17 @@ typedef union
 {
     u8 raw[HAL_LCD_NCOLS * HAL_LCD_NROWS];
     u8 lines[HAL_LCD_NROWS][HAL_LCD_NCOLS];
-} hal_lcd_text_buf_t;
+} hal_lcd_text_screen_t;
 
 typedef union
 {
     u8 raw[HAL_LCD_YSIZE * HAL_LCD_XSIZE / 8];
     u8 lines[HAL_LCD_YSIZE][HAL_LCD_XSIZE / 8];
-} hal_lcd_graph_buf_t;
+} hal_lcd_graph_screen_t;
 
 void HAL_lcd_init(void);
-bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf);
-bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf);
+bool HAL_lcd_render_text_screen(const hal_lcd_text_screen_t *screen);
+bool HAL_lcd_render_graph_screen(const hal_lcd_graph_screen_t *screen);
 bool HAL_lcd_position_cursor(uint col, uint row, uint size, bool is_blinking);
 
 #ifdef _HAL_LCD_C_

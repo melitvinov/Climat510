@@ -14,7 +14,7 @@ typedef struct
     volatile u16 shiftreg;
     volatile uint r;
     volatile uint w;
-    u8 buf[HAL_TTY_TX_BUF_SIZE];
+    volatile u8 buf[HAL_TTY_TX_BUF_SIZE];
 } tty_rt_t;
 
 static GPIO_TypeDef * const port = GPIOB;
@@ -32,11 +32,12 @@ void HAL_tty_init(void)
 
     RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 
+    timer->CR1 = 0;
+    timer->CNT = 0;
     timer->PSC = 0; // 1:1 prescaler
     timer->ARR = HAL_SYS_F_CPU / 9600.;
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
-    timer->EGR = TIM_EGR_UG;
 
     #warning "refactor the priorities !"
     NVIC_SetPriority(TIM4_IRQn, TTY_PRIORITY);
@@ -61,13 +62,13 @@ void timer4_isr(void)
     }
     else
     {
-        if (rt.w == rt.r)   // buf is empty, stop
+        uint r = rt.r;
+        if (rt.w == r)   // buf is empty, stop
         {
-            timer->CR1 &= ~TIM_CR1_CEN;
+            timer->CR1 = 0;
         }
         else
         {
-            uint r = rt.r;
             uint chr = rt.buf[r];
             rt.r = (r + 1) % countof(rt.buf);
             rt.shiftreg = 0x0200 | (chr << 1);  // embed start bit, stop bit
@@ -94,7 +95,7 @@ void HAL_tty_putc(u8 chr)
         // flush
         while (rt.shiftreg)
         {
-            timer->CR1 |= TIM_CR1_CEN;
+            timer->CR1 = TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
             timer4_isr();
         }
@@ -106,7 +107,7 @@ void HAL_tty_putc(u8 chr)
 
         do
         {
-            timer->CR1 |= TIM_CR1_CEN;
+            timer->CR1 = TIM_CR1_CEN;
             while (! (timer->SR & TIM_SR_UIF));
             timer4_isr();
         }
@@ -121,7 +122,7 @@ void HAL_tty_putc(u8 chr)
         rt.buf[w] = chr;            // put byte on hold in buffer
         rt.w = new_w;
 
-        timer->CR1 |= TIM_CR1_CEN;
+        timer->CR1 = TIM_CR1_CEN;
     }
 }
 
@@ -129,4 +130,10 @@ void HAL_tty_puts(const char *str)
 {
     while (*str)
         HAL_tty_putc(*str++);
+}
+
+// tty rx is not implemented in bitbang mode
+int HAL_tty_getc(void)
+{
+    return -1;
 }

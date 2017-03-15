@@ -1,12 +1,3 @@
-//---------------------- Подпрограммы для функционирования STM32 -------------------------------
-
-
-//#define PORT_KEYB_IN	GPIOA
-//#define PORT_KEYB_OUT	GPIOC
-//#define KEYB_IN		0x000f
-//#define KEYB_OUT	0x000f
-//#define KEYB_STARTUP RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE)
-
 void Init_IWDG(uint16_t* fIWDG_reset);
 
 void Check_IWDG(void);

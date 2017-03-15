@@ -294,11 +294,11 @@ static bool configure(void)
 
 
 // TODO: add some rollback in case of errors ? Now we just fail
-bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
+bool HAL_lcd_render_text_screen(const hal_lcd_text_screen_t *screen)
 {
     LCD_XFER
     {
-        if (! write_mem(TEXT_PAGE_ADDR, buf->raw, sizeof(buf->raw)))
+        if (! write_mem(TEXT_PAGE_ADDR, screen->raw, sizeof(screen->raw)))
             return 0;
 
         rt.flags &= ~F_LCD_IS_GRAPHIC;
@@ -318,7 +318,7 @@ bool HAL_lcd_render_text(const hal_lcd_text_buf_t *buf)
 //              1: byte[0] << 4 | byte[1] >> 4
 //              2: byte[1] << 2 | byte[2] >> 6
 //              3: byte[2]
-bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
+bool HAL_lcd_render_graph_screen(const hal_lcd_graph_screen_t *screen)
 {
     int gen_idx;
     int buf_idx;
@@ -333,16 +333,16 @@ bool HAL_lcd_render_graphic(const hal_lcd_graph_buf_t *buf)
         switch (gen_idx & 0x03)
         {
         case 0:
-            result = buf->raw[buf_idx] >> 2;
+            result = screen->raw[buf_idx] >> 2;
             break;
         case 1:
-            result = (buf->raw[buf_idx] << 4) | (buf->raw[buf_idx + 1] >> 4);
+            result = (screen->raw[buf_idx] << 4) | (screen->raw[buf_idx + 1] >> 4);
             break;
         case 2:
-            result = (buf->raw[buf_idx + 1] << 2) | (buf->raw[buf_idx + 2] >> 6);
+            result = (screen->raw[buf_idx + 1] << 2) | (screen->raw[buf_idx + 2] >> 6);
             break;
         case 3:
-            result = buf->raw[buf_idx + 2];
+            result = screen->raw[buf_idx + 2];
             buf_idx += 3;
             break;
         }
@@ -436,16 +436,16 @@ void HAL_lcd_smoke(void)
 {
     HAL_lcd_init();
 
-    HAL_lcd_render_graphic(testpic);
+    HAL_lcd_render_graph_screen(testpic);
 
     HAL_systimer_sleep(1000);
 
-    hal_lcd_text_buf_t buf;
-    memset(&buf, 0, sizeof(buf));
-    for (uint i = 0; i < countof(buf.raw); i++)
-        buf.raw[i] = i;
+    hal_lcd_text_screen_t screen;
+    memset(&screen, 0, sizeof(screen));
+    for (uint i = 0; i < countof(screen.raw); i++)
+        screen.raw[i] = i;
 
-    HAL_lcd_render_text(&buf);
+    HAL_lcd_render_text_screen(&screen);
 
     HAL_lcd_position_cursor(3, 4, 1, 1);
     HAL_systimer_sleep(1000);

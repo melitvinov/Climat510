@@ -17,26 +17,26 @@ typedef struct
     {
         volatile uint r;
         volatile uint w;
-        u8 buf[HAL_TTY_RX_BUF_SIZE];
-    } rx;
+        volatile u8 buf[HAL_TTY_TX_BUF_SIZE];
+    } tx;
 
     struct
     {
         volatile uint r;
         volatile uint w;
-        u8 buf[HAL_TTY_TX_BUF_SIZE];
-    } tx;
+        volatile u8 buf[HAL_TTY_RX_BUF_SIZE];
+    } rx;
 } tty_rt_t;
 
 static USART_TypeDef *const uart = USART1;
-static const uint baudrate = 115200;
+static const uint baudrate = 230400;
 static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TXEIE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
 
 static tty_rt_t rt;
 
 void usart1_isr(void)
 {
-    u32 mask = (USART_SR_ORE | USART_SR_RXNE | USART_SR_TXE);
+    u32 mask = USART_SR_ORE | USART_SR_RXNE | USART_SR_TXE;
     u32 sr = uart->SR & mask;
 
     // process overrun
@@ -49,7 +49,7 @@ void usart1_isr(void)
         uint chr = uart->DR;
 
         uint w = rt.rx.w;
-        uint new_w = (w + 1) % HAL_TTY_RX_BUF_SIZE;
+        uint new_w = (w + 1) % countof(rt.rx.buf);
         if (new_w != rt.rx.r)
         {
             rt.rx.buf[w] = chr;
@@ -63,14 +63,14 @@ void usart1_isr(void)
     {
         // transmit buffer empty, may send something
         uint r = rt.tx.r;
-        if (r != rt.tx.w)
+        if (r == rt.tx.w)
         {
-            uart->DR = rt.tx.buf[r];
-            rt.tx.r = (r + 1) % HAL_TTY_TX_BUF_SIZE;
+            uart->CR1 = active_cr1 & ~USART_CR1_TXEIE;  // disable tx interrupt
         }
         else
         {
-            uart->CR1 = active_cr1 & ~USART_CR1_TXEIE;  // disable tx interrupt
+            uart->DR = rt.tx.buf[r];
+            rt.tx.r = (r + 1) % countof(rt.tx.buf);
         }
     }
 
@@ -89,13 +89,13 @@ static void flush_buf(void)
     {
         while (! (uart->SR & USART_SR_TXE));
         uart->DR = rt.tx.buf[r];
-        r = (r + 1) % HAL_TTY_TX_BUF_SIZE;
+        r = (r + 1) % countof(rt.tx.buf);
     }
 
     rt.tx.r = r;
 }
 
-#warning "refactor the priorities !"
+
 void HAL_tty_init(void)
 {
     NVIC_DisableIRQ(USART1_IRQn);
@@ -114,6 +114,8 @@ void HAL_tty_init(void)
     GPIOA->BSRR = 1 << 10;      // rx with pull-up
     hal_pincfg_in(GPIOA, 10);
 
+    #warning "refactor the priorities !"
+
     NVIC_SetPriority(USART1_IRQn, TTY_PRIORITY);
     NVIC_ClearPendingIRQ(USART1_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
@@ -125,27 +127,39 @@ void HAL_tty_init(void)
     uart->CR1 = active_cr1;
 }
 
-void HAL_tty_putc(u8 chr)
+static bool is_isr_blocked(uint priority)
 {
     u32 primask;
     u32 basepri;
+    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
     __asm__ volatile("mrs %0, primask" : "=r" (primask));
-    __asm__ volatile ("MRS  %0, basepri_max" : "=r" (basepri));
     basepri >>= 8 - __NVIC_PRIO_BITS;
 
-    if (unlikely((primask & 0x01) || (basepri && basepri <= TTY_PRIORITY))) // we're running with disabled interrupts. proceed in polling mode
+    return (primask & 0x01) || (basepri && basepri <= priority);
+}
+
+void HAL_tty_putc(u8 chr)
+{
+    if (is_isr_blocked(TTY_PRIORITY))
     {
+        // proceed in polling mode
         flush_buf();
-        while (! (uart->SR & USART_SR_TXE));
+        while (! (uart->SR & USART_SR_TC));
         uart->DR = chr;
     }
     else
     {
         uint w = rt.tx.w;
-        uint new_w = (w + 1) % HAL_TTY_TX_BUF_SIZE;
+        uint new_w = (w + 1) % countof(rt.tx.buf);
 
-        while (new_w == rt.tx.r); // wait free space in the buffer. we shouldn't be locked forever.
+        while (new_w == rt.tx.r)
+        {
+            //HAL_systimer_sleep(1000);
+            ; // wait free space in the buffer. we shouldn't be locked forever.
+        }
 
+        // NOTE: smart compiler may rearrange writes to the buffer and w index.
+        // so buffer is made volatile too
         rt.tx.buf[w] = chr;
         rt.tx.w = new_w;
 
@@ -164,6 +178,6 @@ int HAL_tty_getc(void)
     uint r = rt.rx.r;
     if (r == rt.rx.w)
         return -1;
-    rt.rx.r = (r + 1) % HAL_TTY_RX_BUF_SIZE;
+    rt.rx.r = (r + 1) % countof(rt.rx.buf);
     return rt.rx.buf[r];
 }

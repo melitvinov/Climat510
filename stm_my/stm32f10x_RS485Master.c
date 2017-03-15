@@ -12,6 +12,8 @@
 
 #include "control_gd.h"
 
+#include "debug.h"
+
 #define USART_MASTER_RX     			fTimeout=10000; while((USART_GetFlagStatus(USART_OUT,USART_FLAG_RXNE) == RESET)&&(fTimeout)) fTimeout--;
 #define USART_MASTER_TX     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TC))&&(fTimeout)) fTimeout--;
 #define USART_MASTER_TXE     			fTimeout=10000; while(!(USART_GetFlagStatus(USART_OUT,USART_FLAG_TXE))&&(fTimeout)) fTimeout--;
@@ -474,6 +476,8 @@ uint8_t RS485_Master_ReadDataIRQ(uint8_t fNCtr, uint16_t fAdrSend, uint16_t fNBy
 
 int16_t RS485_Out2_Transmit(uint16_t fNCtr, uint32_t fSend)
 {
+    WARN("uart2 fired here");
+
     int32_t fTimeout,i;
     uint8_t chSumUARTOUT;
     uint16_t retByte;

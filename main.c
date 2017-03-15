@@ -15,6 +15,7 @@
 #include "hal_tty.h"
 #include "hal_rtc.h"
 #include "hal_nvmem.h"
+#include "hal_sound.h"
 #include "hal_systimer.h"
 
 static int16_t konturMax[6];
@@ -133,27 +134,11 @@ void checkConfig(void)
 
 }
 
-static void do_sound_stuff(void)
-{
-    if (not)
-    {
-        if (!ton_t--)
-        {
-            ton_t=ton;
-            not--;
-            GPIOA->ODR^=GPIO_Pin_4;
-        }
-    }
-    if (!not && nReset)
-    {
-        ton=(nReset--)+2;not=80;
-    }
-}
 
-void DoBeepy(int not_, int ton_)
+void DoBeepy(void)
 {
-    not = not_;
-    ton = ton_;
+    static const hal_sound_note_t simple_beep[] = {{1000, 1}, {0, 0}};
+    HAL_sound_play(simple_beep);
 }
 
 static void periodic_task(void)
@@ -204,7 +189,7 @@ static void periodic_task(void)
         if ((!wtf0.Menu)&&(wtf0.SostRS == OUT_UNIT))
             TestMem(1);
 #endif
-        DoBeepy(220, 10);
+        DoBeepy();
     }
     else
     {
@@ -234,6 +219,9 @@ static void init(void)
 
     LOG("initing lcd ...");
     HAL_lcd_init();
+
+    LOG("initing sound ...");
+    HAL_sound_init();
 
     keyboardSetBITKL(0);
 
@@ -306,15 +294,24 @@ void main(void)
 
     u32 prev_time = 0;
 
+    DoBeepy();
+
+    //hal_beep_on(50);
+
+//  while(1)
+//  {
+//      ;
+//  }
+
     while (1)
     {
-        do_sound_stuff();
         process_pc_input();
         process_legacy_timers();
 
         bool should_show_video = 0;
 
         u32 time = HAL_rtc_get_timestamp();
+
         if (time != prev_time)
         {
             LOG("time: %d", time);

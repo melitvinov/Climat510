@@ -97,13 +97,6 @@ void Init_STM32(void)
 //    USART_OUT2_Configuration(9600);
 //    LOG("inited uart1");
     //I2C_DMAMem_Transfer(I2C1_Buffer_Tx,8,DMA_DIR_PeripheralDST);
-    //Музыка
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-    GPIO_WriteBit(GPIOA,GPIO_Pin_4,Bit_RESET);
 
     CheckInputConfig();
     LOG("checked input config");
