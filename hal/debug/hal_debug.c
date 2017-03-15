@@ -90,7 +90,7 @@ __noreturn void hal_exception(u32 pc, const u32 *sp)
     char sp_str[9];
 
     print_u32(pc_str, pc);
-    print_u32(sp_str, (u32)pc);
+    print_u32(sp_str, (u32)sp);
 
     while (1)
     {

@@ -160,10 +160,6 @@ static void periodic_task(void)
 {
     if (wtf0.Second == 58)
     {
-        LOG("checking pc link");
-
-        ((void (*)(void))0)();
-
         CheckWithoutPC();
         CheckInputConfig();
     }
@@ -312,11 +308,6 @@ void main(void)
 
     while (1)
     {
-        int chr = HAL_tty_getc();
-
-        if (chr >= 0)
-            LOG("got char %c", chr);
-
         do_sound_stuff();
         process_pc_input();
         process_legacy_timers();

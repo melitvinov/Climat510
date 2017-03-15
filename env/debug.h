@@ -7,7 +7,7 @@
 // exposed stream
 extern wstream_t dbg_stream;
 
-void assertion( const char *desc) __noreturn __noinline;
+void assertion(const char *desc) __noreturn __noinline;
 void print_dump(const void *data, uint len);
 
 /*** Evil hackery :-) */

@@ -57,23 +57,12 @@ static const __attribute__ ((section(".initvectors"), used)) vector_table_t init
 
 __naked static void nmi_handler(void)
 {
-    u32 lr;
     u32 *sp;
     u32 pc;
 
-    __asm__ volatile ("mov %0, lr" : "=r" (lr));
-
-    // exception frame is stored to PSP if [lr:4] == 1
-    if (lr & 0x04)
-    {
-        __asm__ volatile ("mrs %0, psp" : "=r" (sp));
-        pc = *(sp + 5);
-    }
-    else
-    {
-        __asm__ volatile ("mrs %0, msp" : "=r" (sp));
-        pc = *(sp + 6);
-    }
+    // XXX: this calc may be wrong
+    __asm__ volatile ("mrs %0, msp" : "=r" (sp));
+    pc = *(sp + 5) - 4;
 
     hal_exception(pc, sp);
 }
