@@ -1,3 +1,5 @@
+#define _HAL_FIELDBUS_C_
+
 #include "syntax.h"
 #include "stm32f10x.h"
 
@@ -43,47 +45,7 @@
 
 */
 
-#define BAUDRATE                    9600
-
-#define ADDRESSING_TIMEOUT          100
-#define REPLY_TIMEOUT               50
-#define SLAVE_SETUP_TIMEOUT         3
-
-enum fieldbus_ev_t
-{
-    EV_ENTRY,
-    EV_EXIT,
-    EV_OVERRUN,
-    EV_BYTE_RECEIVED,
-    EV_TXBUF_EMPTY,
-    EV_SHIFTREG_EMPTY,
-    EV_TIMEOUT,
-};
-
-typedef void (*state_t)(uint ev, uint data);
-
-typedef struct
-{
-    const void *hdr;
-    void *data;
-    uint hdrlen;
-    uint datalen;
-    u8 addr;
-    u8 is_rx;
-} xfer_t;
-
-typedef struct
-{
-    volatile state_t state;
-    volatile xfer_t xfer;
-    u8 *p;
-    uint remain;
-    hal_fasttask_t timer;
-    u32 ticks_till_timeout;
-    volatile hal_fieldbus_status_t status;
-    u8 checksum;
-} fieldbus_rt_t;
-
+PANIC_IF(sizeof(hdr_t) != 5);
 
 static USART_TypeDef *const uart = UART4;
 static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_M;
@@ -92,20 +54,6 @@ static fieldbus_rt_t rt;
 
 static inline void switch_to_tx(void)   { GPIOC->BSRR = 1 << 12; }
 static inline void switch_to_rx(void)   { GPIOC->BSRR = 1 << (12 + 16); }
-
-static void state_idling(uint ev, uint data);
-static void state_sending_addr(uint ev, uint data);
-static void state_receiving_addr(uint ev, uint data);
-static void state_waiting_before_hdr_send(uint ev, uint data);
-static void state_sending_hdr(uint ev, uint data);
-static void state_receiving_hdr_checksum(uint ev, uint data);
-static void state_waiting_before_data_send(uint ev, uint data);
-static void state_sending_data(uint ev, uint data);
-static void state_sending_data_checksum(uint ev, uint data);
-static void state_receiving_data(uint ev, uint data);
-static void state_receiving_data_checksum(uint ev, uint data);
-
-static void timer_handler(void);
 
 static void trans(state_t dst)
 {
@@ -144,7 +92,7 @@ static void state_sending_addr(uint ev, uint data)
             uart->DR;
 
         uart->SR = 0;
-        uart->DR = rt.xfer.addr | 0x100;
+        uart->DR = rt.addr | 0x100;
         uart->CR1 = active_cr1 | USART_CR1_TCIE;  // wait for transmission complete
         return;
 
@@ -177,7 +125,7 @@ static void state_receiving_addr(uint ev, uint data)
         return;
 
     case EV_BYTE_RECEIVED:
-        if (data != (rt.xfer.addr | 0x100))
+        if (data != (rt.addr | 0x100))
         {
             rt.status = HAL_FIELDBUS_ERR_ADDRESS_MISMATCH;
             trans(state_idling);
@@ -222,8 +170,8 @@ static void state_sending_hdr(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_tx();
-        rt.p = (u8 *)rt.xfer.hdr;
-        rt.remain = rt.xfer.hdrlen;
+        rt.p = rt.hdr.raw;
+        rt.remain = sizeof(hdr_t);
         rt.checksum = 0;
         uart->CR1 = active_cr1 | USART_CR1_TXEIE | USART_CR1_TCIE;  // leave only transmit interrupts
         return;
@@ -281,7 +229,7 @@ static void state_receiving_hdr_checksum(uint ev, uint data)
             rt.status = HAL_FIELDBUS_ERR_BAD_CHECKSUM;
             trans(state_idling);
         }
-        else if (rt.xfer.is_rx)
+        else if ((rt.hdr.dir_and_blocknum & DIR_MASK) == DIR_READ_BITS)
         {
             trans(state_receiving_data);
         }
@@ -304,10 +252,10 @@ static void state_receiving_data(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
-        rt.p = rt.xfer.data;
-        rt.remain = rt.xfer.datalen;
+        rt.p = rt.data;
+        rt.remain = rt.hdr.datalen;
         rt.checksum = 0;
-        rt.ticks_till_timeout = REPLY_TIMEOUT + calc_transfer_time(rt.xfer.datalen) * 2;
+        rt.ticks_till_timeout = REPLY_TIMEOUT + calc_transfer_time(rt.remain) * 2;
         hal_fastloop_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
@@ -409,8 +357,8 @@ static void state_sending_data(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_tx();
-        rt.p = rt.xfer.data;
-        rt.remain = rt.xfer.datalen;
+        rt.p = rt.data;
+        rt.remain = rt.hdr.datalen;
         rt.checksum = 0;
         uart->CR1 = active_cr1 | USART_CR1_TXEIE | USART_CR1_TCIE;  // leave only transmit interrupts
         return;
@@ -508,19 +456,21 @@ void HAL_fieldbus_init(void)
 }
 
 
-bool HAL_fieldbus_request_write(uint addr, const void *hdr, uint hdrlen, const void *data, uint datalen)
+bool HAL_fieldbus_request_write(u8 slave_addr, uint reg_addr, uint blocknum, const void *data, uint datalen)
 {
-    REQUIRE(hdr && hdrlen && data && datalen);
+    REQUIRE(data && datalen);
+    REQUIRE((blocknum & DIR_MASK) == 0);
 
     if (rt.state != state_idling)
         return 0;
 
-    rt.xfer.addr = addr;
-    rt.xfer.data = (u8 *)data;  // won't change it, promise !
-    rt.xfer.datalen = datalen;
-    rt.xfer.hdr = hdr;
-    rt.xfer.hdrlen = hdrlen;
-    rt.xfer.is_rx = 0;
+    rt.addr = slave_addr;
+    rt.data = (u8 *)data;  // won't change it, promise !
+
+    rt.hdr.reg_addr = reg_addr;
+    rt.hdr.datalen = datalen;
+    rt.hdr.dir_and_blocknum = DIR_WRITE_BITS | blocknum;
+
     rt.status = HAL_FIELDBUS_BUSY;
 
     trans(state_sending_addr);
@@ -529,19 +479,21 @@ bool HAL_fieldbus_request_write(uint addr, const void *hdr, uint hdrlen, const v
 }
 
 
-bool HAL_fieldbus_request_read(uint addr, const void *hdr, uint hdrlen, void *data, uint datalen)
+bool HAL_fieldbus_request_read(u8 slave_addr, uint reg_addr, uint blocknum, void *data, uint datalen)
 {
-    REQUIRE(hdr && hdrlen && data && datalen);
+    REQUIRE(data && datalen);
+    REQUIRE((blocknum & DIR_MASK) == 0);
 
     if (rt.state != state_idling)
         return 0;
 
-    rt.xfer.addr = addr;
-    rt.xfer.data = data;
-    rt.xfer.datalen = datalen;
-    rt.xfer.hdr = hdr;
-    rt.xfer.hdrlen = hdrlen;
-    rt.xfer.is_rx = 1;
+    rt.addr = slave_addr;
+    rt.data = data;
+
+    rt.hdr.reg_addr = reg_addr;
+    rt.hdr.datalen = datalen;
+    rt.hdr.dir_and_blocknum = DIR_READ_BITS | blocknum;
+
     rt.status = HAL_FIELDBUS_BUSY;
 
     trans(state_sending_addr);
@@ -582,23 +534,9 @@ bool HAL_fieldbus_is_busy(void)
 
 static void smoke_read_status(uint addr)
 {
-    typedef struct __packed
-    {
-        u16 data_addr;
-        u16 data_len;
-        u8 dir_and_blocknum;
-    } hdr_t;
+    u16 slave_status = 0xFFFF;
 
-
-    hdr_t hdr =
-    {
-        .data_addr = 0,
-        .data_len = 2,
-        .dir_and_blocknum = 0x50 | 0,
-    };
-
-    u16 slave_status = 0x1234;
-    bool is_ok = HAL_fieldbus_request_read(addr, &hdr, sizeof(hdr), &slave_status, sizeof(slave_status));
+    bool is_ok = HAL_fieldbus_request_read(addr, 0, 0, &slave_status, sizeof(slave_status));
 
     if (! is_ok)
     {
@@ -618,22 +556,7 @@ static void smoke_read_status(uint addr)
 
 static void smoke_write_output(uint addr, u32 output)
 {
-    typedef struct __packed
-    {
-        u16 data_addr;
-        u16 data_len;
-        u8 dir_and_blocknum;
-    } hdr_t;
-
-
-    hdr_t hdr =
-    {
-        .data_addr = 0,
-        .data_len = 4,
-        .dir_and_blocknum = 0xA0 | 3,
-    };
-
-    bool is_ok = HAL_fieldbus_request_write(addr, &hdr, sizeof(hdr), &output, 4);
+    bool is_ok = HAL_fieldbus_request_write(addr, 0, 3, &output, sizeof(output));
 
     if (! is_ok)
     {
