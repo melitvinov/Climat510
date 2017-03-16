@@ -201,8 +201,8 @@ void USART_OUT_Configuration(uint16_t fbrate)
 // 4) receive byte of (header ?) checksum
 // if push:
 // 5) send data
-// 6) send data checksum (minus 0x55 ?)
-// 7) receive checksum (0x55 ?)
+// 6) send data checksum minus 55
+// 7) receive checksum (55)
 // if pull:
 // 5) receive data (this bit is time-critical ?)
 // 6) receive checksum

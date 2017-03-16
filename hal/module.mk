@@ -9,8 +9,9 @@ SRC += hal/rtc/hal_rtc.c
 SRC += hal/sound/hal_sound.c
 SRC += hal/sys/hal_sys.c
 SRC += hal/systimer/hal_systimer.c
-SRC += hal/rs485/hal_rs485.c
+#SRC += hal/rs485/hal_rs485.c
 SRC += hal/fastloop/hal_fastloop.c
+SRC += hal/fieldbus/hal_fieldbus.c
 
 #SRC += hal/tty/hal_tty_bitbang.c
 SRC += hal/tty/hal_tty_hw.c
@@ -25,6 +26,7 @@ HAL_CINCS += hal/systimer
 HAL_CINCS += hal/tty
 HAL_CINCS += hal/sound
 HAL_CINCS += hal/rs485
+HAL_CINCS += hal/fieldbus
 
 # just for now
 HAL_CINCS += hal/core

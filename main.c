@@ -225,7 +225,7 @@ static void init(void)
     HAL_sound_init();
 
 
-    HAL_rs485_smoke();
+    HAL_fieldbus_smoke();
 
 
     keyboardSetBITKL(0);
