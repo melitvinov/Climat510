@@ -58,7 +58,7 @@ static void __noinline show_lcd_assert(const char *prefix, const char *str)
 __noreturn void HAL_assert(const char *str)
 {
     __disable_irq();
-    HAL_tty_init();
+    HAL_tty_init(115200);
 
     int cnt = 0;
     while (1)
@@ -81,7 +81,7 @@ __noreturn void HAL_assert(const char *str)
 __noreturn void hal_exception(u32 pc, const u32 *sp)
 {
     __disable_irq();
-    HAL_tty_init();
+    HAL_tty_init(115200);
 
 
     uint cnt = 0;

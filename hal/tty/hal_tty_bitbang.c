@@ -24,19 +24,19 @@ static TIM_TypeDef * const timer = TIM4;
 static tty_rt_t rt;
 
 
-static bool is_isr_blocked(uint priority)
+static bool is_isr_blocked(void)
 {
     u32 primask;
-    u32 basepri;
-    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
-    __asm__ volatile("mrs %0, primask" : "=r" (primask));
-    basepri >>= 8 - __NVIC_PRIO_BITS;
+    u32 ipsr;
+    __asm__ volatile ("mrs  %0, ipsr" : "=r" (ipsr));
+    __asm__ volatile ("mrs %0, primask" : "=r" (primask));
 
-    return (primask & 0x01) || (basepri && basepri <= priority);
+    return (primask & 0x01) || (ipsr & 0x1FF);
 }
 
 
-void HAL_tty_init(void)
+// XXX: note: baudrate is ignored in bitbang mode
+void HAL_tty_init(uint baud)
 {
     hal_pincfg_out(port, pin_idx);
     port->BSRR = 1 << pin_idx;
@@ -95,7 +95,7 @@ void timer4_isr(void)
 
 void HAL_tty_putc(u8 chr)
 {
-    if (unlikely(is_isr_blocked(HAL_IRQ_PRIORITY_HIGHEST))) // we're running with disabled interrupts. proceed in polling mode
+    if (unlikely(is_isr_blocked())) // we're running with disabled interrupts. proceed in polling mode
     {
         // flush
         while (rt.shiftreg)

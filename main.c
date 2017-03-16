@@ -16,6 +16,7 @@
 #include "hal_rtc.h"
 #include "hal_nvmem.h"
 #include "hal_sound.h"
+#include "hal_rs485.h"
 #include "hal_systimer.h"
 
 static int16_t konturMax[6];
@@ -203,7 +204,7 @@ static void periodic_task(void)
 
 static void init(void)
 {
-    HAL_tty_init();
+    HAL_tty_init(115200);
 
     LOG("initing RTC...");
     HAL_rtc_init();
@@ -222,6 +223,10 @@ static void init(void)
 
     LOG("initing sound ...");
     HAL_sound_init();
+
+
+    HAL_rs485_smoke();
+
 
     keyboardSetBITKL(0);
 

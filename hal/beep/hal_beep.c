@@ -24,7 +24,7 @@ void hal_beep_init(void)
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
 
-    NVIC_SetPriority(TIM6_IRQn, HAL_IRQ_PRIORITY_NORMAL - 1);   // a little above normal
+    NVIC_SetPriority(TIM6_IRQn, HAL_IRQ_PRIORITY_HIGH + 1);   // a little below the high
     NVIC_ClearPendingIRQ(TIM6_IRQn);
     NVIC_EnableIRQ(TIM6_IRQn);
 }

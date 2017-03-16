@@ -8,7 +8,7 @@
 #include "hal_pincfg.h"
 #include "hal_tty.h"
 
-// hardware uart 115200 on pa9 tx (usart1_tx_slave), pa10 rx (usart1_rx_slave)
+// hardware uart on pa9 tx (usart1_tx_slave), pa10 rx (usart1_rx_slave)
 
 typedef struct
 {
@@ -28,21 +28,19 @@ typedef struct
 } tty_rt_t;
 
 static USART_TypeDef *const uart = USART1;
-static const uint baudrate = 115200;
-static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TXEIE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
+static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 
 static tty_rt_t rt;
 
 
-static bool is_isr_blocked(uint priority)
+static bool is_isr_blocked(void)
 {
     u32 primask;
-    u32 basepri;
-    __asm__ volatile ("mrs  %0, basepri_max" : "=r" (basepri));
-    __asm__ volatile("mrs %0, primask" : "=r" (primask));
-    basepri >>= 8 - __NVIC_PRIO_BITS;
+    u32 ipsr;
+    __asm__ volatile ("mrs  %0, ipsr" : "=r" (ipsr));
+    __asm__ volatile ("mrs %0, primask" : "=r" (primask));
 
-    return (primask & 0x01) || (basepri && basepri <= priority);
+    return (primask & 0x01) || (ipsr & 0x1FF);
 }
 
 
@@ -77,7 +75,7 @@ void usart1_isr(void)
         uint r = rt.tx.r;
         if (r == rt.tx.w)
         {
-            uart->CR1 = active_cr1 & ~USART_CR1_TXEIE;  // disable tx interrupt
+            uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // disable tx interrupt
         }
         else
         {
@@ -103,7 +101,7 @@ static void flush_buf(void)
 }
 
 
-void HAL_tty_init(void)
+void HAL_tty_init(uint baud)
 {
     NVIC_DisableIRQ(USART1_IRQn);
 
@@ -128,14 +126,14 @@ void HAL_tty_init(void)
     uart->CR1 = 0;
     uart->CR2 = 0;
     uart->CR3 = 0;
-    uart->BRR = (HAL_SYS_F_CPU + baudrate/2 - 1) / baudrate;
-    uart->CR1 = active_cr1;
+    uart->BRR = (HAL_SYS_F_CPU + baud/2 - 1) / baud;
+    uart->CR1 = active_cr1 | USART_CR1_TXEIE | USART_CR1_RXNEIE;
 }
 
 
 void HAL_tty_putc(u8 chr)
 {
-    if (is_isr_blocked(HAL_IRQ_PRIORITY_LOWEST))
+    if (is_isr_blocked())
     {
         // proceed in polling mode
         flush_buf();
@@ -158,7 +156,7 @@ void HAL_tty_putc(u8 chr)
         rt.tx.buf[w] = chr;
         rt.tx.w = new_w;
 
-        uart->CR1 = active_cr1; // enable all interrupts
+        uart->CR1 = active_cr1 | USART_CR1_TXEIE | USART_CR1_RXNEIE; // enable all interrupts
     }
 }
 
