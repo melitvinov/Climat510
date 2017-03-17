@@ -10,7 +10,6 @@ SRC += hal/sound/hal_sound.c
 SRC += hal/sys/hal_sys.c
 SRC += hal/systimer/hal_systimer.c
 #SRC += hal/rs485/hal_rs485.c
-SRC += hal/fastloop/hal_fastloop.c
 SRC += hal/fieldbus/hal_fieldbus.c
 
 #SRC += hal/tty/hal_tty_bitbang.c
@@ -39,7 +38,6 @@ HAL_PRIVATE_CINCS += hal/debug
 HAL_PRIVATE_CINCS += hal/pincfg
 HAL_PRIVATE_CINCS += hal/i2c
 HAL_PRIVATE_CINCS += hal/beep
-HAL_PRIVATE_CINCS += hal/fastloop
 
 HAL_PRIVATE_CINCS += fwlib
 

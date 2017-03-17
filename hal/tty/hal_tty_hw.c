@@ -119,7 +119,7 @@ void HAL_tty_init(uint baud)
     GPIOA->BSRR = 1 << 10;      // rx with pull-up
     hal_pincfg_in(GPIOA, 10);
 
-    NVIC_SetPriority(USART1_IRQn, HAL_IRQ_PRIORITY_LOWEST);
+    NVIC_SetPriority(USART1_IRQn, HAL_IRQ_PRIORITY_LOW);
     NVIC_ClearPendingIRQ(USART1_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
 

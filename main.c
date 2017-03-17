@@ -204,13 +204,11 @@ static void periodic_task(void)
 
 static void init(void)
 {
+    HAL_systimer_init();
     HAL_tty_init(115200);
 
     LOG("initing RTC...");
     HAL_rtc_init();
-
-    LOG("initing sys timer...");
-    HAL_systimer_init();
 
     LOG("initing keyboard...");
     Keyboard_Init();

@@ -2,6 +2,7 @@
 #include "stm32f10x.h"
 
 #include "hal_debug.h"
+#include "hal_systimer.h"
 #include "hal_sys.h"
 
 //-- linker symbols

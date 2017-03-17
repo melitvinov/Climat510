@@ -1,14 +1,14 @@
 #define _HAL_FIELDBUS_C_
+#define _HAL_
 
 #include "syntax.h"
 #include "stm32f10x.h"
 
 #include "hal_priorities.h"
+#include "hal_atomic.h"
 #include "hal_sys.h"
 #include "hal_pincfg.h"
-#include "hal_fastloop.h"
 #include "hal_systimer.h"
-
 #include "hal_fieldbus.h"
 
 #include "debug.h"
@@ -110,7 +110,10 @@ static void state_receiving_addr(uint ev, uint data)
     case EV_ENTRY:
         switch_to_rx();
         rt.ticks_till_timeout = ADDRESSING_TIMEOUT;
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        HAL_BLOCK_INTERRUPTS_LEQ_TO(HAL_IRQ_PRIORITY_HIGH)
+        {
+            hal_systimer_add_task(&rt.timer, timer_handler);
+        }
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -137,7 +140,7 @@ static void state_receiving_addr(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -149,7 +152,7 @@ static void state_waiting_before_hdr_send(uint ev, uint data)
     {
     case EV_ENTRY:
         rt.ticks_till_timeout = SLAVE_SETUP_TIMEOUT;        // 2-3 ms depending on a fastloop clock phase
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1;                             // no uart activity
         return;
 
@@ -158,7 +161,7 @@ static void state_waiting_before_hdr_send(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -204,7 +207,7 @@ static void state_receiving_hdr_checksum(uint ev, uint data)
     case EV_ENTRY:
         switch_to_rx();
         rt.ticks_till_timeout = REPLY_TIMEOUT;
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -240,7 +243,7 @@ static void state_receiving_hdr_checksum(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -256,7 +259,7 @@ static void state_receiving_data(uint ev, uint data)
         rt.remain = rt.hdr.datalen;
         rt.checksum = 0;
         rt.ticks_till_timeout = REPLY_TIMEOUT + calc_transfer_time(rt.remain) * 2;
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -286,7 +289,7 @@ static void state_receiving_data(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -299,7 +302,7 @@ static void state_receiving_data_checksum(uint ev, uint data)
     case EV_ENTRY:
         switch_to_rx();
         rt.ticks_till_timeout = REPLY_TIMEOUT;
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -324,7 +327,7 @@ static void state_receiving_data_checksum(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -336,7 +339,7 @@ static void state_waiting_before_data_send(uint ev, uint data)
     {
     case EV_ENTRY:
         rt.ticks_till_timeout = SLAVE_SETUP_TIMEOUT;        // 2-3 ms depending on a fastloop clock phase
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         uart->CR1 = active_cr1;                             // no uart activity
         return;
 
@@ -345,7 +348,7 @@ static void state_waiting_before_data_send(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         return;
     }
 }
@@ -442,6 +445,9 @@ void HAL_fieldbus_init(void)
     GPIOC->BSRR = 1 << (12 + 16);    // dir, cleared by default (rx)
     hal_pincfg_out(GPIOC, 12);
 
+    // NOTE: priorities of uart and timer should be the same to avoid races
+    PANIC_IF(HAL_SYSTIMER_IRQ_PRIORITY != HAL_IRQ_PRIORITY_NORMAL);
+
     NVIC_SetPriority(UART4_IRQn, HAL_IRQ_PRIORITY_NORMAL);
     NVIC_ClearPendingIRQ(UART4_IRQn);
     NVIC_EnableIRQ(UART4_IRQn);
@@ -506,14 +512,13 @@ void HAL_fieldbus_abort(void)
 {
     if (rt.state != state_idling)
     {
-        hal_fastloop_remove_task(&rt.timer);
+        HAL_BLOCK_INTERRUPTS_LEQ_TO(HAL_IRQ_PRIORITY_NORMAL)
+        {
+            trans(state_idling);
+        }
 
-        uart->CR1 = active_cr1;
-        NVIC_DisableIRQ(UART4_IRQn);
-
+        while (! (uart->SR & USART_SR_TC)); // wait for the end of transmission
         uart->SR = 0;
-        trans(state_idling);
-        NVIC_EnableIRQ(UART4_IRQn);
     }
 
     rt.status = HAL_FIELDBUS_ERR_ABORTED;
@@ -531,6 +536,7 @@ bool HAL_fieldbus_is_busy(void)
 }
 
 //-- tests
+#if 1
 
 static void smoke_read_status(uint addr)
 {
@@ -584,9 +590,11 @@ void HAL_fieldbus_smoke(void)
         smoke_read_status(121);
         HAL_systimer_sleep(100);
         smoke_write_output(121, output);
-        HAL_systimer_sleep(100);
+        HAL_systimer_sleep(1000);
 
         output ^= (i++ & 0xFF) << 8;
     }
 
 }
+
+#endif

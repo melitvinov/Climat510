@@ -62,7 +62,7 @@ typedef void (*state_t)(uint ev, uint data);
 typedef struct
 {
     hdr_t hdr;
-    hal_fasttask_t timer;
+    hal_systimer_task_t timer;
     void *data;
     u8 *p;
     uint remain;

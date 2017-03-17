@@ -46,7 +46,7 @@ typedef struct
 
     struct
     {
-        hal_fasttask_t timer;
+        hal_systimer_task_t timer;
         uint ticks_till_timeout;
     };
 } rs_rt_t;
@@ -84,7 +84,7 @@ static void state_idling(uint ev, uint data)
     switch (ev)
     {
     case EV_ENTRY:
-        hal_fastloop_remove_task(&rt.timer);
+        hal_systimer_remove_task(&rt.timer);
         switch_to_rx();
         if (xfer)
             xfer->is_done = 1;
@@ -167,7 +167,7 @@ static void state_receiving(uint ev, uint data)
         rt.remain = xfer->resp_size;
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         rt.ticks_till_timeout = xfer->timeout;
-        hal_fastloop_add_task(&rt.timer, timer_handler);
+        hal_systimer_add_task(&rt.timer, timer_handler);
         return;
 
     case EV_OVERRUN:
