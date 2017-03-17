@@ -23,9 +23,6 @@ void usart_master_stopsend(void)
 
 void usart_master_startsend(void)
 {
-    // unworking delay here
-    for(uint i=0;i<500;i++);
-
     GPIO_WriteBit(USART_OUT_DIR_PORT,USART_OUT_DIR_PIN,Bit_SET);
 }
 
@@ -98,7 +95,7 @@ static uint8_t cCycle;
 static uint8_t  ncFan;
 static uint8_t  cModule;
 static CallBackRS GLF;
-static uint8_t bOutIPCBlock;
+static uint8_t is_exchange_paused;
 
 
 static uint8_t*    GLData;
@@ -446,7 +443,7 @@ uint16_t GetIPCNum(uint16_t nAddress) {
 void ClrAllOutIPCDigit(void)
 {
     int i;
-    bOutIPCBlock=1;
+    is_exchange_paused=1;
     for (i=0; i< OUT_MODUL_SUM; i++)
     {
         if (!ModulData[i].CpM) return;
@@ -457,192 +454,217 @@ void ClrAllOutIPCDigit(void)
 
 void ResumeOutIPCDigit(void)
 {
-    bOutIPCBlock=0;
+    is_exchange_paused=0;
 }
+
+
+TModuleData *find_module_by_address(u16 addr)
+{
+    u32 vCpM = GetIPCComMod(addr);
+
+    if (!vCpM) return NULL;
+    if (vCpM/100 == 6) return NULL;
+
+    for (uint i=0; i< OUT_MODUL_SUM; i++)
+    {
+        TModuleData *p =  &ModulData[i];
+
+        if (p->CpM == vCpM)
+            return p;
+    }
+
+    return NULL;
+}
+
+
+TModuleData *find_module_by_address_or_alloc(u16 addr)
+{
+    u32 vCpM = GetIPCComMod(addr);
+
+    if (!vCpM) return NULL;
+    if (vCpM/100 == 6) return NULL;
+
+    for (uint i=0; i< OUT_MODUL_SUM; i++)
+    {
+        TModuleData *p =  &ModulData[i];
+
+        if (p->CpM == vCpM)
+            return p;
+        if (p->CpM == 0)
+        {
+            p->CpM = vCpM;
+            return p;
+        }
+    }
+
+    return NULL;
+}
+
 
 void SetOutIPCDigit(char How, uint16_t nAddress,char* nErr)
 {
-    uint32_t vCpM,bOut,i;
-//TODO
-    vCpM=GetIPCComMod(nAddress);
-    if (!vCpM) return;
-    if (vCpM/100 == 6) return;
+    TModuleData *m = find_module_by_address_or_alloc(nAddress);
+    if (! m)
+        return;
 
-    for (i=0; i< OUT_MODUL_SUM; i++)
-    {
-        if (!ModulData[i].CpM)
-            ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
-            bOut=1;
-            bOut <<= GetIPCNum(nAddress)-1;
+    u32 bOut=1;
+    bOut <<= GetIPCNum(nAddress)-1;
 
-            *nErr=ModulData[i].Err;
-            if (How)
-                ModulData[i].OutValues |= bOut;
-            else
-                ModulData[i].OutValues &= ~(bOut);
-            return;
-        }
-    }
+    *nErr = m->Err;
+    if (How)
+        m->OutValues |= bOut;
+    else
+        m->OutValues &= ~(bOut);
 }
 
 
 void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr,void* Ptr)
 {
-    uint32_t vCpM,bOut,i;
-//TODO
-    vCpM=GetIPCComMod(nAddress);
-    if (!vCpM) return;
-    if (vCpM/100 == 6) return;
+    TModuleData *m = find_module_by_address_or_alloc(nAddress);
+    if (! m)
+        return;
 
-    for (i=0; i< OUT_MODUL_SUM; i++)
-    {
-        if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
-            bOut=GetIPCNum(nAddress)-1;
-            if (bOut>=MAX_OUT_REG)
-                return;
-            *nErr=ModulData[i].Err;
-            ModulData[i].OutReg[bOut].Value=How;
-            ModulData[i].OutReg[bOut].Type= fType;
-            ModulData[i].fandata=Ptr;
-            return;
-        }
-    }
+    u32 bOut=GetIPCNum(nAddress)-1;
+    if (bOut>=MAX_OUT_REG)
+        return;
+
+    *nErr=m->Err;
+    m->OutReg[bOut].Value=How;
+    m->OutReg[bOut].Type= fType;
+    m->fandata=Ptr;
+    return;
 }
 
 
+// GUESS: read binary value from the cached data (relay pin output)
 char GetOutIPCDigit(uint16_t nAddress, char* nErr)
 {
-    uint32_t vCpM,bIn,i;
-    vCpM=GetIPCComMod(nAddress);
+    u32 vCpM=GetIPCComMod(nAddress);
     if (!vCpM) return -1;
     if (vCpM/100 == 6) return 1;
-    for (i=0; i< OUT_MODUL_SUM; i++)
-    {
-//		if(!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
-            bIn=1;
-            bIn <<= GetIPCNum(nAddress)-1;
-            *nErr=ModulData[i].Err;
-            if (ModulData[i].OutValues & bIn) return 1;
-            else return 0;
-        }
-    }
-    return -1;
+
+    const TModuleData *m = find_module_by_address(nAddress);
+    if (! m)
+        return -1;
+
+    *nErr=m->Err;
+
+    u32 bIn = 1U << (GetIPCNum(nAddress) - 1);
+    if (m->OutValues & bIn)
+        return 1;
+    else
+        return 0;
 }
 
 
+// GUESS: read analog values from the cached data
 uint16_t GetInIPC(uint16_t nAddress,char* nErr)
 {
-    uint16_t vCpM, i, vInput;
 //TODO
-    vCpM=GetIPCComMod(nAddress);
+    u32 vCpM=GetIPCComMod(nAddress);
     if (!vCpM)
     {
-        *nErr=-1; return 0;
+        *nErr=-1;
+        return 0;
     }
     if (vCpM/100 == 6)
     {
-        *nErr=0; return 0;
+        *nErr=0;
+        return 0;
     }
-    vInput=GetIPCNum(nAddress);
+
+    u32 vInput=GetIPCNum(nAddress);
     if (!vInput)
     {
-        *nErr=-1; return 0;
+        *nErr=-1;
+        return 0;
     }
-    for (i=0; i< OUT_MODUL_SUM; i++)
+
+    const TModuleData *m = find_module_by_address_or_alloc(nAddress);
+
+    #warning "4444 ? WTF ?"
+    if (! m)
     {
-        if (!ModulData[i].CpM)
-            ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
-            *nErr=ModulData[i].Err;
-            return ModulData[i].InValues[vInput-1];
-        }
+        *nErr=0;
+        return 4444;
     }
-    *nErr=0;
-    return 4444;
+
+    *nErr = m->Err;
+    return m->InValues[vInput-1];
 }
 
 
+// GUESS: read the the discrete input from cached data
 uint16_t GetDiskrIPC(uint16_t nAddress,char* nErr)
 {
-    uint16_t vCpM,i,vInput;
-//TODO
-    vCpM=GetIPCComMod(nAddress);
+    u32 vCpM=GetIPCComMod(nAddress);
     if (!vCpM)
     {
-        *nErr=-1; return 0;
+        *nErr=-1;
+        return 0;
     }
     if (vCpM/100 == 6)
     {
-        *nErr=0; return 1;
+        *nErr=0;
+        return 1;
     }
-    vInput=GetIPCNum(nAddress);
+    u32 vInput=GetIPCNum(nAddress);
     if (!vInput)
     {
-        *nErr=-1; return 0;
+        *nErr=-1;
+        return 0;
     }
-    for (i=0; i< OUT_MODUL_SUM; i++)
+
+    const TModuleData *m = find_module_by_address_or_alloc(nAddress);
+
+    if (! m)
     {
-        if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
-            *nErr=ModulData[i].Err;
-            if ((ModulData[i].InValues[vInput-1]>2500)&&(ModulData[i].Err<iMODULE_MAX_ERR))
-                return 1;
-            else
-                return 0;
-        }
+        *nErr=0;
+        return 0;
     }
-    *nErr=0;
-    return 0;
+
+    *nErr=m->Err;
+    if ((m->InValues[vInput-1]>2500) && (m->Err < iMODULE_MAX_ERR))
+        return 1;
+    else
+        return 0;
 }
 
 
-
-void UpdateInIPC(uint16_t nAddress,TIModulConf* ModulConf)
+// GUESS: resets the input config in cached data and schedule the module update
+void UpdateInIPC(uint16_t nAddress, const TIModulConf *ModulConf)
 {
-    uint16_t vCpM,i,k,vInput;
-    vCpM=GetIPCComMod(nAddress);
-    if (!vCpM) return;
-    if (vCpM/100 == 6) return;
-    vInput=GetIPCNum(nAddress);
-    if (!vInput) return;
-    for (i=0; i< OUT_MODUL_SUM; i++)
-    {
-        if (!ModulData[i].CpM) ModulData[i].CpM=vCpM;
-        if (vCpM  ==  ModulData[i].CpM)
-        {
+    u32 vInput=GetIPCNum(nAddress);
+    if (! vInput)
+        return;
+
+    TModuleData *m = find_module_by_address_or_alloc(nAddress);
+
+    if (! m)
+        return;
+
 //			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //áåç êàëèáðîâîê
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
-            {
-                ModulData[i].Cond |= NEED_MODULE_RESET;
-                memcpy(&ModulData[i].InConfig[vInput-1],ModulConf,sizeof(TIModulConf));
-            }
+    m->Cond |= NEED_MODULE_RESET;
+    memcpy(&m->InConfig[vInput-1], ModulConf, sizeof(TIModulConf));
 /*			for (j=0;j<sizeof(TIModulConf);j++)
-            {
-                if (((char*)(&ModulData[i].InConfig[vInput-1]))[j]!=((char*)(ModulConf))[j])
-                {
-                    ((char*)(&ModulData[i].InConfig[vInput-1]))[j]=((char*)(ModulConf))[j];
-                }
-            }*/
-            //********************** ÍÀÄÎ ÓÁÐÀÒÜ *****************************
-            for (k=0;k<32;k++)
-            {
-
-                //ModulData[i].InConfig[k].Type=3;
-                ModulData[i].InConfig[k].Input=k+1;
-            }
-            //****************************************************************
-
-            if (ModulData[i].MaxIn<vInput) ModulData[i].MaxIn=vInput;
+    {
+        if (((char*)(&ModulData[i].InConfig[vInput-1]))[j]!=((char*)(ModulConf))[j])
+        {
+            ((char*)(&ModulData[i].InConfig[vInput-1]))[j]=((char*)(ModulConf))[j];
         }
+    }*/
+    //********************** ÍÀÄÎ ÓÁÐÀÒÜ *****************************
+    for (uint k=0;k < 32;k++)
+    {
+
+        //ModulData[i].InConfig[k].Type=3;
+        m->InConfig[k].Input=k+1;
     }
+    //****************************************************************
+
+    if (m->MaxIn<vInput)
+        m->MaxIn = vInput;
 }
 
 /*int16_t IMOD_WriteOutput(char COMPort,int nModule, uint32_t Values)
@@ -724,13 +746,10 @@ uint8_t IMOD_Exchange(TModuleData*   fModule)
 
 void SendIPC(uint8_t *fErrModule)
 {
-/*	if (ModulData[0].OutValues)
-        ModulData[0].OutValues=0;
-    else
-        ModulData[0].OutValues=0x0f0f1f;
-    RS485_Master_WriteDataIRQ(122,0,4,&ModulData[0].OutValues,3,&ModulData[0].Cond,0);
-    return;*/
-    if (bOutIPCBlock) return;
+    if (is_exchange_paused)
+        return;
+
+    // process timeout if operation in progress
     if (phase_rs_out!=RSOUT_INIT)
     {
         if (!RSOutTime)
@@ -744,6 +763,7 @@ void SendIPC(uint8_t *fErrModule)
             return;
         }
     }
+
     ncFan%=MAX_FAN_COUNT;
     cCycle%=10;
     cOperInModule%=8;

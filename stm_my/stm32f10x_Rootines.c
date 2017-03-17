@@ -482,14 +482,18 @@ void CheckInputConfig()
     tTempConf.U2 = 0;
 
     for (tTepl=0;tTepl<NZONES;tTepl++)
+    {
         for (nSens=0;nSens<cConfSInputs;nSens++)
         {
             tTempConf.Input=GetInputConfig(tTepl,nSens)%100;
             UpdateInIPC(GetInputConfig(tTepl,nSens),&tTempConf);
         }
+    }
     for (tTepl=0;tTepl<NZONES;tTepl++)
+    {
         for (nSens=0;nSens<cConfSSens;nSens++)
             UpdateInIPC(GetSensConfig(tTepl,nSens), &caldata.Cal.InTeplSens[tTepl][nSens]);
+    }
     for (nSens=0;nSens<cConfSMetSens;nSens++)
         UpdateInIPC(GetMetSensConfig(nSens),&caldata.Cal.MeteoSens[nSens]);
 
