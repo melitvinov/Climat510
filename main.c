@@ -15,9 +15,10 @@
 #include "hal_tty.h"
 #include "hal_rtc.h"
 #include "hal_nvmem.h"
-#include "hal_sound.h"
 #include "hal_rs485.h"
 #include "hal_systimer.h"
+
+#include "sound.h"
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
@@ -139,7 +140,8 @@ void checkConfig(void)
 void DoBeepy(void)
 {
     static const hal_sound_note_t simple_beep[] = {{1000, 1}, {0, 0}};
-    HAL_sound_play(simple_beep);
+    //static const hal_sound_note_t simple_beep[] = {{1000, 1}, {0, 1}, {2000, 2}, {0, 2}, {3000, 3}, {0, 3}, {4000, 4}, {0, 0},};
+    sound_play(simple_beep);
 }
 
 static void periodic_task(void)
@@ -220,10 +222,10 @@ static void init(void)
     HAL_lcd_init();
 
     LOG("initing sound ...");
-    HAL_sound_init();
+    sound_init();
 
 
-    HAL_fieldbus_smoke();
+    //HAL_fieldbus_smoke();
 
 
     keyboardSetBITKL(0);
@@ -310,6 +312,7 @@ void main(void)
     {
         process_pc_input();
         process_legacy_timers();
+        timers_process();
 
         bool should_show_video = 0;
 

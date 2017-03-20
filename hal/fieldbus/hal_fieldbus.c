@@ -1,5 +1,4 @@
 #define _HAL_FIELDBUS_C_
-#define _HAL_
 
 #include "syntax.h"
 #include "stm32f10x.h"
@@ -8,7 +7,6 @@
 #include "hal_atomic.h"
 #include "hal_sys.h"
 #include "hal_pincfg.h"
-#include "hal_systimer.h"
 #include "hal_fieldbus.h"
 
 #include "debug.h"
@@ -49,6 +47,7 @@ PANIC_IF(sizeof(hdr_t) != 5);
 
 static USART_TypeDef *const uart = UART4;
 static const u32 active_cr1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_M;
+static TIM_TypeDef * const timer = TIM7;
 
 static fieldbus_rt_t rt;
 
@@ -65,6 +64,22 @@ static void trans(state_t dst)
 static u32 calc_transfer_time(uint size)
 {
     return (size * 10 * 1000 + BAUDRATE - 1) /  BAUDRATE;
+}
+
+static void start_timer(u32 ms)
+{
+    timer->CNT = 0;
+    timer->ARR = ms * 10;
+    timer->CR1 = TIM_CR1_CEN;
+}
+
+static void stop_timer(void)
+{
+    timer->CR1 = 0;
+    timer->SR = 0;
+    __NOP();        // sr write may lag, give nvic a time to react
+    __NOP();
+    NVIC_ClearPendingIRQ(TIM7_IRQn);
 }
 
 
@@ -109,12 +124,11 @@ static void state_receiving_addr(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
-        rt.ticks_till_timeout = ADDRESSING_TIMEOUT;
-        HAL_BLOCK_INTERRUPTS_LEQ_TO(HAL_IRQ_PRIORITY_HIGH)
+        HAL_BLOCK_INTERRUPTS_LEQ_TO(HAL_IRQ_PRIORITY_NORMAL)
         {
-            hal_systimer_add_task(&rt.timer, timer_handler);
+            start_timer(ADDRESSING_TIMEOUT);
+            uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         }
-        uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
     case EV_OVERRUN:
@@ -140,7 +154,7 @@ static void state_receiving_addr(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -151,8 +165,7 @@ static void state_waiting_before_hdr_send(uint ev, uint data)
     switch (ev)
     {
     case EV_ENTRY:
-        rt.ticks_till_timeout = SLAVE_SETUP_TIMEOUT;        // 2-3 ms depending on a fastloop clock phase
-        hal_systimer_add_task(&rt.timer, timer_handler);
+        start_timer(SLAVE_SETUP_TIMEOUT);
         uart->CR1 = active_cr1;                             // no uart activity
         return;
 
@@ -161,7 +174,7 @@ static void state_waiting_before_hdr_send(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -206,8 +219,7 @@ static void state_receiving_hdr_checksum(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
-        rt.ticks_till_timeout = REPLY_TIMEOUT;
-        hal_systimer_add_task(&rt.timer, timer_handler);
+        start_timer(REPLY_TIMEOUT);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -243,7 +255,7 @@ static void state_receiving_hdr_checksum(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -258,8 +270,7 @@ static void state_receiving_data(uint ev, uint data)
         rt.p = rt.data;
         rt.remain = rt.hdr.datalen;
         rt.checksum = 0;
-        rt.ticks_till_timeout = REPLY_TIMEOUT + calc_transfer_time(rt.remain) * 2;
-        hal_systimer_add_task(&rt.timer, timer_handler);
+        start_timer(REPLY_TIMEOUT + calc_transfer_time(rt.remain) * 2);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -289,7 +300,7 @@ static void state_receiving_data(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -301,8 +312,7 @@ static void state_receiving_data_checksum(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
-        rt.ticks_till_timeout = REPLY_TIMEOUT;
-        hal_systimer_add_task(&rt.timer, timer_handler);
+        start_timer(REPLY_TIMEOUT);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -327,7 +337,7 @@ static void state_receiving_data_checksum(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -338,8 +348,7 @@ static void state_waiting_before_data_send(uint ev, uint data)
     switch (ev)
     {
     case EV_ENTRY:
-        rt.ticks_till_timeout = SLAVE_SETUP_TIMEOUT;        // 2-3 ms depending on a fastloop clock phase
-        hal_systimer_add_task(&rt.timer, timer_handler);
+        start_timer(SLAVE_SETUP_TIMEOUT);
         uart->CR1 = active_cr1;                             // no uart activity
         return;
 
@@ -348,7 +357,7 @@ static void state_waiting_before_data_send(uint ev, uint data)
         return;
 
     case EV_EXIT:
-        hal_systimer_remove_task(&rt.timer);
+        stop_timer();
         return;
     }
 }
@@ -404,11 +413,10 @@ static void state_sending_data_checksum(uint ev, uint data)
 
 // -- event dispatchers
 
-static void timer_handler(void)
+void timer7_isr(void)
 {
-    if (rt.ticks_till_timeout--)
-        return;
-
+    timer->CR1 = 0;
+    timer->SR = 0;
     rt.state(EV_TIMEOUT, 0);
 }
 
@@ -446,8 +454,6 @@ void HAL_fieldbus_init(void)
     hal_pincfg_out(GPIOC, 12);
 
     // NOTE: priorities of uart and timer should be the same to avoid races
-    PANIC_IF(HAL_SYSTIMER_IRQ_PRIORITY != HAL_IRQ_PRIORITY_NORMAL);
-
     NVIC_SetPriority(UART4_IRQn, HAL_IRQ_PRIORITY_NORMAL);
     NVIC_ClearPendingIRQ(UART4_IRQn);
     NVIC_EnableIRQ(UART4_IRQn);
@@ -456,6 +462,18 @@ void HAL_fieldbus_init(void)
     uart->CR2 = 0;
     uart->CR3 = 0;
     uart->BRR = (HAL_SYS_F_CPU + BAUDRATE/2 - 1) / BAUDRATE;
+
+
+    timer->CR1 = 0;
+    timer->CNT = 0;
+    timer->PSC = HAL_SYS_F_CPU * 0.1E-3 - 1;      // 0.1 ms prescaler. this way 1-2 ms timeouts error would be negligible
+    timer->ARR = 0;
+    timer->SR = 0;
+    timer->DIER = TIM_DIER_UIE;
+
+    NVIC_SetPriority(TIM7_IRQn, HAL_IRQ_PRIORITY_NORMAL);
+    NVIC_ClearPendingIRQ(TIM7_IRQn);
+    NVIC_EnableIRQ(TIM7_IRQn);
 
     rt.state = state_idling;
     trans(state_idling);
@@ -537,6 +555,8 @@ bool HAL_fieldbus_is_busy(void)
 
 //-- tests
 #if 1
+
+#include "hal_systimer.h"
 
 static void smoke_read_status(uint addr)
 {

@@ -6,7 +6,6 @@ SRC += hal/lcd/hal_lcd.c
 SRC += hal/nvmem/hal_nvmem.c
 SRC += hal/pincfg/hal_pincfg.c
 SRC += hal/rtc/hal_rtc.c
-SRC += hal/sound/hal_sound.c
 SRC += hal/sys/hal_sys.c
 SRC += hal/systimer/hal_systimer.c
 #SRC += hal/rs485/hal_rs485.c
@@ -23,7 +22,7 @@ HAL_CINCS += hal/nvmem
 HAL_CINCS += hal/rtc
 HAL_CINCS += hal/systimer
 HAL_CINCS += hal/tty
-HAL_CINCS += hal/sound
+HAL_CINCS += hal/beep
 HAL_CINCS += hal/rs485
 HAL_CINCS += hal/fieldbus
 

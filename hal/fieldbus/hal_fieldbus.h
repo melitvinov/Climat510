@@ -27,7 +27,7 @@ void HAL_fieldbus_abort(void);
 
 #define ADDRESSING_TIMEOUT          100
 #define REPLY_TIMEOUT               50
-#define SLAVE_SETUP_TIMEOUT         3
+#define SLAVE_SETUP_TIMEOUT         2
 
 #define DIR_WRITE_BITS  0xA0
 #define DIR_READ_BITS   0x50
@@ -62,12 +62,10 @@ typedef void (*state_t)(uint ev, uint data);
 typedef struct
 {
     hdr_t hdr;
-    hal_systimer_task_t timer;
     void *data;
     u8 *p;
     uint remain;
     volatile state_t state;
-    u32 ticks_till_timeout;
     volatile hal_fieldbus_status_t status;
     u8 checksum;
     volatile u8 addr;
@@ -84,7 +82,6 @@ static void state_sending_data(uint ev, uint data);
 static void state_sending_data_checksum(uint ev, uint data);
 static void state_receiving_data(uint ev, uint data);
 static void state_receiving_data_checksum(uint ev, uint data);
-static void timer_handler(void);
 
 #endif
 #endif

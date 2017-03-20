@@ -15,6 +15,8 @@ SRC += stm_my/stm32f10x_RS485Master.c
 SRC += stm_my/stm32f10x_RS485.c
 SRC += stm_my/stm32f10x__clock.c
 SRC += keyboard.c
+SRC += sound.c
+SRC += timers.c
 
 # these are 'coarse fixed'
 SRC += 405_Memory.c

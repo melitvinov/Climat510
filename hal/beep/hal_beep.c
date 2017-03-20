@@ -7,6 +7,8 @@
 
 // piezo beeper on pa4, 4 kHz resonant freq
 
+#warning "make it DAC-driven to allow interrupt-free use ?"
+
 static GPIO_TypeDef * const port = GPIOA;
 static const uint pin_idx = 4;
 static TIM_TypeDef * const timer = TIM6;
