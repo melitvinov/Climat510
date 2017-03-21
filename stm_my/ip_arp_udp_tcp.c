@@ -18,7 +18,7 @@
 //#include <includes.h>
 #include "net.h"
 #include "ip_arp_udp_tcp.h"
-#include "enc28j60.h"
+#include "enc28j60_if.h"
 
 static const unsigned char *ipaddr;
 

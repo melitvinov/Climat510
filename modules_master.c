@@ -2,7 +2,6 @@
 
 #include "module.h"
 #include "modules_master.h"
-#include "misc.h"
 
 #include "control_gd.h"
 

@@ -2,13 +2,6 @@
 #include "syntax.h"
 
 #include "stm32f10x_Rootines.h"
-#include "misc.h"
-#include "stm32f10x_tim.h"
-#include "stm32f10x_i2c.h"
-#include "stm32f10x_bkp.h"
-#include "stm32f10x_pwr.h"
-#include "stm32f10x_exti.h"
-#include "stm32f10x_iwdg.h"
 
 // XXX: isolation
 #include "405_memory.h"

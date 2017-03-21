@@ -23,14 +23,13 @@
  * http://www.icdev.com.cn/?2213/
  * Host chip: ADUC7026
 **********************************************/
+#include "syntax.h"
 //#include <includes.h>
 #include <string.h>
-#include "enc28j60.h"
+#include "enc28j60_if.h"
 #include "ip_arp_udp_tcp.h"
 #include "net.h"
 #include "simple_server.h"
-
-#include "spi.h"
 
 #include "syntax.h"
 #include "wtf.h"
@@ -396,8 +395,6 @@ void simple_servercycle(void)
 
 void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint16_t *fPORTNUMBER)
 {
-    SPI1_Init();
-
 
 //	Del_1ms(100);
     /*initialize enc28j60*/
@@ -410,8 +407,8 @@ void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, cons
     enc28j60Init(MACAddr);
     init_ip_arp_udp_tcp(MACAddr,IPAddr,*PORTNUMBER);
     //Ö¸Ê¾µÆ×´Ì¬:0x476 is PHLCON LEDA(ÂÌ)=links status, LEDB(ºì)=receive/transmit
-    enc28j60PhyWrite(PHLCON,0x7a4);
-    enc28j60clkout(2); // change clkout from 6.25MHz to 12.5MHz
+//    enc28j60PhyWrite(PHLCON,0x7a4);
+//    enc28j60clkout(2); // change clkout from 6.25MHz to 12.5MHz
 //	Del_1ms(20);
     Sockets[0].IP_PHASE=0;
     //init the ethernet/ip layer:

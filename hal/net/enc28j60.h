@@ -1,14 +1,12 @@
-//Âñòàâëåííûé ìîäóëü Ethernet
-#include "STM32F10X_GPIO.h"
+#ifndef _ENC28J60_H_
+#define _ENC28J60_H_
 
-
-
-#ifndef __ENC28J60_H
-#define __ENC28J60_H
+//-- bit definitions header was found on the net. it's somebody else good work
 
 // ENC28J60 Control Registers
 // Control register definitions are a combination of address,
 // bank number, and Ethernet/MAC/PHY indicator bits.
+
 // - Register address        (bits 0-4)
 // - Bank number        (bits 5-6)
 // - MAC/PHY indicator        (bit 7)
@@ -238,32 +236,6 @@
 // stp TX buffer at end of mem
 #define TXSTOP_INIT      0x1FFF
 //
-// max frame length which the conroller will accept:
-#define        MAX_FRAMELEN        1500        // (note: maximum ethernet frame length would be 1518)
-//#define MAX_FRAMELEN     600
 
-#define 	ENC28J60_CS	 		GPIO_Pin_2
-#define 	ENC28J60_CSL()		GPIO_WriteBit(GPIOD,ENC28J60_CS,Bit_RESET)///*(GPIOD->ODR &= ~(1<<9))//*/GPIOB->BRR = ENC28J60_CS;
-#define 	ENC28J60_CSH()		GPIO_WriteBit(GPIOD,ENC28J60_CS,Bit_SET)///*(GPIOD->ODR |= 1<<9)//*/GPIOB->BSRR = ENC28J60_CS;
-
-//SPI1³õÊ¼»¯
-//void	ENC28J60_Init(void);
-unsigned char enc28j60ReadOp(unsigned char op, unsigned char address);
-void    enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data);
-void    enc28j60ReadBuffer(unsigned int len, unsigned char* data);
-void    enc28j60WriteBuffer(unsigned int len, unsigned char* data);
-void    enc28j60SetBank(unsigned char address);
-unsigned char enc28j60Read(unsigned char address);
-void    enc28j60Write(unsigned char address, unsigned char data);
-void    enc28j60PhyWrite(unsigned char address, unsigned int data);
-void    enc28j60clkout(unsigned char clk);
-void    enc28j60Init(unsigned char* macaddr);
-unsigned char enc28j60getrev(void);
-void    enc28j60PacketSend(unsigned int len, unsigned char* packet);
-unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet);
-
-
-//SPI1¶ÁÐ´Ò»×Ö½ÚÊý¾Ý
-//INT8U	ENC28J60_ReadWrite(INT8U writedat);
 
 #endif
