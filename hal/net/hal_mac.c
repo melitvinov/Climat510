@@ -32,12 +32,29 @@ unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet);
 static unsigned char Enc28j60Bank;
 static unsigned int NextPacketPtr;
 
-static inline int assert_cs(void)           { GPIOD->BSRR = 1 << (2 + 16); return 1;}
-static inline void deassert_cs(int *dummy)  { GPIOD->BSRR = 1 << 2; }
 
-#define SPI_XFER for (int _todo __cleanup(deassert_cs) = assert_cs(); _todo; _todo = 0)
+#define SPI_XFER for (int _todo __cleanup(release_chip) = access_chip(); _todo; _todo = 0)
 
 static SPI_TypeDef *const spi = SPI1;
+
+static inline void spi_sync(void)
+{
+    while ((spi->SR & (SPI_SR_TXE | SPI_SR_BSY)) != (SPI_SR_TXE));
+    spi->DR;
+    spi->SR;
+}
+
+static inline int access_chip(void)
+{
+    GPIOD->BSRR = 1 << (2 + 16);
+    return 1;
+}
+
+static inline void release_chip(int *dummy)
+{
+    spi_sync();
+    GPIOD->BSRR = 1 << 2;
+}
 
 static void init_iface(void)
 {
@@ -55,25 +72,44 @@ static void init_iface(void)
     spi->I2SCFGR = 0;
 
     // spi mode 0, clock = fCPU / 4 = 36 / 4 = 9 MHz
-    REQUIRE(HAL_SYS_F_CPU / 4. <= 10E6);
     // maximum spi frequency for ethernet chip is 10 MHz.
+    REQUIRE(HAL_SYS_F_CPU / 4. <= 10E6);
     spi->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE | SPI_CR1_MSTR | SPI_CR1_BR_0;
-    // clear possible flags
-    spi->DR;
-    spi->SR;
+    spi_sync();
 }
 
-unsigned char SPI1_ReadWrite(unsigned char writedat)
+static void spi_write(const u8 *src, uint len)
 {
-    while (! (spi->SR & SPI_SR_TXE));
-
-    spi->DR = writedat;
-
-    while (! (spi->SR & SPI_SR_RXNE));
-
-    return spi->DR;
+    for (; len; len--)
+    {
+        while (! (spi->SR & SPI_SR_TXE));
+        spi->DR = *src++;
+    }
 }
 
+static void spi_read(u8 *dst, uint len)
+{
+    spi_sync();
+
+    for (; len; len--)
+    {
+        spi->DR = 0;
+        while (! (spi->SR & SPI_SR_RXNE));
+        *dst++ = spi->DR;
+    }
+}
+
+static void spi_write_byte(u8 byte)
+{
+    spi_write(&byte, 1);
+}
+
+static u8 spi_read_byte(void)
+{
+    u8 out;
+    spi_read(&out, 1);
+    return out;
+}
 
 unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
 {
@@ -82,12 +118,12 @@ unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
     SPI_XFER
     {
         dat = op | (address & ADDR_MASK);
-        SPI1_ReadWrite(dat);
-        dat = SPI1_ReadWrite(0xFF);
+        spi_write_byte(dat);
+        dat = spi_read_byte();
         // do dummy read if needed (for mac and mii, see datasheet page 29)
         if (address & 0x80)
         {
-            dat = SPI1_ReadWrite(0xFF);
+            dat = spi_read_byte();
         }
     }
     return dat;
@@ -101,28 +137,24 @@ void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data
     {
         // issue write command
         dat = op | (address & ADDR_MASK);
-        SPI1_ReadWrite(dat);
+        spi_write_byte(dat);
         // write data
         dat = data;
-        SPI1_ReadWrite(dat);
+        spi_write_byte(dat);
     }
 }
 
 void enc28j60ReadBuffer(unsigned int len, unsigned char* data)
 {
+    #warning "this fucka null-terminates the sting. why ?"
+
     SPI_XFER
     {
         // issue read command
-        SPI1_ReadWrite(ENC28J60_READ_BUF_MEM);
-        while (len)
-        {
-            len--;
-            // read data
-            *data = (unsigned char)SPI1_ReadWrite(0);
-            data++;
-        }
-        *data='\0';
+        spi_write_byte(ENC28J60_READ_BUF_MEM);
+        spi_read(data, len);
     }
+    data[len] = '\0';
 }
 
 void enc28j60WriteBuffer(unsigned int len, unsigned char* data)
@@ -130,14 +162,8 @@ void enc28j60WriteBuffer(unsigned int len, unsigned char* data)
     SPI_XFER
     {
         // issue write command
-        SPI1_ReadWrite(ENC28J60_WRITE_BUF_MEM);
-
-        while (len)
-        {
-            len--;
-            SPI1_ReadWrite(*data);
-            data++;
-        }
+        spi_write_byte(ENC28J60_WRITE_BUF_MEM);
+        spi_write(data, len);
     }
 }
 
