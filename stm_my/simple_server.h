@@ -34,7 +34,7 @@ typedef struct
 
 typedef struct
 {
-    void*    Adr;
+    void *Adr;
     uint16_t    MaxSize;
 }eAdrGD;
 
@@ -52,8 +52,8 @@ typedef struct
 
 
 
-int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER);
-int simple_servercycle(void);
+void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr, uint16_t *fPORTNUMBER);
+void simple_servercycle(void);
 
 #endif
 

@@ -1,3 +1,5 @@
+#ifndef _RTC_H_
+#define _RTC_H_
 
 #define FIRSTYEAR   2000		// start year
 #define FIRSTDAY    6			// 0 = Sunday
@@ -32,3 +34,5 @@ typedef struct
 char ReadDateTime(eDateTime *fDateTime);
 //Запись даты и времени
 void WriteDateTime(eDateTime *fDateTime);
+
+#endif

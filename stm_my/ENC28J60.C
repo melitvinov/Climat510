@@ -1,7 +1,5 @@
-//#include "includes.h"
 #include "enc28j60.h"
 #include "spi.h"
-//#include <stdio.h>
 
 static unsigned char Enc28j60Bank;
 static unsigned int NextPacketPtr;

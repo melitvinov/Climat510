@@ -2,7 +2,7 @@
 
 #include "keyboard.h"
 
-#include "stm32f10x_LCD240x64.h"
+#include "lcd.h"
 #include "wtf.h"
 
 #include "control_gd.h"

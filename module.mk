@@ -11,16 +11,19 @@ SRC += stm_lib/stm32f10x_usart.c
 SRC += stm_lib/misc.c
 SRC += stm_lib/stm32f10x_iwdg.c
 
-SRC += stm_my/stm32f10x__clock.c
-SRC += keyboard.c
+# these are good
 SRC += sound.c
 SRC += timers.c
 
-SRC += measure.c
-
+# these are semi-good
 SRC += module.c
-
 SRC += modules_master.c
+
+# these are ugly
+SRC += rtc.c
+SRC += keyboard.c
+SRC += measure.c
+SRC += lcd.c
 
 # these are 'coarse fixed'
 SRC += 405_Memory.c
@@ -31,7 +34,6 @@ SRC += stm_my/enc28j60.c
 SRC += stm_my/ip_arp_udp_tcp.c
 SRC += stm_my/simple_server.c
 SRC += stm_my/stm32f10x_Rootines.c
-SRC += stm_my/stm32f10x_LCD240x64.c
 
 SRC += 405_Display.c
 SRC += 405_Menu.c

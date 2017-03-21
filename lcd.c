@@ -1,9 +1,9 @@
 #include "syntax.h"
 
-#include "stm32f10x_LCD240x64.h"
-
 #include "hal_systimer.h"
 #include "hal_lcd.h"
+
+#include "lcd.h"
 
 #include "debug.h"
 

@@ -52,7 +52,7 @@ void    SPI1_Init(void)
 
 }
 
-unsigned char   SPI1_ReadWrite(unsigned char writedat)
+unsigned char SPI1_ReadWrite(unsigned char writedat)
 {
     /* Loop while DR register in not emplty */
     while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE)  ==  RESET);

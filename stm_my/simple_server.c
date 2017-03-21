@@ -30,7 +30,13 @@
 #include "net.h"
 #include "simple_server.h"
 
-static eAdrGD   *pADRGD;
+#include "spi.h"
+
+#include "syntax.h"
+#include "wtf.h"
+#include "debug.h"
+
+static const eAdrGD   *pADRGD;
 static uint8_t* EthSost;
 static uint8_t* EthBlock;
 static uint16_t* PORTNUMBER;
@@ -142,18 +148,25 @@ char CheckSum(char *byte, int size)
     return res;
 }
 
-int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
+void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 {
+    LOG("socket update");
+
     switch (Sockets[nSock].IP_PHASE)
     {
     case(ETH_INIT):
-        *fbsize=0;return 0;
+        LOG("socket init");
+        *fbsize=0;
+        return;
+
     case(ETH_HEAD):
         if (!data_p)
         {
+            LOG("socket no p head");
             *fbsize=0;
-            return 0;
+            return;
         }
+        LOG("socket hdr");
 //		else
         *EthSost=WORK_UNIT;
         BufCpy((char*)&Sockets[nSock].Header,&f_buf[data_p],cSizeHead);
@@ -168,20 +181,25 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
             Sockets[nSock].IP_PHASE=ETH_SENDBLOCK;
         else
             Sockets[nSock].IP_PHASE=ETH_RECVBLOCK;
-        return 1;
+        return;
+
     case(ETH_SENDBLOCK):
+        LOG("socket sendblock");
         if (Sockets[nSock].Header.Size>MAX_PACKET_LENGTH)
         {
-
+            LOG("sending initial buffer");
             fill_tcp_buf(f_buf,MAX_PACKET_LENGTH,((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr);
             Sockets[nSock].Header.Adr+=MAX_PACKET_LENGTH;
             Sockets[nSock].Header.Size-=MAX_PACKET_LENGTH;
             *fbsize=MAX_PACKET_LENGTH;
 //			Sockets[nSock].IP_PHASE=ETH_INIT;
-            return 1;
+            return;
         }
 
-        fill_tcp_buf(f_buf,Sockets[nSock].Header.Size,((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr);
+        LOG("attempt to send buffer of size %d, block %d, offset %d."
+            "block addr is 0x%08x", Sockets[nSock].Header.Size, Sockets[nSock].NumBlock, Sockets[nSock].Header.Adr,
+            (int) pADRGD[Sockets[nSock].NumBlock].Adr);
+        fill_tcp_buf(f_buf, Sockets[nSock].Header.Size, (u8 *)(pADRGD[Sockets[nSock].NumBlock].Adr) + Sockets[nSock].Header.Adr);
         /*if (Sockets[nSock].Header.Size  ==  263)
         {
             volatile int16_t ii;
@@ -199,13 +217,15 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 
         Sockets[nSock].IP_PHASE=ETH_INIT;
         *EthSost=OUT_UNIT;
+        return;
 
-        return 1;
     case(ETH_RECVBLOCK):
+        LOG("socket recvblock");
         if (Sockets[nSock].Header.Size<=plen-54)
         {
             volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
-            if (crc != fbuf[info_data_len+53]) return 0;
+            if (crc != fbuf[info_data_len+53])
+                return;
         }
 
         if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
@@ -244,12 +264,12 @@ int SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
         }
         Sockets[nSock].Header.Size-=plen;
         *fbsize=0;
-        return 1;
+        return;
     }
 }
 
 #warning IP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-int simple_servercycle(void)
+void simple_servercycle(void)
 {
     uint8_t tIPAddr[4];
     char i,nS,freeSlot;
@@ -323,6 +343,8 @@ int simple_servercycle(void)
         }
         if (fbuf[TCP_FLAGS_P] & TCP_FLAGS_ACK_V)
         {
+            LOG("initing len info");
+
             init_len_info(fbuf); // init some data structures
             // we can possibly have no data, just ack:
             dat_p=get_tcp_data_pointer();
@@ -338,16 +360,21 @@ int simple_servercycle(void)
             }
             else
             {
+                LOG("got data p");
                 //if (Sockets[nS].IP_PHASE  ==  ETH_RECVBLOCK)
                 //{
                 //	fbuf[27] = 0xFF;
                 //}
 
-                j=checksum(&fbuf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN+info_data_len,2);
-                if (j)
+                #warning "ignore checksum for now"
+                if (0)
                 {
-                    //j = 0xFF;
-                    return;
+                    j=checksum(&fbuf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN+info_data_len,2);
+                    if (j)
+                    {
+                        //j = 0xFF;
+                        return;
+                    }
                 }
             }
             check_ip_scr(fbuf,tIPAddr);
@@ -367,9 +394,10 @@ int simple_servercycle(void)
 
 }
 
-int simple_server(eAdrGD* fADRGD,uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint8_t* fPORTNUMBER)
+void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint16_t *fPORTNUMBER)
 {
     SPI1_Init();
+
 
 //	Del_1ms(100);
     /*initialize enc28j60*/

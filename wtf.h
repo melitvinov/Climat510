@@ -11,10 +11,11 @@ typedef struct
     unsigned char   Second;
 
     uint16_t    PORTNUM;
-    eAdrGD      AdrGD[15];
     uchar       NumBlock;
 
     uchar SostRS;
+
+    eAdrGD      AdrGD[15];
 } wtf0_t;
 
 extern wtf0_t wtf0;

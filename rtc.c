@@ -1,5 +1,5 @@
 #include "syntax.h"
-#include "stm32f10x_clock.h"
+#include "rtc.h"
 
 #include "hal_rtc.h"
 

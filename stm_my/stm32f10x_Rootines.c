@@ -7,7 +7,6 @@
 #include "stm32f10x_i2c.h"
 #include "stm32f10x_bkp.h"
 #include "stm32f10x_pwr.h"
-#include "stm32f10x_clock.h"
 #include "stm32f10x_exti.h"
 #include "stm32f10x_iwdg.h"
 
@@ -19,8 +18,10 @@
 
 #include "control_gd.h"
 
+#include "rtc.h"
+
 #include "keyboard.h"
-#include "stm32f10x_LCD240x64.h"
+#include "lcd.h"
 #include "unsorted.h"
 
 #include "hal_systimer.h"
@@ -29,9 +30,8 @@
 
 // XXX: this stuff is from climdef.h
 static uint8_t* mymac = 0x1FFFF7EE;
-static unsigned char myip[4] = {192,168,1,231};
+//static unsigned char myip[4] = {192,168,1,231};
 static uint16_t    NMinPCOut;
-static uint16_t* IWDG_Reset;
 
 static void ReadFromFRAM(void);
 
@@ -47,7 +47,7 @@ void CheckWithoutPC(void)
         NMinPCOut=0;
         #warning "init of pc uart is diabled"
         //USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
-        simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac,(uint8_t*)&wtf0.PORTNUM);
+        simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, &wtf0.PORTNUM);
         gd_rw()->TControl.Zones[0].WithoutPC++;
     }
     NMinPCOut++;
@@ -69,12 +69,8 @@ void Init_STM32(void)
 
     wtf0.PORTNUM=DEF_PORTNUM;
 
-    simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, (uint8_t*)&wtf0.PORTNUM);
+    simple_server(wtf0.AdrGD, &wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, &wtf0.PORTNUM);
     LOG("started web");
-
-//    Init_MEAS_INPUT();
-//    Init_IWDG(&GD.TControl.Tepl[0].nReset);
-    Check_IWDG();
 
     #warning" init of usart2 is disabled"
 //    USART_OUT2_Configuration(9600);
@@ -147,27 +143,6 @@ void GetRTC(uint16_t *time, uint16_t *date, uint8_t *year, u8 *day_of_week)
     *day_of_week = fDateTime.wday;
 }
 
-void Init_IWDG(uint16_t* fIWDG_Reset)
-{
-    IWDG_Reset=fIWDG_Reset;
-    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-    IWDG_SetPrescaler(IWDG_Prescaler_32);
-    IWDG_SetReload(65000);
-    IWDG_ReloadCounter();
-#ifndef DEBUG
-    IWDG_Enable();
-#endif
-}
-
-void Check_IWDG(void)
-{
-//	if (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) != RESET)
-    {
-        (*IWDG_Reset)++;
-//		RCC_ClearFlag();
-    }
-
-}
 
 /*------------------------------------------------
         Тестирование и установка данных при сбросе "Тест"
@@ -204,13 +179,13 @@ void TestMem(uchar TipReset)
     wtf0.Menu=0;
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
-    TestFRAM(TipReset);
+    TestFRAM();
     ButtonReset();
     GetRTC(&gd_rw()->Hot.Time, &gd_rw()->Hot.Date, &gd_rw()->Hot.Year, &NowDayOfWeek);
 }
 
 /*-- Восстановление из EEPROM, а при ошибке перезапись в EEPROM------*/
-void    TestFRAM(char EraseBl)
+void    TestFRAM()
 {
     uint16_t cSum;
     uint8_t nBlFRAM;

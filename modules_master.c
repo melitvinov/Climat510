@@ -214,7 +214,7 @@ uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr)
 // GUESS: resets the input config in cached data and schedule the module update
 void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
 {
-    nAddress = 101;
+//  nAddress = 101;
 
     u32 vInput=GetIPCNum(nAddress);
     if (! vInput)
@@ -264,7 +264,7 @@ void SendIPC(s8 *fErrModule)
 {
     if (! any_modules_defined())
     {
-        LOG("no modules defined");
+//        LOG("no modules defined");
         return;
     }
 

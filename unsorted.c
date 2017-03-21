@@ -15,6 +15,8 @@
 
 #include "defs.h"
 
+#include "debug.h"
+
 extern uchar nReset;
 
 // so we're persisting this data:
@@ -77,7 +79,7 @@ void InitBlockEEP(void)
 // 10) GD.HOT again
 // 11) GD.TControl
 
-static void setup_scatter(void)
+void setup_scatter(void)
 {
     // scatter list of some kind
     wtf0.AdrGD[0].Adr=&gd_rw()->Hot;

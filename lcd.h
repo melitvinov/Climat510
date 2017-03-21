@@ -1,5 +1,5 @@
-#ifndef __STM32F10X_LCD240X64_H
-#define	__STM32F10X_LCD240X64_H
+#ifndef _LCD_H_
+#define	_LCD_H_
 
 #define	SUM_LINE_DISP	8
 

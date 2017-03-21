@@ -155,6 +155,7 @@ static void periodic_task(void)
     // so control is firing every second
 
     LOG("running periodic control");
+
     // XXX: moved here from control.c
     LoadDiscreteInputs();
     GetRTC(&gd_rw()->Hot.Time, &gd_rw()->Hot.Date, &gd_rw()->Hot.Year, &NowDayOfWeek);
@@ -223,6 +224,8 @@ static void init(void)
 
     ClrAllOutIPCDigit();
 
+
+    setup_scatter();
     Init_STM32();
 
     LOG("initing lcd");

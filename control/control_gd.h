@@ -10,8 +10,6 @@
 #include "control_abi.h"
 #include "module.h"
 
-#pragma pack(1)
-
 #define MAX_FAN_COUNT	64
 
 typedef struct
