@@ -1,15 +1,6 @@
 # root module makefile
 
 # C source files
-#SRC += stm_lib/stm32f10x_rcc.c
-#SRC += stm_lib/stm32f10x_gpio.c
-#SRC += stm_lib/stm32f10x_exti.c
-#SRC += stm_lib/stm32f10x_bkp.c
-#SRC += stm_lib/stm32f10x_pwr.c
-#SRC += stm_lib/stm32f10x_spi.c
-#SRC += stm_lib/stm32f10x_usart.c
-#SRC += stm_lib/misc.c
-#SRC += stm_lib/stm32f10x_iwdg.c
 
 # these are good
 SRC += sound.c
@@ -43,7 +34,4 @@ SRC += unsorted.c
 
 SRC += main.c
 
-CINCS += . stm_my stm_lib
-
-# from coocox
-CDEFS += -DSTM32F10X_CL
+CINCS += . stm_my
