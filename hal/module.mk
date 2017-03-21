@@ -1,4 +1,5 @@
 SRC += hal/beep/hal_beep.c
+SRC += hal/core/hal_atomic.c
 SRC += hal/debug/hal_debug.c
 SRC += hal/i2c/hal_i2c_bitbang.c
 SRC += hal/keyb/hal_keyb.c
