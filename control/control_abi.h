@@ -1,17 +1,14 @@
 #ifndef _CONTROL_ABI_
 #define _CONTROL_ABI_
 
-// XXX: would it work in GCC ?
-#pragma pack(1)
-
-typedef struct  //20
+typedef struct __packed  //20
 {
     uint8_t   RCS;
     int8_t  Position;
 } eMechanic;
 
 
-typedef struct
+typedef struct __packed
 {
 
     int16_t     Optimal;
@@ -39,7 +36,7 @@ typedef struct
 } eKontur;
 
 
-typedef struct
+typedef struct __packed
 {
     int16_t     DifTAirTDo;//Разница междуизмеренным и заданным
     int16_t     UpSR;//Повышение температуры теплицы солнцем	2
@@ -67,7 +64,7 @@ typedef struct
 } eNextTCalc;
 
 
-typedef struct
+typedef struct __packed
 {
     int16_t         CorrScreen;
     int16_t         TaskCritery;
@@ -78,7 +75,7 @@ typedef struct
 } eOtherCalc;
 
 
-typedef struct
+typedef struct __packed
 {
     int16_t     TAir;
     int16_t     DoTHeat;
@@ -111,7 +108,7 @@ typedef struct
 } eClimTask;
 
 
-typedef struct
+typedef struct __packed
 {
     int16_t     Value;
     uint8_t   RCS;
@@ -126,7 +123,7 @@ typedef struct
 */
 } eSensing;
 
-typedef struct
+typedef struct __packed
 {
 
     uint8_t       Cfg[2];
@@ -181,7 +178,16 @@ typedef struct
 } eZone;
 
 
-typedef struct
+// bits of the News register
+#define bOperator       0x01
+#define bEdit           0x02
+#define bKlTest         0x04
+#define bResRam         0x08
+#define bReset          0x20
+#define bWriEEP         0x80
+
+
+typedef struct __packed
 {
 //0
     uint8_t       News;
@@ -221,7 +227,7 @@ typedef struct
 //----
 
 // blobs in remote reporting
-typedef struct
+typedef struct __packed
 {
     int16_t     c_MaxTPipe[cSWaterKontur];   /*Максимально допустимая температура Контур1-5*/
     int16_t     f_MaxOpenUn;   /*Фрамуги_Максимально допустимое открытие*/
@@ -247,7 +253,7 @@ typedef struct
 //+42 байта
 } eZoneControl;
 
-typedef struct
+typedef struct __packed
 {
     uint8_t           rModification;
     uint8_t           rSInTeplSens;
@@ -270,7 +276,7 @@ typedef struct
 
 // ---
 
-typedef struct  eeTimer
+typedef struct __packed
 {
     uint8_t       Zone[1];
     uint16_t    TimeStart;
@@ -310,7 +316,7 @@ typedef struct  eeTimer
 
 // ---
 
-typedef struct
+typedef struct __packed
 {
     int16_t     v_TimeMixVal;
     int16_t     v_PFactor;  /*Смесительный клапан - П-коэф разницы Т воды*/
@@ -319,7 +325,7 @@ typedef struct
     int8_t      v_Type;
 } eConstMixVal;
 
-typedef struct
+typedef struct __packed
 {
     eConstMixVal     ConstMixVal[cSRegCtrl];
 } eConstMech;
@@ -327,7 +333,7 @@ typedef struct
 // ---
 
 #ifdef AHU1
-typedef struct
+typedef struct __packed
 {
     int8_t   TUpRHUp;
     int8_t   TUpRHDown;
@@ -341,7 +347,7 @@ typedef struct
 } eStrategy;
 #else
 
-typedef struct
+typedef struct __packed
 {
     int8_t TempPower;
     int8_t RHPower;
@@ -355,7 +361,7 @@ typedef struct
 
 // ---
 
-typedef struct
+typedef struct __packed
 {
     uint16_t    Systems[cConfSSystem];
     uint16_t    RNum[SUM_NAME_CONF];
@@ -363,7 +369,7 @@ typedef struct
 
 // ---
 
-typedef struct
+typedef struct __packed
 {
 
 /*-- начало сохраняемых данных, размер 130 байт*/
@@ -602,7 +608,7 @@ eTuneClimate;
 
 // ---
 
-typedef struct
+typedef struct __packed
 {
     int16_t             LastDoT;
     int16_t             RealPower[2];
@@ -619,7 +625,7 @@ typedef struct
     int8_t              PumpPause;
 } eTControlKontur;
 
-typedef struct
+typedef struct __packed
 {
     int32_t             TimeSetMech;
     int32_t             TimeRealMech;
@@ -633,7 +639,7 @@ typedef struct
     int8_t          TryMove;
 } eMechBusy;
 
-typedef struct
+typedef struct __packed
 {
     int16_t             IntVal;
     int16_t             Stop;
@@ -643,7 +649,7 @@ typedef struct
 
 } eRegsSettings;
 
-typedef struct
+typedef struct __packed
 {
     int16_t             Value;
     int8_t              Mode;
@@ -654,7 +660,7 @@ typedef struct
 //		int16_t				TempStart;
 } eScreen;
 
-typedef struct
+typedef struct __packed
 {
     eTControlKontur Kontur[cSKontur];
     int16_t         LastLastInTeplSensing[cConfSSens];
@@ -763,7 +769,7 @@ typedef struct
     int8_t          Alarms[MAX_ALARMS];
 } eTControlZone;
 
-typedef struct
+typedef struct __packed
 {
     eTControlZone   Zones[NZONES];
 //		int16_t 		LastLastMeteoSensing[cConfSMetSens];
@@ -788,7 +794,7 @@ typedef struct
 // ---
 typedef int16_t eSensLevel[4];
 
-typedef struct
+typedef struct __packed
 {
     eSensLevel InTeplSens[NZONES][cConfSSens];
     eSensLevel MeteoSens[cConfSMetSens];

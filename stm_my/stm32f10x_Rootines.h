@@ -18,14 +18,10 @@ void w1_check(void);
 int16_t w1reset(void);
 void w1_wr(void);
 void w1_rd(void);
-void CrcCalc(void);
 void Reg48ToI2C(void);
 void OutReg(void);
 
 void TestMem(uchar);
-
-void Measure(void);
-void CheckInputConfig(void);
 
 
 // XXX: isolation

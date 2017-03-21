@@ -60,17 +60,17 @@ static uint8_t *pDataRS;
 /**********************************************************************************************************/
 
 
-void CheckRSTime()
-{
-    RSTime--;
-    if (RSTime<0)   RSTime=0;
-    if ((PHASE_RS>RS_START)&&(!RSTime))
-    {
-        PHASE_RS=RS_START;
-        USART_PC_STOPSEND;
-    }
-
-}
+//void CheckRSTime()
+//{
+//    RSTime--;
+//    if (RSTime<0)   RSTime=0;
+//    if ((PHASE_RS>RS_START)&&(!RSTime))
+//    {
+//        PHASE_RS=RS_START;
+//        USART_PC_STOPSEND;
+//    }
+//
+//}
 
 
 USART_PC_INT_VECT

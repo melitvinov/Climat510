@@ -8,8 +8,10 @@
 #include "control.h"
 #include "control_siod.h"
 
+#include "measure.h"
+
 // for modul_sum constant
-#include "stm32f10x_RS485Master.h"
+#include "modules_master.h"
 #include "stm32f10x_LCD240x64.h"
 #include "wtf.h"
 
@@ -197,7 +199,7 @@ void pmInfoProg405(void){
 //	IntX = gd_get()->Hot.MidlSR;
 //	if (IntX<0) IntX=-IntX;
 //	w_int(&IntX,SSSS, 0);
-    w_int(&gd()->FanBlock[0][0].FanData[0].ActualSpeed,SSSS, 0);
+    w_int(&gd()->FanBlock[0][0].FanData[0].actual_speed,SSSS, 0);
 
     if (!idx)
     {
@@ -332,10 +334,10 @@ void pmParam() {
             byte_x = byte_y % SUM_NAME_CONF;
             OutStr = NameOutputConfig[byte_x].Name;
             byte_w = byte_x;
-            if (byte_x>=SUM_NAME_INPUTS)
-                OutStr = NameInputConfig[byte_x-SUM_NAME_INPUTS].Name;
-            if (byte_x>=SUM_NAME_INSENS)
-                OutStr = NameSensConfig[byte_x-SUM_NAME_INSENS].Name;
+            if (byte_x >= INPUTS_REGS_OFFSET)
+                OutStr = NameInputConfig[byte_x-INPUTS_REGS_OFFSET].Name;
+            if (byte_x >= SENSORS_REGS_OFFSET)
+                OutStr = NameSensConfig[byte_x-SENSORS_REGS_OFFSET].Name;
             w_txt(OutStr);
             Ad_Buf=(Ad_Buf / DisplCols)*DisplCols+20;
             lcdbuf[Ad_Buf++]=':';
@@ -716,7 +718,7 @@ void pmCalibr(void) {
     Ad_Buf++;
 
 
-    eCalSensor *eCS=&caldata.Cal.InTeplSens[0][int_y];
+    module_input_cfg_t *eCS=&caldata.InTeplSens[0][int_y];
     w_txt(NameSensConfig[byte_x].Name);
     lcdbuf[Ad_Buf++]='=';
     w_int(&int_x,NameSensConfig[byte_x].Frm, 0);
@@ -724,7 +726,7 @@ void pmCalibr(void) {
     byte_y = Y_menu2%5;        //номер меню в датчике
     Ad_Buf = Str3;
     w_txt(Mes149);
-    w_int(&eCS->Type,SS, 0);
+    w_int(&eCS->type,SS, 0);
     //if(!eCS->Input) {Ad_Buf++; w_txt("<off>");return;}
     if (!(byte_y))
     {
@@ -733,13 +735,13 @@ void pmCalibr(void) {
     //if((eCS->Input > 10)) {DigitSens();return;}
 
     w_txt(Mes157);
-    w_int(&eCS->Output,SS, 0);
+    w_int(&eCS->output,SS, 0);
     if ((byte_y) == 1)
     {
         BlkW = 1;MinimVal = 1;MaximVal = 32;
     }
     w_txt(Mes156);
-    w_int(&eCS->Corr,SSS, 0);
+    w_int(&eCS->corr,SSS, 0);
     if ((byte_y) == 2)
     {
         BlkW = 1;MinimVal = 0;MaximVal = 255;
@@ -754,15 +756,15 @@ void pmCalibr(void) {
         byte_z=(byte_y-3);            //номер эталона
         if (!byte_z)
         {
-            eCS->V1+=(SaveInt-eCS->V0);
-            eCS->U1+=(sensdata.uInTeplSens[0][int_y]-eCS->U0);
-            eCS->V0 = SaveInt;
-            eCS->U0 = sensdata.uInTeplSens[0][int_y];
+            eCS->v1+=(SaveInt-eCS->v0);
+            eCS->u1+=(sensdata.uInTeplSens[0][int_y]-eCS->u0);
+            eCS->v0 = SaveInt;
+            eCS->u0 = sensdata.uInTeplSens[0][int_y];
         }
         else
         {
-            eCS->V1 = SaveInt2;
-            eCS->U1 = sensdata.uInTeplSens[0][int_y];
+            eCS->v1 = SaveInt2;
+            eCS->u1 = sensdata.uInTeplSens[0][int_y];
         }
         SetInSaveRam(eCS, 12);
         EndInput = 0;
@@ -771,13 +773,13 @@ void pmCalibr(void) {
 
     if (!wtf0.Menu)
     {
-        SaveInt = eCS->V0;
-        SaveInt2 = eCS->V1;
+        SaveInt = eCS->v0;
+        SaveInt2 = eCS->v1;
     }
     Ad_Buf = Str4;
     w_txt(Mes154);
     lcdbuf[Ad_Buf++]='(';
-    w_int(&eCS->U0,SSSS, 0);
+    w_int(&eCS->u0,SSSS, 0);
     w_txt(Mes150);
     lcdbuf[Ad_Buf++]=')';
     w_int(&SaveInt,NameSensConfig[byte_x].Frm, 0);
@@ -785,7 +787,7 @@ void pmCalibr(void) {
     Ad_Buf = Str5;
     w_txt(Mes155);
     lcdbuf[Ad_Buf++]='(';
-    w_int(&eCS->U1,SSSS, 0);
+    w_int(&eCS->u1,SSSS, 0);
     w_txt(Mes150);
     lcdbuf[Ad_Buf++]=')';
     w_int(&SaveInt2,NameSensConfig[byte_x].Frm, 0);
@@ -840,7 +842,7 @@ void pmNow(void) {
     if (!x_menu) return;
     if (x_menu == SumTeplZones*3+1)
     {
-        Y_menu2%=OUT_MODUL_SUM;//cSMech;
+        Y_menu2%=N_MAX_MODULES;//cSMech;
         Form = 0;
         ModStatus(Y_menu2,&CpM,&Err,&Failure,&Cond,&MaxIn,&InpVal);
         if (!CpM)
@@ -871,7 +873,7 @@ void pmNow(void) {
     {
         int byte_y=(x_menu-SumTeplZones-1)/2+1;
         int byte_z=(x_menu-SumTeplZones-1)%2+1;
-        Y_menu2%=OUT_MODUL_SUM;//cSMech;
+        Y_menu2%=N_MAX_MODULES;//cSMech;
         Form = 0;
         Ad_Buf = Str2;
         w_txt("Fans zone ");
@@ -883,7 +885,7 @@ void pmNow(void) {
         {
             if (byte_x == 32)
                 Ad_Buf = Str4;
-            if (gd()->FanBlock[x_menu-SumTeplZones-1][0].FanData[byte_x].Actual)
+            if (gd()->FanBlock[x_menu-SumTeplZones-1][0].FanData[byte_x].actual)
             {
 
                 lcdbuf[Ad_Buf++]='0';
@@ -1042,4 +1044,10 @@ void YMenu(char vPozY) {
     //----
     SumYMenu = vPozY-pozY;
     if (Y_menu > SumYMenu) Y_menu = SumYMenu;
+}
+
+void reset_menu(void)
+{
+    Y_menu=0;
+    x_menu=0;
 }

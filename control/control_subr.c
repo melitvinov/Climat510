@@ -270,22 +270,15 @@ char CheckMain(const contour_t *ctr)
     return ctr->link.idx;
 }
 
-void InitGD(void)
+void InitControl(void)
 {
-    eCalSensor *eCS;
-
     #warning "this one is fucked. we're cleaning too much"
     memclr(&_GD.Control,sizeof(eControl)
-           +sizeof(eFullCal)
            +sizeof(eLevel)
            +sizeof(eTimer)*cSTimer);
 
     #warning "this one is fucked. we're cleaning too much"
     memclr(&_GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*NZONES+sizeof(eConstMech)*NZONES+sizeof(eMechConfig)*NZONES);
-
-
-    #warning "meteo is not cleaned"
-    memclr(&sensdata.uInTeplSens,sizeof(sensdata.uInTeplSens));
 
     // default datetime
     _GD.Hot.Year=01;
@@ -297,18 +290,6 @@ void InitGD(void)
     for (uint zone_idx  =0; zone_idx< sizeof(NameConst)/3; zone_idx++)
         _GD.TuneClimate.s_TStart[zone_idx] = NameConst[zone_idx].StartZn;
 
-    for (int i=0; i<cConfSMetSens;i++)
-    {
-        eCS=&caldata.Cal.MeteoSens[i];
-        eCS->V0=NameSensConfig[i+cConfSSens].vCal[0];
-        eCS->V1=NameSensConfig[i+cConfSSens].vCal[1];
-        eCS->U0=NameSensConfig[i+cConfSSens].uCal[0];
-        eCS->U1=NameSensConfig[i+cConfSSens].uCal[1];
-        eCS->Type=NameSensConfig[i+cConfSSens].TypeInBoard;
-        eCS->Output=NameSensConfig[i+cConfSSens].Output;
-        //eCS->Input=OutPortsAndInputs[ByteX][0];
-        //eCS->nInput=OutPortsAndInputs[ByteX][1];
-    }
 
     for (int zone_idx=0;zone_idx<NZONES;zone_idx++)
     {
@@ -357,19 +338,6 @@ void InitGD(void)
             dst->ConstMixVal[int_x].v_PFactor=DefMechanic[1];
             dst->ConstMixVal[int_x].v_IFactor=DefMechanic[2];
             //pGD_ConstMechanic->ConstMixVal[IntX].Power=(char)DefMechanic[3];
-        }
-
-/* Первоначальна настройка калибровок */
-        for (int byte_y=0;byte_y<cConfSSens;byte_y++)
-        {
-            eCS=&caldata.Cal.InTeplSens[zone_idx][byte_y];
-            eCS->V0=NameSensConfig[byte_y].vCal[0];
-            eCS->V1=NameSensConfig[byte_y].vCal[1];
-            eCS->U0=NameSensConfig[byte_y].uCal[0];
-            eCS->U1=NameSensConfig[byte_y].uCal[1];
-            eCS->Output=NameSensConfig[byte_y].Output;
-            eCS->Type=NameSensConfig[byte_y].TypeInBoard;
-            //eCS->nInput=InPortsAndInputs[ByteX][ByteY][1];
         }
     }
 }

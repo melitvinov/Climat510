@@ -6,8 +6,6 @@
 #include "control_gd.h"
 #include "unsorted.h"
 
-#include "stm32f10x_Define.h"
-
 #include "wtf.h"
 
 #include "debug.h"
@@ -22,10 +20,6 @@
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
-
-static uchar not=230;
-static uchar ton=3;
-static uchar ton_t=15;
 
 uchar nReset=25;
 
@@ -151,7 +145,7 @@ static void periodic_task(void)
         CheckWithoutPC();
         CheckInputConfig();
     }
-    CheckRSTime();
+    //CheckRSTime();
 #ifndef NOTESTMEM
 
     if (wtf0.SostRS == OUT_UNIT)
@@ -169,17 +163,12 @@ static void periodic_task(void)
 
     control_pre();
 
-    #warning "so these IPC fucks are transferred from interrupts. so lame"
-
-    ResumeOutIPCDigit();
-
-
     // xxx: sweet as a fuck
-    if (wtf0.Second == 20)
-    {
-        LOG("reiniting lcd");
-        InitLCD();
-    }
+//  if (wtf0.Second == 20)
+//  {
+//      LOG("reiniting lcd");
+//      InitLCD();
+//  }
 
     control_post(wtf0.Second, wtf0.SostRS == WORK_UNIT);
 
@@ -224,6 +213,8 @@ static void init(void)
     LOG("initing sound ...");
     sound_init();
 
+    LOG("initing fieldbus ...");
+    HAL_fieldbus_init();
 
     //HAL_fieldbus_smoke();
 
@@ -259,6 +250,7 @@ static void init(void)
         byte_x=6;
     TestMem(byte_x);
 
+    InitAllThisThings(5);
     ButtonReset();
 
     wtf0.Second=38;
@@ -313,6 +305,7 @@ void main(void)
         process_pc_input();
         process_legacy_timers();
         timers_process();
+        module_processor_periodic();
 
         bool should_show_video = 0;
 

@@ -12,7 +12,7 @@
 #include "control_const.h"
 
 
-#define GetMetSensConfig(nSens)	(gd()->MechConfig[0].RNum[nSens+SUM_NAME_OUTSENS])
+#define GetMetSensConfig(nSens)	(gd()->MechConfig[0].RNum[METEO_REGS_OFFSET + nSens])
 
 #define tpRELAY		1
 #define tpLEVEL		2
@@ -48,7 +48,7 @@
 #define cSmScreenSens	19
 #define cSmWaterSens	20
 
-// number of greenhouses
+// number of zones
 #define NZONES			8
 
 #define cConfSSystem		10
@@ -71,13 +71,17 @@
 #define DEF_PORTNUM         2012
 
 
-#define SUM_NAME_INPUTS			(cConfSOutput)
+// 46
+#define INPUTS_REGS_OFFSET      cConfSOutput
 
-#define SUM_NAME_INSENS			(SUM_NAME_INPUTS+cConfSInputs)
+// 46 + 7
+#define SENSORS_REGS_OFFSET     (INPUTS_REGS_OFFSET+cConfSInputs)
 
-#define SUM_NAME_OUTSENS		(SUM_NAME_INSENS+cConfSSens)
+// 46 + 7 + 26
+#define METEO_REGS_OFFSET       (SENSORS_REGS_OFFSET + cConfSSens)
 
-#define SUM_NAME_CONF			(SUM_NAME_OUTSENS+cConfSMetSens)
+// 46 + 7 + 26 + 11
+#define SUM_NAME_CONF			(METEO_REGS_OFFSET + cConfSMetSens)
 
 
 #define MAX_SUM_RELAY	80

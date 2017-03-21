@@ -2,11 +2,12 @@
 
 #include "hal_keyb.h"
 #include "keyboard.h"
-
+#include "timers.h"
 #include "debug.h"
 
 static u8 BITKL;
 static KEY_PRESSED SIM;
+static timer_t timer;
 
 static const u8 remap_lut[] =
 {
@@ -47,9 +48,9 @@ KEY_PRESSED keyboardGetSIM(void)
     return SIM;
 }
 
-void Keyboard_Init(void)
+static void on_timer(timer_t *timer)
 {
-    HAL_keyb_init();
+    KeyboardProcess();
 }
 
 // непонятно зачем вообще что то возвращать, если это не используется
@@ -67,3 +68,8 @@ void KeyboardProcess(void)
     LOG("sim is %d", SIM);
 }
 
+void Keyboard_Init(void)
+{
+    HAL_keyb_init();
+    timer_start(&timer, 100, 1, on_timer);
+}

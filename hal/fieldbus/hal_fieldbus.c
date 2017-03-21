@@ -15,7 +15,7 @@
     fieldbus is very legacy, not easy to integrate it above the primitive serial read/write
     so the implementation isolate the complexies inside the hal module
     there is some logic, a sequence of requests and responses embedded in low-level code.
-    non-standart 9-bit serial format is exploited for signalling the start of transaction - address byte had msbit set,
+    non-standart 9-bit serial format is exploited for signalling the start of transaction - address byte has msbit set,
     while data bytes has not
 
     sequence:

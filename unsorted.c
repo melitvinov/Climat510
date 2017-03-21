@@ -7,18 +7,15 @@
 #include "keyboard.h"
 #include "control_gd.h"
 #include "405_memory.h"
+#include "measure.h"
 
 #include "wtf.h"
 #include "unsorted.h"
-
-#include "stm32f10x_Define.h"
+#include "modules_master.h"
 
 #include "defs.h"
 
 extern uchar nReset;
-
-extern uint16_t Y_menu;
-extern uint16_t x_menu;
 
 // so we're persisting this data:
 // 0) Tepl of GD.Control
@@ -55,11 +52,11 @@ void InitBlockEEP(void)
     BlockEEP[4].AdrCopyRAM=&gd_rw()->MechConfig;
     BlockEEP[4].Size = sizeof(gd()->MechConfig);
 
-    BlockEEP[5].AdrCopyRAM=&caldata.Cal.InTeplSens;
-    BlockEEP[5].Size = sizeof(caldata.Cal.InTeplSens);
+    BlockEEP[5].AdrCopyRAM=&caldata.InTeplSens;
+    BlockEEP[5].Size = sizeof(caldata.InTeplSens);
 
-    BlockEEP[6].AdrCopyRAM=&caldata.Cal.MeteoSens;
-    BlockEEP[6].Size = sizeof(caldata.Cal.MeteoSens);
+    BlockEEP[6].AdrCopyRAM=&caldata.MeteoSens;
+    BlockEEP[6].Size = sizeof(caldata.MeteoSens);
 
     BlockEEP[7].AdrCopyRAM=&gd_rw()->ConstMechanic;
     BlockEEP[7].Size = sizeof(gd()->ConstMechanic);
@@ -101,12 +98,12 @@ static void setup_scatter(void)
     wtf0.AdrGD[5].Adr=&gd_rw()->MechConfig;
     wtf0.AdrGD[5].MaxSize=sizeof(gd()->MechConfig);
 
-    wtf0.AdrGD[6].Adr=&caldata.Cal;
-    wtf0.AdrGD[6].MaxSize=sizeof(caldata.Cal);
+    wtf0.AdrGD[6].Adr=&caldata;
+    wtf0.AdrGD[6].MaxSize=sizeof(caldata);
 
     #warning "WTF: size is fullcal again ?"
-    wtf0.AdrGD[7].Adr=&caldata.Cal.MeteoSens;
-    wtf0.AdrGD[7].MaxSize=sizeof(eFullCal);
+    wtf0.AdrGD[7].Adr=&caldata.MeteoSens;
+    wtf0.AdrGD[7].MaxSize=sizeof(calibration_t);
 
     wtf0.AdrGD[8].Adr=&gd_rw()->ConstMechanic;
     wtf0.AdrGD[8].MaxSize=sizeof(gd()->ConstMechanic);
@@ -137,27 +134,24 @@ void ButtonReset(void)
 
 void SetRelay(uint16_t nRelay)
 {
-    char bRelay;
     if (GetIPCComMod(nRelay))
     {
-        SetOutIPCDigit(1,nRelay,&bRelay);
+        SetOutIPCDigit(1,nRelay);
     }
 }
 //----------------------------------------
 void ClrRelay(uint16_t nRelay)
 {
-    char bRelay;
     if (GetIPCComMod(nRelay))
     {
-        SetOutIPCDigit(0,nRelay,&bRelay);
+        SetOutIPCDigit(0,nRelay);
     }
 }
 
 char TestRelay(uint16_t nRelay)
 {
-    char bRelay;
     if (GetIPCComMod(nRelay))
-        return GetOutIPCDigit(nRelay,&bRelay);
+        return GetOutIPCDigit(nRelay);
     // XXX: is it right to report 0 ?
     return 0;
 }
@@ -167,7 +161,9 @@ void InitAllThisThings(char fTipReset)
     if (fTipReset>2)
         memclr(&gd_rw()->Hot, sizeof(gd()->Hot));
 
-    InitGD();
+    InitControl();
+    reset_calibration();
+
     wtf0.SostRS=OUT_UNIT;
 
     gd_rw()->Control.NFCtr=NumCtr;
@@ -185,8 +181,7 @@ void InitAllThisThings(char fTipReset)
 
     gd_rw()->Hot.News |= bReset;
 
-    Y_menu=0;
-    x_menu=0;
+    reset_menu();
     keyboardSetSIM(100);
     nReset=25;
 }
