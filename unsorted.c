@@ -119,6 +119,21 @@ void setup_scatter(void)
 
     wtf0.AdrGD[11].Adr=&gd_rw()->TControl;
     wtf0.AdrGD[11].MaxSize=sizeof(gd()->TControl);
+
+    LOG("scatter addresses:");
+    uint total = 0;
+    for (uint i = 0; i < countof(wtf0.AdrGD); i++)
+    {
+        if (! wtf0.AdrGD[i].Adr)
+            break;
+
+        LOG("address: 0x%08x, size %d", (uint)wtf0.AdrGD[i].Adr, wtf0.AdrGD[i].MaxSize);
+
+        total += wtf0.AdrGD[i].MaxSize;
+    }
+
+    LOG("scatter total size %d", total);
+
 }
 
 void ButtonReset(void)
