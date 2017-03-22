@@ -1,10 +1,7 @@
 #include "syntax.h"
 
-#include "hal_systimer.h"
-#include "hal_lcd.h"
-
+#include "hal.h"
 #include "lcd.h"
-
 #include "debug.h"
 
 

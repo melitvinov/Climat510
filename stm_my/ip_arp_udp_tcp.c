@@ -19,8 +19,8 @@
 #include "syntax.h"
 
 #include "net.h"
+#include "hal.h"
 #include "ip_arp_udp_tcp.h"
-#include "hal_mac.h"
 
 #include "debug.h"
 

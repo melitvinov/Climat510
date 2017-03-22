@@ -10,12 +10,7 @@
 
 #include "debug.h"
 
-#include "hal_tty.h"
-#include "hal_rtc.h"
-#include "hal_nvmem.h"
-#include "hal_rs485.h"
-#include "hal_systimer.h"
-
+#include "hal.h"
 #include "sound.h"
 
 static int16_t konturMax[6];

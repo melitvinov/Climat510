@@ -3,8 +3,6 @@
 #ifndef _TCPIP_H
 #define _TCPIP_H
 
-#include  "ENC28J60.h"
-
 #define OUT_UNIT        0x50
 #define IN_UNIT         0xa0
 #define WORK_UNIT       0x70

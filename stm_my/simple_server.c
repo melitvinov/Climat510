@@ -24,9 +24,8 @@
  * Host chip: ADUC7026
 **********************************************/
 #include "syntax.h"
-#include "hw_flags.h"
 #include <string.h>
-#include "hal_mac.h"
+#include "hal.h"
 #include "ip_arp_udp_tcp.h"
 #include "net.h"
 #include "simple_server.h"

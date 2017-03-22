@@ -1,7 +1,7 @@
 #define _DEBUG_C_
 
 #include "syntax.h"
-#include "hal_debug.h"
+#include "hal.h"
 #include "debug.h"
 
 void assertion(const char *desc)

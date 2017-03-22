@@ -1,7 +1,6 @@
 #include "syntax.h"
+#include "hal.h"
 #include "rtc.h"
-
-#include "hal_rtc.h"
 
 static const uint8_t DaysInMonth[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 

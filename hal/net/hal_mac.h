@@ -1,4 +1,5 @@
 #ifndef _HAL_MAC_H_
+#define _HAL_MAC_H_
 
 // MTU of ethernet
 #define HAL_ETH_MTU             1500

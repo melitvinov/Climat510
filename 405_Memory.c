@@ -1,8 +1,8 @@
 // ==  ==  ==  ==  ==  ==  ==  == = опнейр 403  ==  ==  ==  ==  ==  ==  ==  ==  ==  == =
 
 #include "syntax.h"
+#include "hal.h"
 #include "405_memory.h"
-#include "hal_nvmem.h"
 
 eBlockEEP BlockEEP[SUM_BLOCK_EEP];
 

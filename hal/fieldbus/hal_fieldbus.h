@@ -1,6 +1,5 @@
 #ifndef _HAL_FIELDBUS_H_
 #define _HAL_FIELDBUS_H_
-// public
 
 typedef enum
 {

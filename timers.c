@@ -2,7 +2,7 @@
 
 #include "syntax.h"
 #include "defs.h"
-#include "hal_systimer.h"
+#include "hal.h"
 #include "timers.h"
 #include "debug.h"
 

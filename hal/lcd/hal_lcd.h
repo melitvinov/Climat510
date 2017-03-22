@@ -1,6 +1,5 @@
 #ifndef _HAL_LCD_H_
 #define _HAL_LCD_H_
-// public
 
 // for the graphic mode
 #define HAL_LCD_XSIZE   240

@@ -2,7 +2,7 @@
 
 #include "syntax.h"
 
-#include "hal_fieldbus.h"
+#include "hal.h"
 #include "module.h"
 
 #include "debug.h"

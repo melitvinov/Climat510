@@ -13,7 +13,7 @@ static GPIO_TypeDef * const port = GPIOA;
 static const uint pin_idx = 4;
 static TIM_TypeDef * const timer = TIM6;
 
-void hal_beep_init(void)
+void HAL_beep_init(void)
 {
     hal_pincfg_out(port, pin_idx);
 
@@ -46,7 +46,7 @@ void timer6_isr(void)
     is_high = ~is_high;
 }
 
-void hal_beep_on(u32 hz)
+void HAL_beep_on(u32 hz)
 {
     if (hz == 0)
     {
@@ -59,7 +59,7 @@ void hal_beep_on(u32 hz)
     }
 }
 
-void hal_beep_off(void)
+void HAL_beep_off(void)
 {
-    hal_beep_on(0);
+    HAL_beep_on(0);
 }

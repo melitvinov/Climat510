@@ -1,6 +1,5 @@
 #include "syntax.h"
-#include "hal_systimer.h"
-#include "hal_beep.h"
+#include "hal.h"
 #include "timers.h"
 #include "sound.h"
 
@@ -18,7 +17,7 @@ static sound_rt_t rt;
 
 void sound_init(void)
 {
-    hal_beep_init();
+    HAL_beep_init();
 }
 
 static void sequencer(timer_t *timer)
@@ -27,7 +26,7 @@ static void sequencer(timer_t *timer)
 
     if (note->dur)
     {
-        hal_beep_on(note->freq);
+        HAL_beep_on(note->freq);
 
         timer_start(&rt.timer, note->dur * (uint)(1E3 / (HAL_SOUND_BPM * 4/60.)), 0, sequencer);    // 120 bpm, semiquaver freq is 8 Hz
         rt.note = note + 1;
@@ -47,7 +46,7 @@ void sound_play(const hal_sound_note_t *seq)
 
 void sound_stop(void)
 {
-    hal_beep_off();
+    HAL_beep_off();
     timer_stop(&rt.timer);
     rt.note = NULL;
 }

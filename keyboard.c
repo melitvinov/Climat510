@@ -1,6 +1,6 @@
 #include "syntax.h"
 
-#include "hal_keyb.h"
+#include "hal.h"
 #include "keyboard.h"
 #include "timers.h"
 #include "debug.h"

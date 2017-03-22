@@ -17,7 +17,7 @@
 #include "lcd.h"
 #include "unsorted.h"
 
-#include "hal_systimer.h"
+#include "hal.h"
 
 #include "debug.h"
 
