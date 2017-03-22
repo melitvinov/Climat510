@@ -21,7 +21,7 @@
 
 
 
-#define BUFFER_SIZE 1500//400
+#define BUFFER_SIZE 1514
 #define PSTR(s) s
 
 typedef struct

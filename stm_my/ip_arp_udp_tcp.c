@@ -16,11 +16,36 @@
  * Chip type           : ATMEGA88 with ENC28J60
  *********************************************/
 //#include <includes.h>
+#include "syntax.h"
+
 #include "net.h"
 #include "ip_arp_udp_tcp.h"
-#include "enc28j60_if.h"
+#include "hal_mac.h"
+
+#include "debug.h"
 
 static const unsigned char *ipaddr;
+
+static unsigned char macaddr[6];
+static unsigned int myARPport=2012;
+static unsigned int info_hdr_len=0;
+static unsigned char seqnum=0xa; // my initial tcp sequence number
+
+unsigned int info_data_len=0;
+
+
+static void mac_send_pkt_adapter(const u8* packet, uint len)
+{
+    u8 *p = HAL_mac_alloc_buf();
+    if (! p)
+    {
+        WARN("failed to alloc buf");
+        return;
+    }
+
+    memcpy(p, packet, len);
+    HAL_mac_write_packet(p, len);
+}
 
 // The Ip checksum is calculated over the ip header only starting
 // with the header length field and a total length of 20 bytes
@@ -321,7 +346,7 @@ void make_arp_answer_from_request(unsigned char *buf)
         i++;
     }
     // eth+arp is 42 bytes:
-    enc28j60PacketSend(42,buf);
+    mac_send_pkt_adapter(buf, 42);
 }
 
 void make_echo_reply_from_request(unsigned char *buf,unsigned  int len)
@@ -337,7 +362,7 @@ void make_echo_reply_from_request(unsigned char *buf,unsigned  int len)
     }
     buf[ICMP_CHECKSUM_P]+=0x08;
     //
-    enc28j60PacketSend(len,buf);
+    mac_send_pkt_adapter(buf,len);
 }
 
 // you can send a max of 220 bytes of data
@@ -372,7 +397,7 @@ void make_udp_reply_from_request(unsigned char *buf,char *data,unsigned char dat
     ck=checksum(&buf[IP_SRC_P], 16 + datalen,1);
     buf[UDP_CHECKSUM_H_P]=ck>>8;
     buf[UDP_CHECKSUM_L_P]=ck& 0xff;
-    enc28j60PacketSend(UDP_HEADER_LEN+IP_HEADER_LEN+ETH_HEADER_LEN+datalen,buf);
+    mac_send_pkt_adapter(buf,UDP_HEADER_LEN+IP_HEADER_LEN+ETH_HEADER_LEN+datalen);
 }
 
 void make_tcp_synack_from_syn(unsigned char *buf)
@@ -391,7 +416,7 @@ void make_tcp_synack_from_syn(unsigned char *buf)
     buf[TCP_CHECKSUM_H_P]=ck>>8;
     buf[TCP_CHECKSUM_L_P]=ck& 0xff;
     // add 4 for option mss:
-    enc28j60PacketSend(IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+4+ETH_HEADER_LEN,buf);
+    mac_send_pkt_adapter(buf,IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+4+ETH_HEADER_LEN);
 }
 
 // get a pointer to the start of tcp data in buf
@@ -500,7 +525,7 @@ void make_tcp_ack_from_any(unsigned char *buf)
     j=checksum(&buf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN,2);
     buf[TCP_CHECKSUM_H_P]=j>>8;
     buf[TCP_CHECKSUM_L_P]=j& 0xff;
-    enc28j60PacketSend(IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+ETH_HEADER_LEN,buf);
+    mac_send_pkt_adapter(buf,IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+ETH_HEADER_LEN);
 }
 
 // you must have called init_len_info at some time before calling this function
@@ -536,7 +561,7 @@ void make_tcp_ack_with_data(unsigned char *buf,unsigned  int dlen, char fin)
     j=checksum(&buf[IP_SRC_P], 8+TCP_HEADER_LEN_PLAIN+dlen,2);
     buf[TCP_CHECKSUM_H_P]=j>>8;
     buf[TCP_CHECKSUM_L_P]=j& 0xff;
-    enc28j60PacketSend(IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+dlen+ETH_HEADER_LEN,buf);
+    mac_send_pkt_adapter(buf,IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN+dlen+ETH_HEADER_LEN);
 }
 
 /* end of ip_arp_udp.c */

@@ -24,9 +24,9 @@
  * Host chip: ADUC7026
 **********************************************/
 #include "syntax.h"
-//#include <includes.h>
+#include "hw_flags.h"
 #include <string.h>
-#include "enc28j60_if.h"
+#include "hal_mac.h"
 #include "ip_arp_udp_tcp.h"
 #include "net.h"
 #include "simple_server.h"
@@ -48,25 +48,7 @@ static unsigned int dat_p;
 
 static eSocket  Sockets[MAX_SOCKET_COUNT];
 
-
-//extern void delay_ms(unsigned char ms);
-
-// please modify the following two lines. mac and ip have to be unique
-// in your local area network. You can not have the same numbers in
-// two devices:
-
-// base url (you can put a DNS name instead of an IP addr. if you have
-// a DNS server (baseurl must end in "/"):
-static char baseurl[]="http://192.168.1.25/";
-//static unsigned int myport =PORTNUM; // listen port for tcp/www (max range 1-254)
-// or on a different port:
-//static char baseurl[]="http://10.0.0.24:88/";
-//static unsigned int mywwwport =88; // listen port for tcp/www (max range 1-254)
-//
-static unsigned int myudpport =1200; // listen port for udp
-// how did I get the mac addr? Translate the first 3 numbers into ascii is: TUX
-
-
+// XXX: +1 because lame phy writes beyound the packet end
 static unsigned char fbuf[BUFFER_SIZE+1];
 
 
@@ -80,61 +62,6 @@ void BufCpy(char *pp1, char *pp2, int n) { //dest,source,number
 }
 
 
-
-// takes a string of the form password/commandNumber and analyse it
-// return values: -1 invalid password, otherwise command number
-//                -2 no command given but password valid
-unsigned char analyse_get_url(char *str)
-{
-    unsigned char i=0;
-    if (verify_password(str) == 0)
-    {
-        return(-1);
-    }
-    // find first "/"
-    // passw not longer than 9 char:
-    while (*str && i<10 && *str >',' && *str<'{')
-    {
-        if (*str == '/')
-        {
-            str++;
-            break;
-        }
-        i++;
-        str++;
-    }
-    if (*str < 0x3a && *str > 0x2f)
-    {
-        // is a ASCII number, return it
-        return(*str-0x30);
-    }
-    return(-2);
-}
-
-/*uint16_t CRC16(char *fbuf, const uint16_t start, const uint16_t end)
-{
-  volatile int i,j;
-  volatile uint16_t bCRC;
-  volatile char ch;
-  bCRC = 0xFFFF;
-  for (i=start; i<end; i++)
-  {
-      ch = *fbuf;
-    bCRC = bCRC ^ ch;
-    fbuf++;
-    for (j=0; j<8; j++)
-    {
-      if ( (bCRC % 2) > 0 )
-      {
-        bCRC = bCRC >> 1;
-        bCRC = bCRC ^ 0xA001;
-      }
-      else
-        bCRC = bCRC >> 1;
-    }
-  }
-  return bCRC;
-}*/
 
 char CheckSum(char *byte, int size)
 {
@@ -267,6 +194,27 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
     }
 }
 
+// XXX: temporary adapters for mac api compatibility
+static uint mac_recv_pkt_adapter(void)
+{
+    uint len;
+    u8 *macbuf = HAL_mac_read_packet(&len);
+
+    if (! macbuf)
+        return 0;
+
+    REQUIRE(plen <= sizeof(fbuf) - 1);
+
+    memcpy(fbuf, macbuf, len);
+    HAL_mac_free_buf(macbuf);
+
+    #warning "inside the phy was a fucka nullterminating the packet. moved it here"
+    fbuf[plen] = '\0';
+
+    return len;
+}
+
+
 #warning IP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void simple_servercycle(void)
 {
@@ -275,14 +223,12 @@ void simple_servercycle(void)
     volatile unsigned int j;
 //		OSTimeDlyHMSM(0, 0, 0, 50);
     // get the next new packet:
-    plen = enc28j60PacketReceive(BUFFER_SIZE, fbuf);
-    //USART_DMASendData(USART1,fbuf,plen);
 
-    /*plen will ne unequal to zero if there is a valid packet (without crc error) */
-    if (plen == 0)
-    {
+    plen = mac_recv_pkt_adapter();
+
+    if (! plen)
         return;
-    }
+
     // arp is broadcast if unknown but a host may also
     // verify the mac address by sending it to
     // a unicast address.
@@ -404,7 +350,7 @@ void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, cons
     PORTNUMBER=fPORTNUMBER;
     MACAddr=fMACAddr;
     IPAddr=fIPAddr;
-    enc28j60Init(MACAddr);
+    HAL_mac_init(MACAddr, PHY_FULL_DUPLEX | MAC_ACCEPT_BROADCAST);
     init_ip_arp_udp_tcp(MACAddr,IPAddr,*PORTNUMBER);
     //Ö¸Ê¾µÆ×´Ì¬:0x476 is PHLCON LEDA(ÂÌ)=links status, LEDB(ºì)=receive/transmit
 //    enc28j60PhyWrite(PHLCON,0x7a4);

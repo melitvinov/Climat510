@@ -29,12 +29,8 @@
 //#define unsigned char  unsigned char
 //#define unsigned  int unisgned int
 
-static unsigned int myARPport=2012;
-static unsigned char macaddr[6];
 //static unsigned char ipaddr[4];
-static unsigned int info_hdr_len=0;
-static unsigned int info_data_len=0;
-static unsigned char seqnum=0xa; // my initial tcp sequence number
+extern unsigned int info_data_len;
 
 
 // you must call this function once before you use any of the other functions:

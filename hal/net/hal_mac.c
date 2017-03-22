@@ -3,39 +3,57 @@
 #include "stm32f10x.h"
 #include "hal_pincfg.h"
 #include "hal_sys.h"
-
+#include "hal_systimer.h"
+#include "hw_flags.h"
 #include "enc28j60.h"
 #include "hal_mac.h"
 
 #include "debug.h"
 
+//--
 
+#define MAX_PKT_SIZE    (HAL_ETH_MTU + HAL_ETH_HDR_SIZE)
+#define MAX_FRAMELEN    (MAX_PKT_SIZE + 4)    // + crc
 
-// max frame length which the conroller will accept:
-#define        MAX_FRAMELEN        1500        // (note: maximum ethernet frame length would be 1518)
-//#define MAX_FRAMELEN     600
+// space for storing one tx packet, including the control byte, very packet of max framelen and 7-byte status vector
+#define MAX_TX_PKT_SPACE  (MAX_FRAMELEN + 1 + 7)
 
-unsigned char enc28j60ReadOp(unsigned char op, unsigned char address);
-void    enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data);
-void    enc28j60ReadBuffer(unsigned int len, unsigned char* data);
-void    enc28j60WriteBuffer(unsigned int len, unsigned char* data);
-void    enc28j60SetBank(unsigned char address);
-unsigned char enc28j60Read(unsigned char address);
-void    enc28j60Write(unsigned char address, unsigned char data);
-void    enc28j60PhyWrite(unsigned char address, unsigned int data);
-void    enc28j60clkout(unsigned char clk);
-void    enc28j60Init(unsigned char* macaddr);
-unsigned char enc28j60getrev(void);
-void    enc28j60PacketSend(unsigned int len, unsigned char* packet);
-unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet);
+// ethernet chip memory layout:
+// rx buffer start must be at 0 according to errata 5. one tx packet is enough to for blocking tx, so
+// we allocate a single tx buffer end of the memory. remaining memory are for rx buffers
+#define MEM_BASE        0x0000
+#define MEM_SIZE        0x2000
 
-static unsigned char Enc28j60Bank;
-static unsigned int NextPacketPtr;
+#define TXMEM_BASE    (MEM_SIZE - MAX_TX_PKT_SPACE)
+#define TXMEM_LAST    (MEM_SIZE - 1)
 
+#define RXMEM_BASE    0x0000
+#define RXMEM_LAST    (TXMEM_BASE - 1)
 
-#define SPI_XFER for (int _todo __cleanup(release_chip) = access_chip(); _todo; _todo = 0)
+// datasheet recommends tx mem base be even
+PANIC_IF(TXMEM_BASE % 2);
+
+#define SPI_XFER for (int _todo __cleanup(spi_release) = spi_access(); _todo; _todo = 0)
+
+// 2 bytes are prepadding to make eth mtu land on a word boundary
+typedef struct __aligned(4)
+{
+    u8 data[2 + MAX_PKT_SIZE + HAL_ETH_BUF_EXTRA_TAIL];
+} mac_buf_t;
+
+typedef struct
+{
+    u16 rx_head;
+    u8 current_bank;
+    u8 used_bufs;
+    mac_buf_t bufs[2];
+} mac_rt_t;
 
 static SPI_TypeDef *const spi = SPI1;
+
+static mac_rt_t rt;
+
+// --- spi stuff
 
 static inline void spi_sync(void)
 {
@@ -44,19 +62,27 @@ static inline void spi_sync(void)
     spi->SR;
 }
 
-static inline int access_chip(void)
+static inline int spi_access(void)
 {
     GPIOD->BSRR = 1 << (2 + 16);
     return 1;
 }
 
-static inline void release_chip(int *dummy)
+static inline void spi_release(int *dummy)
 {
     spi_sync();
+    // at least 210 ns are required after accessing mac and mii registers.
+    // one nop is 28 ns, 8 nops (+ spi registers access inside the sync) are > 220 ns
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
     GPIOD->BSRR = 1 << 2;
 }
 
-static void init_iface(void)
+static void spi_init(void)
 {
     GPIOD->BSRR = 1 << 2;           // cs
     hal_pincfg_out(GPIOD, 2);
@@ -71,10 +97,10 @@ static void init_iface(void)
     spi->CR2 = 0;
     spi->I2SCFGR = 0;
 
-    // spi mode 0, clock = fCPU / 4 = 36 / 4 = 9 MHz
-    // maximum spi frequency for ethernet chip is 10 MHz.
-    REQUIRE(HAL_SYS_F_CPU / 4. <= 10E6);
-    spi->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE | SPI_CR1_MSTR | SPI_CR1_BR_0;
+    // spi mode 0, clock = fCPU / 2 = 36 / 2 = 18 MHz
+    // maximum spi frequency for ethernet chip is 20 MHz according to the datasheet
+    REQUIRE(HAL_SYS_F_CPU / 4. <= 20E6);
+    spi->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE | SPI_CR1_MSTR;
     spi_sync();
 }
 
@@ -99,314 +125,385 @@ static void spi_read(u8 *dst, uint len)
     }
 }
 
-static void spi_write_byte(u8 byte)
+static void spi_txrx(const void *tx, uint txlen, void *rx, uint rxlen)
 {
-    spi_write(&byte, 1);
+    SPI_XFER
+    {
+        if (txlen)
+            spi_write(tx, txlen);
+        if (rxlen)
+            spi_read(rx, rxlen);
+    }
 }
 
-static u8 spi_read_byte(void)
+// this one accesses spi too, since op and src memories are are expensive to glue together
+static void stream_to_buf_mem(const void *src, uint len)
 {
-    u8 out;
-    spi_read(&out, 1);
+    const u8 op = ENC28J60_WRITE_BUF_MEM;
+    SPI_XFER
+    {
+        spi_write(&op, 1);
+        spi_write(src, len);
+    }
+}
+
+static void stream_from_buf_mem(void *dst, uint len)
+{
+    const u8 op = ENC28J60_READ_BUF_MEM;
+    spi_txrx(&op, 1, dst, len);
+}
+
+static void set_bank(u8 addr)
+{
+    u8 bank = (addr & BANK_MASK) >> BANK_MASK_IDX;
+    u8 banked_addr = addr & ADDR_MASK;
+
+    if (banked_addr >= SHARED_REGS_OFFSET)
+        return;
+
+    if (bank == rt.current_bank)
+        return;
+
+    const u8 to_clr[] = {ENC28J60_BIT_FIELD_CLR | ECON1, ECON1_BSEL1 | ECON1_BSEL0};
+    const u8 to_set[] = {ENC28J60_BIT_FIELD_SET | ECON1, bank};
+
+    spi_txrx(to_clr, 2, NULL, 0);
+    spi_txrx(to_set, 2, NULL, 0);
+
+    rt.current_bank = bank;
+}
+
+
+static void set_eth_bits(u8 addr, u8 mask)
+{
+    set_bank(addr);
+
+    const u8 tx[] = {ENC28J60_BIT_FIELD_SET | (addr & ADDR_MASK), mask};
+    spi_txrx(tx, 2, NULL,  0);
+}
+
+static void clr_eth_bits(u8 addr, u8 mask)
+{
+    set_bank(addr);
+
+    const u8 tx[] = {ENC28J60_BIT_FIELD_CLR | (addr & ADDR_MASK), mask};
+    spi_txrx(tx, 2, NULL, 0);
+}
+
+static void reset_chip(void)
+{
+    const u8 op = ENC28J60_SOFT_RESET;
+    spi_txrx(&op, 1, NULL, 0);
+}
+
+static void write_control_reg(u8 address, u8 data)
+{
+    set_bank(address);
+
+    const u8 tx[] = {ENC28J60_WRITE_CTRL_REG | (address & ADDR_MASK), data};
+    spi_txrx(tx, 2, NULL, 0);
+}
+
+static u8 read_control_reg(u8 addr)
+{
+    set_bank(addr);
+
+    const u8 tx[] = {ENC28J60_READ_CTRL_REG | (addr & ADDR_MASK)};
+
+    if (! (addr & IS_MII_REG))
+    {
+        u8 rx;
+        spi_txrx(tx, 2, &rx, 1);
+        return rx;
+    }
+    else    // one dummy read is required for these
+    {
+        u8 rx[2];
+        spi_txrx(tx, 2, rx, 2);
+        return rx[1];
+    }
+}
+
+static void write_phy_reg(u8 addr, u16 data)
+{
+    write_control_reg(MIREGADR, addr);
+    write_control_reg(MIWRL, data);
+    write_control_reg(MIWRH, data >> 8);
+
+    // wait until the PHY write completes
+    while (read_control_reg(MISTAT) & MISTAT_BUSY);
+}
+
+
+__unused static u16 read_phy_reg(u8 addr)
+{
+    write_control_reg(MIREGADR, addr);
+    write_control_reg(MICMD, MICMD_MIIRD);
+
+    while (read_control_reg(MISTAT) & MISTAT_BUSY);
+
+    write_control_reg(MICMD, 0);
+
+    u16 out = read_control_reg(MIRDL);
+    out |= read_control_reg(MIRDH) << 8;
     return out;
 }
 
-unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
-{
-    unsigned char dat = 0;
+//-- buffer allocator. there is just two buffers, so logic is simple
 
-    SPI_XFER
+void *HAL_mac_alloc_buf(void)
+{
+    PANIC_IF(countof(rt.bufs) != 2);
+    static const s8 next_free_buf[4] = {0, 1, 0, -1};
+    int pos = next_free_buf[rt.used_bufs];
+    if (pos < 0)
     {
-        dat = op | (address & ADDR_MASK);
-        spi_write_byte(dat);
-        dat = spi_read_byte();
-        // do dummy read if needed (for mac and mii, see datasheet page 29)
-        if (address & 0x80)
+        WARN("Failed to alloc buffer");
+        return NULL;
+    }
+    rt.used_bufs |= 1 << pos;
+    // +2 is to make data aligned for the next layers after ethernet
+    return rt.bufs[pos].data + 2;
+}
+
+// Free buf. Addr may point to any byte of buffer, not just beginning
+void HAL_mac_free_buf(void *addr)
+{
+    uint pos =  ((u8 *)addr - (u8 *)rt.bufs) / sizeof(rt.bufs[0]);
+    if (pos >= countof(rt.bufs))
+    {
+        REQUIRE(0);
+        return;
+    }
+
+    uint mask = 1 << pos;
+    if (!(rt.used_bufs & mask))
+    {
+        REQUIRE(0);
+        return;
+    }
+    rt.used_bufs &= ~mask;
+}
+
+
+void HAL_mac_init(const u8 *mac_addr, u32 flags)
+{
+    if (flags & PHY_FULL_DUPLEX)
+        LOG("starting phy in full-duplex mode");
+    if (flags & MAC_ACCEPT_ANY_UNICAST)
+        WARN("this mac doesn't support 'any unicast' filter");
+    if (flags & PHY_100MBIT)
+        WARN("this phy doesn't support 100 mbit");
+    if (flags & PHY_AUTO_NEGOTIATION)
+        WARN("this phy doesn't support auto negotiation");
+    if (flags & PHY_LOOPBACK)
+        WARN("loopback is not implemented");
+
+    spi_init();
+
+    // wait >=1 ms after reset, as suggested in errata 1.2
+    reset_chip();
+    hal_systimer_sleep_us(2000);
+
+    u8 rev = read_control_reg(EREVID);
+    LOG("ethernet chip revision register: 0x%02x", rev);
+
+    // bank 0
+
+    rt.rx_head = RXMEM_BASE;
+
+    write_control_reg(ERXSTL, RXMEM_BASE & 0xFF);
+    write_control_reg(ERXSTH, RXMEM_BASE >> 8);
+    write_control_reg(ERXNDL, RXMEM_LAST & 0xFF);
+    write_control_reg(ERXNDH, RXMEM_LAST >> 8);
+    // these should be even, errata 14
+    write_control_reg(ERXRDPTL, RXMEM_LAST & 0xFF);
+    write_control_reg(ERXRDPTH, RXMEM_LAST >> 8);
+    // tx
+    write_control_reg(ETXSTL, TXMEM_BASE & 0xFF);
+    write_control_reg(ETXSTH, TXMEM_BASE >> 8);
+
+    // bank 1
+
+    u8 val = ERXFCON_UCEN | ERXFCON_CRCEN;
+    if (flags & MAC_ACCEPT_MULTICAST)
+        val |= ERXFCON_MCEN;
+    if (flags & MAC_ACCEPT_BROADCAST)
+        val |= ERXFCON_BCEN;
+
+    write_control_reg(ERXFCON, val);
+
+    // bank 2
+
+    write_control_reg(MACON1, MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS);
+    // enable automatic padding to 60bytes and CRC operations, report frame len, full duplex
+
+    val = MACON3_PADCFG0 | MACON3_TXCRCEN | MACON3_FRMLNEN;
+    if (flags & PHY_FULL_DUPLEX)
+        val |= MACON3_FULDPX;
+
+    write_control_reg(MACON3, val);
+
+    write_control_reg(MACON4, 0);
+    // back-to-back inter-packed gap. 0x15 for full duplex, 0x12 for half
+    write_control_reg(MABBIPG, (flags & PHY_FULL_DUPLEX) ? 0x15 : 0x12);
+    // set inter-frame gap (non-back-to-back)
+    write_control_reg(MAIPGL, 0x12);
+
+    if (! (flags & PHY_FULL_DUPLEX))
+        write_control_reg(MAIPGH, 0x0C);
+
+    write_control_reg(MAMXFLL, MAX_FRAMELEN & 0xFF);
+    write_control_reg(MAMXFLH, MAX_FRAMELEN >> 8);
+
+    // bank 3
+
+    write_control_reg(MAADR5, mac_addr[0]);
+    write_control_reg(MAADR4, mac_addr[1]);
+    write_control_reg(MAADR3, mac_addr[2]);
+    write_control_reg(MAADR2, mac_addr[3]);
+    write_control_reg(MAADR1, mac_addr[4]);
+    write_control_reg(MAADR0, mac_addr[5]);
+    // no clock output
+    write_control_reg(ECOCON, 0);
+
+    // phy
+    write_phy_reg(PHCON1, (flags & PHY_FULL_DUPLEX) ? PHCON1_PDPXMD : 0);
+    // leds: led b displays tx/rx activity, led a displays link status
+    write_phy_reg(PHLCON, 0x3472);
+
+    set_eth_bits(ECON2, ECON2_AUTOINC);
+
+    // go
+    set_eth_bits(ECON1, ECON1_RXEN);
+}
+
+
+uint HAL_mac_write_packet(void *data, uint len)
+{
+    REQUIRE(len <= MAX_PKT_SIZE);
+
+    // passed data is nbuf. there is two prepadding bytes.
+    // be smartass and utilize one of them as a required control byte
+    u8 *p = data;
+    p -= 1;
+    len += 1;
+    *p = 0;       // control byte 0 means use default, no overrides
+
+    write_control_reg(EWRPTL, TXMEM_BASE & 0xFF);
+    write_control_reg(EWRPTH, TXMEM_BASE >> 8);
+
+    stream_to_buf_mem(p, len);
+
+    const uint last = TXMEM_BASE + len - 1;
+    write_control_reg(ETXNDL, last & 0xFF);
+    write_control_reg(ETXNDH, last >> 8);
+
+    clr_eth_bits(EIR, EIR_TXIF | EIR_TXERIF);
+    set_eth_bits(ECON1, ECON1_TXRTS);
+
+    // wait for the end of transmission to simplify buffer management.
+    // transfer should fast enough for non-realtime system, < 2ms for 1500 byte payload.
+    //
+    // we check if transmission has failed, reset the transmitter and try again
+
+    uint is_ok = 0;
+
+    uint tries = 16;
+    while (1)
+    {
+        u8 eir =  read_control_reg(EIR);
+        if (! (eir & (EIR_TXIF | EIR_TXERIF)))
+            break;
+
+        clr_eth_bits(ECON1, ECON1_TXRTS);
+
+        if (! (eir & EIR_TXERIF))
         {
-            dat = spi_read_byte();
+            is_ok = 1;
+            break;
+        }
+
+        set_eth_bits(ECON1, ECON1_TXRST);
+        clr_eth_bits(ECON1, ECON1_TXRST);
+        clr_eth_bits(EIR, EIR_TXERIF | EIR_TXIF);
+
+        if (--tries)
+        {
+            WARN("transmission error, retry");
+            set_eth_bits(ECON1, ECON1_TXRTS);
+        }
+        else
+        {
+            WARN("failed to send packet");
+            break;
         }
     }
-    return dat;
+
+    HAL_mac_free_buf(data);
+    return is_ok;
 }
 
-void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data)
-{
-    unsigned char dat = 0;
 
-    SPI_XFER
+void *HAL_mac_read_packet(uint *len)
+{
+    // reliable way to see if there is a packet (errata 6)
+    if (read_control_reg(EPKTCNT) == 0)
+        return NULL;
+
+    u8 *ret = NULL;
+
+    struct __packed
     {
-        // issue write command
-        dat = op | (address & ADDR_MASK);
-        spi_write_byte(dat);
-        // write data
-        dat = data;
-        spi_write_byte(dat);
-    }
-}
+        u16 next_pkt;
+        u16 len;
+        u16 rxstat;
+    } preamble;
 
-void enc28j60ReadBuffer(unsigned int len, unsigned char* data)
-{
-    #warning "this fucka null-terminates the sting. why ?"
+    write_control_reg(ERDPTL, rt.rx_head);
+    write_control_reg(ERDPTH, rt.rx_head >> 8);
 
-    SPI_XFER
+    stream_from_buf_mem(&preamble, sizeof(preamble));
+
+    rt.rx_head = preamble.next_pkt;
+    uint rxlen = preamble.len - 4; // shave off crc
+
+    // bit 7 signals 'packet is ok'
+    if ((preamble.rxstat & 0x80) && rxlen > 0 && rxlen <= (MAX_PKT_SIZE))
     {
-        // issue read command
-        spi_write_byte(ENC28J60_READ_BUF_MEM);
-        spi_read(data, len);
-    }
-    data[len] = '\0';
-}
-
-void enc28j60WriteBuffer(unsigned int len, unsigned char* data)
-{
-    SPI_XFER
-    {
-        // issue write command
-        spi_write_byte(ENC28J60_WRITE_BUF_MEM);
-        spi_write(data, len);
-    }
-}
-
-void enc28j60SetBank(unsigned char address)
-{
-    // set the bank (if needed)
-    if ((address & BANK_MASK) != Enc28j60Bank)
-    {
-        // set the bank
-        enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
-        enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK)>>5);
-        Enc28j60Bank = (address & BANK_MASK);
-    }
-}
-
-unsigned char enc28j60Read(unsigned char address)
-{
-    // set the bank
-    enc28j60SetBank(address);
-    // do the read
-    return enc28j60ReadOp(ENC28J60_READ_CTRL_REG, address);
-}
-
-void enc28j60Write(unsigned char address, unsigned char data)
-{
-    // set the bank
-    enc28j60SetBank(address);
-    // do the write
-    enc28j60WriteOp(ENC28J60_WRITE_CTRL_REG, address, data);
-}
-
-void enc28j60PhyWrite(unsigned char address, unsigned int data)
-{
-    // set the PHY register address
-    enc28j60Write(MIREGADR, address);
-    // write the PHY data
-    enc28j60Write(MIWRL, data);
-    enc28j60Write(MIWRH, data>>8);
-    // wait until the PHY write completes
-    while (enc28j60Read(MISTAT) & MISTAT_BUSY)
-    {
-        #warning "here was a sound"
-//      	Sound;
-        //Del_10us(1);
-        //_nop_();
-    }
-}
-
-void enc28j60clkout(unsigned char clk)
-{
-    //setup clkout: 2 is 12.5MHz:
-    enc28j60Write(ECOCON, clk & 0x7);
-}
-
-void enc28j60Init(unsigned char* macaddr)
-{
-    init_iface();
-    // initialize I/O
-    //enc28j60CSinit();
-
-    //enc28j60SetSCK();
-    //enc28j60HWreset();
-    // perform system reset
-    enc28j60WriteOp(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
-    //for(y=0;y<1000000;y++);
-    //Del_1ms(250);
-    // check CLKRDY bit to see if reset is complete
-    // The CLKRDY does not work. See Rev. B4 Silicon Errata point. Just wait.
-    //while(!(enc28j60Read(ESTAT) & ESTAT_CLKRDY));
-    // do bank 0 stuff
-    // initialize receive buffer
-    // 16-bit transfers, must write low byte first
-    // set receive buffer start address
-    NextPacketPtr = RXSTART_INIT;
-    // Rx start
-    enc28j60Write(ERXSTL, RXSTART_INIT&0xFF);
-    enc28j60Write(ERXSTH, RXSTART_INIT>>8);
-    // set receive pointer address
-    enc28j60Write(ERXRDPTL, RXSTART_INIT&0xFF);
-    enc28j60Write(ERXRDPTH, RXSTART_INIT>>8);
-    // RX end
-    enc28j60Write(ERXNDL, RXSTOP_INIT&0xFF);
-    enc28j60Write(ERXNDH, RXSTOP_INIT>>8);
-    // TX start
-    enc28j60Write(ETXSTL, TXSTART_INIT&0xFF);
-    enc28j60Write(ETXSTH, TXSTART_INIT>>8);
-    // TX end
-    enc28j60Write(ETXNDL, TXSTOP_INIT&0xFF);
-    enc28j60Write(ETXNDH, TXSTOP_INIT>>8);
-    // do bank 1 stuff, packet filter:
-    // For broadcast packets we allow only ARP packtets
-    // All other packets should be unicast only for our mac (MAADR)
-    //
-    // The pattern to match on is therefore
-    // Type     ETH.DST
-    // ARP      BROADCAST
-    // 06 08 -- ff ff ff ff ff ff -> ip checksum for theses bytes=f7f9
-    // in binary these poitions are:11 0000 0011 1111
-    // This is hex 303F->EPMM0 = 0x3f,EPMM1 = 0x30
-    enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_PMEN);
-    enc28j60Write(EPMM0, 0x3f);
-    enc28j60Write(EPMM1, 0x30);
-    enc28j60Write(EPMCSL, 0xf9);
-    enc28j60Write(EPMCSH, 0xf7);
-    //
-    //
-    // do bank 2 stuff
-    // enable MAC receive
-    enc28j60Write(MACON1, MACON1_MARXEN|MACON1_TXPAUS|MACON1_RXPAUS);
-    // bring MAC out of reset
-    enc28j60Write(MACON2, 0x00);
-    // enable automatic padding to 60bytes and CRC operations
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, MACON3, MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN|MACON3_FULDPX);
-    // set inter-frame gap (non-back-to-back)
-    enc28j60Write(MAIPGL, 0x12);
-    enc28j60Write(MAIPGH, 0x0C);
-    // set inter-frame gap (back-to-back)
-    enc28j60Write(MABBIPG, 0x12);
-    // Set the maximum packet size which the controller will accept
-    // Do not send packets longer than MAX_FRAMELEN:
-    enc28j60Write(MAMXFLL, MAX_FRAMELEN&0xFF);
-    enc28j60Write(MAMXFLH, MAX_FRAMELEN>>8);
-    // do bank 3 stuff
-    // write MAC address
-    // NOTE: MAC address in ENC28J60 is byte-backward
-    enc28j60Write(MAADR5, macaddr[0]);
-    enc28j60Write(MAADR4, macaddr[1]);
-    enc28j60Write(MAADR3, macaddr[2]);
-    enc28j60Write(MAADR2, macaddr[3]);
-    enc28j60Write(MAADR1, macaddr[4]);
-    enc28j60Write(MAADR0, macaddr[5]);
-
-    //printf("MAADR5 = 0x%x\r\n", enc28j60Read(MAADR5));
-    //printf("MAADR4 = 0x%x\r\n", enc28j60Read(MAADR4));
-    //printf("MAADR3 = 0x%x\r\n", enc28j60Read(MAADR3));
-    //printf("MAADR2 = 0x%x\r\n", enc28j60Read(MAADR2));
-    //printf("MAADR1 = 0x%x\r\n", enc28j60Read(MAADR1));
-    //printf("MAADR0 = 0x%x\r\n", enc28j60Read(MAADR0));
-
-    enc28j60PhyWrite(PHCON1, PHCON1_PDPXMD);
-
-
-    // no loopback of transmitted frames
-    enc28j60PhyWrite(PHCON2, PHCON2_HDLDIS);
-    // switch to bank 0
-    enc28j60SetBank(ECON1);
-    // enable interrutps
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, EIE, EIE_INTIE|EIE_PKTIE);
-    // enable packet reception
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
-}
-
-// read the revision of the chip:
-unsigned char enc28j60getrev(void)
-{
-    return(enc28j60Read(EREVID));
-}
-
-void enc28j60PacketSend(unsigned int len, unsigned char* packet)
-{
-    // Set the write pointer to start of transmit buffer area
-    enc28j60Write(EWRPTL, TXSTART_INIT&0xFF);
-    enc28j60Write(EWRPTH, TXSTART_INIT>>8);
-
-    // Set the TXND pointer to correspond to the packet size given
-    enc28j60Write(ETXNDL, (TXSTART_INIT+len)&0xFF);
-    enc28j60Write(ETXNDH, (TXSTART_INIT+len)>>8);
-
-    // write per-packet control byte (0x00 means use macon3 settings)
-    enc28j60WriteOp(ENC28J60_WRITE_BUF_MEM, 0, 0x00);
-
-    // copy the packet into the transmit buffer
-    enc28j60WriteBuffer(len, packet);
-
-    // send the contents of the transmit buffer onto the network
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-
-    // Reset the transmit logic problem. See Rev. B4 Silicon Errata point 12.
-    if ((enc28j60Read(EIR) & EIR_TXERIF))
-    {
-        enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
-    }
-}
-
-// Gets a packet from the network receive buffer, if one is available.
-// The packet will by headed by an ethernet header.
-//      maxlen  The maximum acceptable length of a retrieved packet.
-//      packet  Pointer where packet data should be stored.
-// Returns: Packet length in bytes if a packet was retrieved, zero otherwise.
-unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet)
-{
-    unsigned int rxstat;
-    unsigned int len;
-
-    // check if a packet has been received and buffered
-    //if( !(enc28j60Read(EIR) & EIR_PKTIF) ){
-    // The above does not work. See Rev. B4 Silicon Errata point 6.
-    if (enc28j60Read(EPKTCNT)  == 0)
-    {
-        return(0);
-    }
-
-    // Set the read pointer to the start of the received packet
-    enc28j60Write(ERDPTL, (NextPacketPtr));
-    enc28j60Write(ERDPTH, (NextPacketPtr)>>8);
-
-    // read the next packet pointer
-    NextPacketPtr  = enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0);
-    NextPacketPtr |= enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0)<<8;
-
-    // read the packet length (see datasheet page 43)
-    len  = enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0);
-    len |= enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0)<<8;
-
-    len-=4; //remove the CRC count
-    // read the receive status (see datasheet page 43)
-    rxstat  = enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0);
-    rxstat |= enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0)<<8;
-    // limit retrieve length
-    if (len>maxlen-1)
-    {
-        len=maxlen-1;
-    }
-
-    // check CRC and symbol errors (see datasheet page 44, table 7-3):
-    // The ERXFCON.CRCEN is set by default. Normally we should not
-    // need to check this.
-    if ((rxstat & 0x80) == 0)
-    {
-        // invalid
-        len=0;
+        ret = HAL_mac_alloc_buf();
+        if (! ret)
+        {
+            WARN("failed to alloc buf, dropping packet");
+        }
+        else
+        {
+            stream_from_buf_mem(ret, rxlen);
+            *len = rxlen;
+        }
     }
     else
     {
-        // copy the packet from the receive buffer
-        enc28j60ReadBuffer(len, packet);
+        WARN("bad packet, ignoring");
     }
-    // Move the RX read pointer to the start of the next received packet
-    // This frees the memory we just read out
-    enc28j60Write(ERXRDPTL, (NextPacketPtr));
-    enc28j60Write(ERXRDPTH, (NextPacketPtr)>>8);
 
-    // decrement the packet counter indicate we are done with this packet
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
-    return(len);
+    // advance the read pointer to lag one byte behind and be even (errata 14)
+    uint rd = rt.rx_head;
+    if (rd == 0)
+        rd = RXMEM_LAST;
+    else
+        rd -= 1;
+
+    write_control_reg(ERXRDPTL, rd);
+    write_control_reg(ERXRDPTH, rd >> 8);
+
+    // decrement the packet counter to indicate we are done with this packet
+    set_eth_bits(ECON2, ECON2_PKTDEC);
+
+    return ret;
+}
+
+void HAL_mac_periodic(void)
+{
+    ;
 }
