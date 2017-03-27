@@ -12,6 +12,7 @@
 
 #include "hal.h"
 #include "sound.h"
+#include "fieldbus.h"
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
@@ -211,9 +212,9 @@ static void init(void)
     sound_init();
 
     LOG("initing fieldbus ...");
-    fieldbus_init();
+//  fieldbus_init();
 
-    //HAL_fieldbus_smoke();
+    fieldbus_smoke();
 
 
     keyboardSetBITKL(0);

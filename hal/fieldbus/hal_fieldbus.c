@@ -296,10 +296,11 @@ void HAL_fieldbus_init(uint baud)
 
     timer->CR1 = 0;
     timer->CNT = 0;
-    timer->PSC = HAL_SYS_F_CPU * 0.1E-3 - 1;      // 0.1 ms prescaler. this way 1-2 ms timeouts error would be negligible
+    timer->PSC = HAL_SYS_F_CPU * 0.1E-3 - 1;    // 0.1 ms prescaler. this way 1-2 ms timeouts error would be negligible
     timer->ARR = 0;
-    timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
+    timer->EGR = TIM_EGR_UG;                    // load prescaler/etc
+    timer->SR = 0;
 
     NVIC_SetPriority(TIM7_IRQn, HAL_IRQ_PRIORITY_NORMAL);
     NVIC_ClearPendingIRQ(TIM7_IRQn);

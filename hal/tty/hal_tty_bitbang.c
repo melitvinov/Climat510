@@ -50,7 +50,7 @@ void HAL_tty_init(uint baud)
     timer->SR = 0;
     timer->DIER = TIM_DIER_UIE;
 
-    NVIC_SetPriority(TIM7_IRQn, HAL_IRQ_PRIORITY_HIGHEST);
+    NVIC_SetPriority(TIM4_IRQn, HAL_IRQ_PRIORITY_HIGHEST);
     NVIC_ClearPendingIRQ(TIM4_IRQn);
     NVIC_EnableIRQ(TIM4_IRQn);
 
