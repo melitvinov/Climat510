@@ -125,8 +125,8 @@
 // PHY registers
 #define PHCON1           0x00
 #define PHSTAT1          0x01
-#define PHHID1           0x02
-#define PHHID2           0x03
+#define PHID1            0x02
+#define PHID2            0x03
 #define PHCON2           0x10
 #define PHSTAT2          0x11
 #define PHIE             0x12
@@ -230,6 +230,9 @@
 #define PHSTAT1_PHDPX    0x0800
 #define PHSTAT1_LLSTAT   0x0004
 #define PHSTAT1_JBSTAT   0x0002
+
+// ENC28J60 PHY PHSTAT2 Register Bit Definitions
+#define PHSTAT2_LSTAT    (1 << 10)
 
 // ENC28J60 PHY PHCON2 Register Bit Definitions
 #define PHCON2_FRCLINK   0x4000

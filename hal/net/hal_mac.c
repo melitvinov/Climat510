@@ -43,6 +43,7 @@ typedef struct __aligned(4)
 
 typedef struct
 {
+    u32 flags;
     u16 rx_head;
     u8 current_bank;
     u8 used_bufs;
@@ -213,13 +214,13 @@ static u8 read_control_reg(u8 addr)
     if (! (addr & IS_MII_REG))
     {
         u8 rx;
-        spi_txrx(tx, 2, &rx, 1);
+        spi_txrx(tx, 1, &rx, 1);
         return rx;
     }
     else    // one dummy read is required for these
     {
         u8 rx[2];
-        spi_txrx(tx, 2, rx, 2);
+        spi_txrx(tx, 1, rx, 2);
         return rx[1];
     }
 }
@@ -235,7 +236,7 @@ static void write_phy_reg(u8 addr, u16 data)
 }
 
 
-__unused static u16 read_phy_reg(u8 addr)
+static u16 read_phy_reg(u8 addr)
 {
     write_control_reg(MIREGADR, addr);
     write_control_reg(MICMD, MICMD_MIIRD);
@@ -288,6 +289,8 @@ void HAL_mac_free_buf(void *addr)
 
 void HAL_mac_init(const u8 *mac_addr, u32 flags)
 {
+    rt.flags = flags;
+
     if (flags & PHY_FULL_DUPLEX)
         LOG("starting phy in full-duplex mode");
     if (flags & MAC_ACCEPT_ANY_UNICAST)
@@ -307,6 +310,10 @@ void HAL_mac_init(const u8 *mac_addr, u32 flags)
 
     u8 rev = read_control_reg(EREVID);
     LOG("ethernet chip revision register: 0x%02x", rev);
+    u16 phyid1 = read_phy_reg(PHID1);
+    u16 phyid2 = read_phy_reg(PHID2);
+    LOG("phy id 1: 0x%04x", phyid1);
+    LOG("phy id 2: 0x%04x", phyid2);
 
     // bank 0
 
@@ -383,6 +390,37 @@ uint HAL_mac_write_packet(void *data, uint len)
 {
     REQUIRE(len <= MAX_PKT_SIZE);
 
+    // check phy status, no reason to send packet on disconnected link
+    u16 phystat = read_phy_reg(PHSTAT2);
+    if (! (phystat & PHSTAT2_LSTAT))
+    {
+        WARN("no link, dropping tx packet");
+        HAL_mac_free_buf(data);
+        return 0;
+    }
+
+    // in full duplex mode we send packet and forget. make sure previous packet
+    // has been sent. otherwise reset transmitter and continue
+    if (rt.flags & PHY_FULL_DUPLEX)
+    {
+        // one read of phy is 4 spi bytes, at 18 MHz it's 2.2us in best case.
+        // one ethernet packet of 1500+ bytes should be transferred in <2 ms
+        // set tries to 10 ms (excluding any extra code overhead)
+        uint tries = 10E-3/2.2E-6;
+        while (1)
+        {
+            if (! (read_control_reg(ECON1) & ECON1_TXRTS))
+                break;
+
+            if (--tries)
+                continue;
+
+            set_eth_bits(ECON1, ECON1_TXRST);
+            clr_eth_bits(ECON1, ECON1_TXRST);
+            WARN("previous packet has stuck, resetting transmitter");
+        }
+    }
+
     // passed data is nbuf. there is two prepadding bytes.
     // be smartass and utilize one of them as a required control byte
     u8 *p = data;
@@ -401,32 +439,31 @@ uint HAL_mac_write_packet(void *data, uint len)
     write_control_reg(ETXNDL, last & 0xFF);
     write_control_reg(ETXNDH, last >> 8);
 
+    // full-duplex transfer cause no collisions, so we fire and forget
+    if (rt.flags & PHY_FULL_DUPLEX)
+    {
+        set_eth_bits(ECON1, ECON1_TXRTS);
+        return 1;
+    }
+
+    // half-duplex transfer may cause collision, so wait for the end of transmission,
+    // check if transmission has failed, reset the transmitter and try again.
+    // should be fast enough for non-realtime system, < 2ms for 1500 byte payload.
+
     clr_eth_bits(EIR, EIR_TXIF | EIR_TXERIF);
     set_eth_bits(ECON1, ECON1_TXRTS);
-
-    // wait for the end of transmission to simplify buffer management.
-    // transfer should fast enough for non-realtime system, < 2ms for 1500 byte payload.
-    //
-    // we check if transmission has failed, reset the transmitter and try again
-
-    #warning "transmission may fail only due to collision on half-duplex link or link absence. if link is full-duplex (or no link at all), no reason to wait"
-
-    uint is_ok = 0;
 
     uint tries = 16;
     while (1)
     {
         u8 eir =  read_control_reg(EIR);
         if (! (eir & (EIR_TXIF | EIR_TXERIF)))
-            break;
+            continue;
 
         clr_eth_bits(ECON1, ECON1_TXRTS);
 
         if (! (eir & EIR_TXERIF))
-        {
-            is_ok = 1;
-            break;
-        }
+            return 1;
 
         set_eth_bits(ECON1, ECON1_TXRST);
         clr_eth_bits(ECON1, ECON1_TXRST);
@@ -440,11 +477,9 @@ uint HAL_mac_write_packet(void *data, uint len)
         else
         {
             WARN("failed to send packet");
-            break;
+            return 0;
         }
     }
-
-    return is_ok;
 }
 
 
