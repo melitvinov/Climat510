@@ -395,6 +395,8 @@ uint HAL_mac_write_packet(void *data, uint len)
 
     stream_to_buf_mem(p, len);
 
+    HAL_mac_free_buf(data);
+
     const uint last = TXMEM_BASE + len - 1;
     write_control_reg(ETXNDL, last & 0xFF);
     write_control_reg(ETXNDH, last >> 8);
@@ -406,6 +408,8 @@ uint HAL_mac_write_packet(void *data, uint len)
     // transfer should fast enough for non-realtime system, < 2ms for 1500 byte payload.
     //
     // we check if transmission has failed, reset the transmitter and try again
+
+    #warning "transmission may fail only due to collision on half-duplex link or link absence. if link is full-duplex (or no link at all), no reason to wait"
 
     uint is_ok = 0;
 
@@ -440,7 +444,6 @@ uint HAL_mac_write_packet(void *data, uint len)
         }
     }
 
-    HAL_mac_free_buf(data);
     return is_ok;
 }
 

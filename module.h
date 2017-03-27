@@ -47,7 +47,10 @@ typedef struct __packed
 
 typedef struct
 {
+
+    #warning "not used, remove"
     module_output_cfg_t outputs_cfg;                            // outputs config
+
     module_output_register_t outputs[MODULE_MAX_N_OUTPUTS];     // outputs registers (analog/continuous outputs ?)
     module_input_cfg_t inputs_cfg[MODULE_MAX_MAX_N_INPUTS];     // inputs config
     module_fandata_t *fandata;
@@ -64,7 +67,6 @@ typedef struct
 
 
 void module_processor_run(module_t *module, bool is_reduced_sync, u8 nfan);
-void module_processor_periodic(void);
 bool module_processor_is_busy(void);
 
 #endif

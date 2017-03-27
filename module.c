@@ -1,8 +1,8 @@
 #define NOLOG
 
 #include "syntax.h"
-
-#include "hal.h"
+#include "timers.h"
+#include "fieldbus.h"
 #include "module.h"
 
 #include "debug.h"
@@ -11,24 +11,19 @@ enum module_proc_ev_e
 {
     EV_ENTRY,
     EV_PERIODIC,
-    EV_XFER_OK,
+    EV_XFER_SUCCESS,
 };
 
 typedef void (* state_t)(uint ev);
 
 typedef struct
 {
+    timer_t timer;
     state_t state;
     module_t *data;
     bool is_reduced_sync;
-    uint shadow_len;
     u8 nfan;
-
-    union
-    {
-        u16 status;
-        u8 buf[384];
-    };
+    u16 status;
 } module_rt_t;
 
 static void state_idling(uint ev);
@@ -36,19 +31,19 @@ static void state_idling(uint ev);
 static module_rt_t rt = {.state = state_idling};
 
 
-PANIC_IF(sizeof(rt.buf) < sizeof(rt.data->outputs_cfg));
-PANIC_IF(sizeof(rt.buf) < sizeof(rt.data->outputs));
-PANIC_IF(sizeof(rt.buf) < sizeof(rt.data->discrete_outputs));
-PANIC_IF(sizeof(rt.buf) < sizeof(rt.data->inputs_cfg));
-PANIC_IF(sizeof(rt.buf) < sizeof(rt.data->inputs));
-PANIC_IF(sizeof(rt.buf) < sizeof(module_fandata_t));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->outputs_cfg));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->outputs));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->discrete_outputs));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs_cfg));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(module_fandata_t));
 
 
 static u8 get_maddr(void)
 {
     if (! rt.data->max_n_outputs)
         return rt.data->CpM % 100 + 120;
-    return rt.data->CpM % 100+140;
+    return rt.data->CpM % 100 + 140;
 }
 
 static void trans(state_t dst)
@@ -71,16 +66,16 @@ static void state_top(uint ev)
     {
     case EV_PERIODIC:
         {
-            hal_fieldbus_status_t status = HAL_fieldbus_get_status();
-            if (status == HAL_FIELDBUS_BUSY)
+            fieldbus_status_t status = fieldbus_get_status();
+            if (status == FIELDBUS_BUSY)
                 return;
-            if (status == HAL_FIELDBUS_IDLE)
+            if (status == FIELDBUS_IDLE)
             {
                 rt.data->cond &= ~MODULE_TRANSIENT_ERR_MASK;
-                rt.state(EV_XFER_OK);
+                rt.state(EV_XFER_SUCCESS);
                 return;
             }
-            if (status == HAL_FIELDBUS_ERR_BAD_CHECKSUM)
+            if (status == FIELDBUS_ERR_BAD_CHECKSUM)
                 rt.data->cond |= MODULE_ERR_CHECKSUM;
             else
                 rt.data->cond |= MODULE_ERR_LINK;
@@ -96,6 +91,7 @@ static void state_idling(uint ev)
     {
     case EV_ENTRY:
         LOG("idling");
+        timer_stop(&rt.timer);
         return;
 
     case EV_PERIODIC:
@@ -117,12 +113,12 @@ static void state_pulling_cond(uint ev)
         else
         {
             LOG("pulling cond");
-            bool is_ok = HAL_fieldbus_request_read(get_maddr(), 0, 0, &rt.status, sizeof(rt.status));
+            bool is_ok = fieldbus_request_read(get_maddr(), 0, 0, &rt.status, sizeof(rt.status));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         if (rt.status & 0x01)
             rt.data->cond |= MODULE_ERR_RESET;
 
@@ -148,14 +144,12 @@ static void state_pushing_input_config(uint ev)
     case EV_ENTRY:
         {
             LOG("pulling input config");
-            uint len = sizeof(rt.data->inputs_cfg);
-            memcpy(rt.buf, &rt.data->inputs_cfg, len);
-            bool is_ok = HAL_fieldbus_request_write(get_maddr(), 0, 2, rt.buf, len);
+            bool is_ok = fieldbus_request_write(get_maddr(), 0, 2, &rt.data->inputs_cfg, sizeof(rt.data->inputs_cfg));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         trans(state_pushing_out_regs);
         return;
     }
@@ -170,14 +164,12 @@ static void state_pushing_discrete_outputs(uint ev)
     case EV_ENTRY:
         {
             LOG("pushing out values");
-            uint len = sizeof(rt.data->discrete_outputs);
-            memcpy(rt.buf, &rt.data->discrete_outputs, len);
-            bool is_ok = HAL_fieldbus_request_write(get_maddr(), 0, 3, rt.buf, len);
+            bool is_ok = fieldbus_request_write(get_maddr(), 0, 3, &rt.data->discrete_outputs, sizeof(rt.data->discrete_outputs));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         trans(state_pushing_out_config);
         return;
     }
@@ -198,14 +190,12 @@ static void state_pushing_out_config(uint ev)
         else
         {
             LOG("pushing out config");
-            uint len = sizeof(rt.data->outputs_cfg);
-            memcpy(rt.buf, &rt.data->outputs_cfg, len);
-            bool is_ok = HAL_fieldbus_request_write(get_maddr(), 4, 3, rt.buf, len);
+            bool is_ok = fieldbus_request_write(get_maddr(), 4, 3, &rt.data->outputs_cfg, sizeof(rt.data->outputs_cfg));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         trans(state_pulling_inputs);
         return;
     }
@@ -237,15 +227,12 @@ static void state_pulling_inputs(uint ev)
                 WARN("max in > inValues, trimming transfer");
                 cnt = countof(rt.data->inputs);
             }
-            // XXX: shadow len used to make sure sure maxin in unchanged during the transfer
-            rt.shadow_len = sizeof(rt.data->inputs[0]) * cnt;
-            bool is_ok = HAL_fieldbus_request_read(get_maddr(), 2, 0, rt.buf, rt.shadow_len);
+            bool is_ok = fieldbus_request_read(get_maddr(), 2, 0, rt.data->inputs, sizeof(rt.data->inputs[0]) * cnt);
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
-        memcpy(&rt.data->inputs, rt.buf, rt.shadow_len);
+    case EV_XFER_SUCCESS:
         trans(state_pushing_out_regs);
         return;
     }
@@ -266,14 +253,12 @@ static void state_pushing_out_regs(uint ev)
         else
         {
             LOG("pushing out regs");
-            uint len = sizeof(rt.data->outputs);
-            memcpy(rt.buf, &rt.data->outputs, len);
-            bool is_ok = HAL_fieldbus_request_write(get_maddr(), 0, 8, rt.buf, len);
+            bool is_ok = fieldbus_request_write(get_maddr(), 0, 8, &rt.data->outputs, sizeof(rt.data->outputs));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         trans(state_pushing_fandata);
         return;
     }
@@ -294,14 +279,12 @@ static void state_pushing_fandata(uint ev)
         else
         {
             LOG("pushing fandata");
-            uint len = sizeof(module_fandata_t);
-            memcpy(rt.buf, &rt.data->fandata[rt.nfan], len);
-            bool is_ok = HAL_fieldbus_request_write(get_maddr(), 3 + sizeof(module_fandata_t) * rt.nfan, 9, rt.buf, len);
+            bool is_ok = fieldbus_request_write(get_maddr(), 3 + sizeof(module_fandata_t) * rt.nfan, 9, &rt.data->fandata[rt.nfan], sizeof(module_fandata_t));
             REQUIRE(is_ok);
         }
         return;
 
-    case EV_XFER_OK:
+    case EV_XFER_SUCCESS:
         trans(state_idling);
         return;
     }
@@ -309,21 +292,26 @@ static void state_pushing_fandata(uint ev)
     state_top(ev);
 }
 
+// -- event dispatcher
+
+static void on_periodic_timer(timer_t *dummy)
+{
+    rt.state(EV_PERIODIC);
+}
+
 
 void module_processor_run(module_t *module, bool is_reduced_sync, u8 nfan)
 {
+    LOG("running module processor");
+
     REQUIRE(! module_processor_is_busy());
 
     rt.data = module;
     rt.is_reduced_sync = is_reduced_sync;
     rt.nfan = nfan;
 
+    timer_start(&rt.timer,  1, 1, on_periodic_timer);
     trans(state_pulling_cond);
-}
-
-void module_processor_periodic(void)
-{
-    rt.state(EV_PERIODIC);
 }
 
 

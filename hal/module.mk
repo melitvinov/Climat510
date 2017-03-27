@@ -12,9 +12,6 @@ SRC += hal/sys/hal_sys.c
 SRC += hal/systimer/hal_systimer.c
 SRC += hal/fieldbus/hal_fieldbus.c
 
-# this one is very low-level and replaced by the fieldbus
-#SRC += hal/rs485/hal_rs485.c
-
 #SRC += hal/tty/hal_tty_bitbang.c
 SRC += hal/tty/hal_tty_hw.c
 

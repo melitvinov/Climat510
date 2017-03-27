@@ -7,6 +7,7 @@ SRC += sound.c
 SRC += timers.c
 
 # these are semi-good
+SRC += fieldbus.c
 SRC += module.c
 SRC += modules_master.c
 

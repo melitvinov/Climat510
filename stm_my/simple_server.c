@@ -87,11 +87,9 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
     case(ETH_HEAD):
         if (!data_p)
         {
-            LOG("socket no p head");
             *fbsize=0;
             return;
         }
-        LOG("socket hdr");
 //		else
         *EthSost=WORK_UNIT;
         BufCpy((char*)&Sockets[nSock].Header,&f_buf[data_p],cSizeHead);
@@ -109,10 +107,12 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
         return;
 
     case(ETH_SENDBLOCK):
-        LOG("socket sendblock");
+        LOG("send size %d, block %d, offset %d."
+            "block addr is 0x%08x", Sockets[nSock].Header.Size, Sockets[nSock].NumBlock, Sockets[nSock].Header.Adr,
+            (int) pADRGD[Sockets[nSock].NumBlock].Adr);
+
         if (Sockets[nSock].Header.Size>MAX_PACKET_LENGTH)
         {
-            LOG("sending initial buffer");
             fill_tcp_buf(f_buf,MAX_PACKET_LENGTH,((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr);
             Sockets[nSock].Header.Adr+=MAX_PACKET_LENGTH;
             Sockets[nSock].Header.Size-=MAX_PACKET_LENGTH;
@@ -120,10 +120,6 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 //			Sockets[nSock].IP_PHASE=ETH_INIT;
             return;
         }
-
-        LOG("attempt to send buffer of size %d, block %d, offset %d."
-            "block addr is 0x%08x", Sockets[nSock].Header.Size, Sockets[nSock].NumBlock, Sockets[nSock].Header.Adr,
-            (int) pADRGD[Sockets[nSock].NumBlock].Adr);
         fill_tcp_buf(f_buf, Sockets[nSock].Header.Size, (u8 *)(pADRGD[Sockets[nSock].NumBlock].Adr) + Sockets[nSock].Header.Adr);
         /*if (Sockets[nSock].Header.Size  ==  263)
         {

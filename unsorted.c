@@ -37,7 +37,6 @@ void InitBlockEEP(void)
 т.е порядки структур должны быть строго одинаковы
 и все несохраняеьые в EEP должны быть в конце AdrGD*/
 
-
     #warning "WTF: +15 ?"
     BlockEEP[0].AdrCopyRAM=&gd()->Control.Zones;
     BlockEEP[0].Size = sizeof(gd()->Control.Zones)+15;
@@ -66,16 +65,16 @@ void InitBlockEEP(void)
 
 // so far so good.
 // remote is expecting blob of:
-// 0) GD.HOT
-// 1) GD.Control
-// 2) GD.Timers
-// 3) GD.TuneClimate
-// 4) GD.Strategy
-// 5) GD.MechConfig
-// 6) caldata.Cal (full !)
-// 7) caldata.Cal.MeteoSens (part of caldata.Cal). BUT ! sized for a full caldata :-)
-// 8) GD.ConstMechanic
-// 9) GD.Level
+// 0) GD.HOT (state to be monitored)
+// 1) GD.Control (parameters of control)
+// 2) GD.Timers (control tasks)
+// 3) GD.TuneClimate (fine-tune of the control)
+// 4) GD.Strategy (strategy of the control)
+// 5) GD.MechConfig (fieldbus nodes settings and something else)
+// 6) caldata.Cal (full ! settings of the sensors)
+// 7) caldata.Cal.MeteoSens (settings of the meteo sensors. part of caldata.Cal). BUT ! sized for a full caldata :-)
+// 8) GD.ConstMechanic (config of actuators)
+// 9) GD.Level (? some mismatch here)
 // 10) GD.HOT again
 // 11) GD.TControl
 
@@ -119,6 +118,7 @@ void setup_scatter(void)
 
     wtf0.AdrGD[11].Adr=&gd_rw()->TControl;
     wtf0.AdrGD[11].MaxSize=sizeof(gd()->TControl);
+
 
     LOG("scatter addresses:");
     uint total = 0;
@@ -191,7 +191,8 @@ void InitAllThisThings(char fTipReset)
 
     gd_rw()->Control.Read1W=9;
     gd_rw()->Control.Write1W=4;
-    gd_rw()->Control.ConfSTepl=cConfSTepl;
+    //gd_rw()->Control.ConfSTepl=cConfSTepl;
+    gd_rw()->Control.ConfSTepl=2;
     gd_rw()->Control.Language=cDefLanguage;
     gd_rw()->Control.Cod=111;
     gd_rw()->Control.Screener=40;

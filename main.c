@@ -137,6 +137,7 @@ static void periodic_task(void)
 {
     if (wtf0.Second == 58)
     {
+        LOG("checking input config");
         CheckWithoutPC();
         CheckInputConfig();
     }
@@ -149,7 +150,7 @@ static void periodic_task(void)
 
     // so control is firing every second
 
-    LOG("running periodic control");
+    //LOG("running periodic control");
 
     // XXX: moved here from control.c
     LoadDiscreteInputs();
@@ -210,7 +211,7 @@ static void init(void)
     sound_init();
 
     LOG("initing fieldbus ...");
-    HAL_fieldbus_init();
+    fieldbus_init();
 
     //HAL_fieldbus_smoke();
 
@@ -303,7 +304,6 @@ void main(void)
         process_pc_input();
         process_legacy_timers();
         timers_process();
-        module_processor_periodic();
 
         bool should_show_video = 0;
 
@@ -311,7 +311,7 @@ void main(void)
 
         if (time != prev_time)
         {
-            LOG("time: %d", time);
+            //LOG("time: %d", time);
             prev_time = time;
             wtf0.Second++;
 

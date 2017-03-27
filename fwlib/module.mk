@@ -14,7 +14,7 @@ FWLIB_API_HEADERS += fwlib/fw_mem_wstream.h
 FWLIB_API_HEADERS += fwlib/fw_string.h
 FWLIB_API_HEADERS += fwlib/fw_format.h
 
-AUTOGENS += $(FWLIB_API_OUTPUT)
+#AUTOGENS += $(FWLIB_API_OUTPUT)
 
 $(FWLIB_API_OUTPUT): $(FWLIB_API_HEADERS)
 	@echo 'Generating fwlib API header' $@

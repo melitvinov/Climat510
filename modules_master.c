@@ -25,8 +25,6 @@ uint16_t GetIPCNum(uint16_t nAddress)
 }
 
 
-
-
 void ClrAllOutIPCDigit(void)
 {
     int i;
@@ -89,6 +87,8 @@ void SetOutIPCDigit(char How, uint16_t nAddress)
     if (! m)
         return;
 
+    LOG("updating bit");
+
     u32 bOut=1;
     bOut <<= GetIPCNum(nAddress)-1;
 
@@ -99,7 +99,7 @@ void SetOutIPCDigit(char How, uint16_t nAddress)
 }
 
 
-void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr, module_fandata_t *fandata)
+void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr, module_fandata_t *fandata)
 {
     module_t *m = alloc_module(nAddress);
     if (! m)
@@ -223,6 +223,8 @@ void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
 
     if (! m)
         return;
+
+    LOG("updating input");
 
 //			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //без калибровок
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))

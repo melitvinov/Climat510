@@ -145,55 +145,6 @@
 #define cSAlrStorm			33 //Защита от шторма
 
 
-
-#define aNoTaskA	0x00
-
-#define aTempA	0x00
-#define aRHA	0x00
-#define aLeafA	0x00
-#define aGrndA	0x00
-#define aScreen	0x00
-#define aGlassA	0x00
-#define aCOA	0x00
-#define aTempCA	0x00
-#define aWinNA	0x00
-#define aWinSA	0x00
-#define aTT1A	0x00
-#define aTT2A	0x00
-#define aTT3A	0x00
-#define aTT4A	0x00
-#define aTT5A	0x00
-
-#define aNoTaskB	0x00
-
-#define aTempB	0x00
-#define aRHB	0x00
-#define aLeafB	0x00
-#define aGrndB	0x00
-#define aRezB	0x00
-#define aGlassB	0x00
-#define aCOB	0x00
-#define aTempCB	0x00
-#define aWinNB	0x00
-#define aWinSB	0x00
-#define aTT1B	0x00
-#define aTT2B	0x00
-#define aTT3B	0x00
-#define aTT4B	0x00
-#define aTT5B	0x00
-
-#define aTempO	0x00
-#define aSunO	0x00
-#define aSpeedO	0x00
-#define aDirO	0x00
-#define aRainO	0x00
-#define aRHO	0x00
-#define aTTInO	0x00
-#define aTTOutO	0x00
-#define aPInO	0x00
-#define aPOutO	0x00
-#define aQO		0x00
-
 /*-----------------------------*/
 /*Смещеия механизмов в массиве*/
 /*
@@ -231,7 +182,6 @@
 #define cMSFreshSens	0x02
 #define cMSBlockRegs	0x01
 
-//#define cbNoMech		0x02
 /*----------------------------------*/
 
 #define cTermHorzScr	0
@@ -240,17 +190,6 @@
 #define cTermVertScr2	3
 #define cTermVertScr3	4
 #define cTermVertScr4	5
-
-/*-------Константы меню--------------
-#define cmTimeDate		0
-#define cmTimer			1
-#define cmArxiv			2
-#define cmControl		3
-#define cmHand			4
-#define cmCalibr		5
-#define cmLevel			6
-#define cEndMenu		7*/
-/*------------------------------------*/
 
 /*Константы измеряемых датчиков */
 #define cOutSensing		0
@@ -348,32 +287,9 @@
 //#define cAndKontur	1
 //#define cSepKontur	2
 
-/*Фазы досветки*/
-#define	cfOnLight		1
-#define	cfPauseLight	0
-
-/*Режимы досветки*/
-#define	cmOnLight		1
-#define	cmOffLight		0
-
-/*Константы досветки*/
-
-#define	cHelpKontur5	5
 
 /*-----------------------------*/
 
-/*-------Константы меню--------------*/
-#define cmTimeDate		0
-#define cmTimer			1
-//#define cmArxiv			cmTimer+cSTepl
-#define cmControl		cmTimer+1//cmArxiv+1
-#define cmConstMech		cmControl+1
-#define cmStrategy		cmConstMech+1
-#define cmMechConfig	cmStrategy+1
-#define cmHand			cmMechConfig+1
-#define cmCalibr		cmHand+1
-//#define cmLevel			cmCalibr+1
-#define cEndMenu		cmCalibr+1
 /*-------------------------------*/
 /*Единицы измерения*/
 #define cu				0

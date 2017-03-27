@@ -10,9 +10,9 @@
 
 // convinience macros
 #define countof( arg)       ( sizeof(arg)/sizeof(arg[0]))
-#define lastof( arg)        ( countof(arg) - 1)
-#define endof( arg)     (&arg[countof(arg)])
-#define firstof( arg)   (&arg[0])
+#define firstof( arg)       (arg[0])
+#define lastof( arg)        (arg[countof(arg) - 1])
+#define endof( arg)         (arg[countof(arg)])
 #ifndef container_of
     #define container_of(ptr, type, member) ({ const typeof( ((type *)0)->member ) *__mptr = (ptr); (type *)( (char *)__mptr - offsetof(type,member) );})
 #endif
