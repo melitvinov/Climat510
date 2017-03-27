@@ -46,12 +46,12 @@ typedef struct
     volatile hal_fieldbus_status_t status;
     volatile uint byte_idx;
 
-    u32 rx_tout;
+    u32 rxtout;
 
     const u8 *tx;
     u8 *rx;
-    uint tx_len;
-    uint rx_len;
+    uint txlen;
+    uint rxlen;
     u8 addr;
 } hal_fieldbus_rt_t;
 
@@ -108,6 +108,7 @@ static void state_sending_addr(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_tx();
+        rt.status = HAL_FIELDBUS_BUSY;
 
         while (uart->SR & (USART_SR_RXNE | USART_SR_ORE))
             uart->DR;
@@ -130,8 +131,8 @@ static void state_receiving_addr(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
-        if (rt.rx_tout)
-            start_timer(rt.rx_tout);
+        if (rt.rxtout)
+            start_timer(rt.rxtout);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -166,6 +167,8 @@ static void state_sending_data(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_tx();
+        REQUIRE(rt.tx && rt.txlen);
+        rt.status = HAL_FIELDBUS_BUSY;
         rt.byte_idx = 0;
         uart->CR1 = active_cr1 | USART_CR1_TXEIE | USART_CR1_TCIE;  // leave only transmit interrupts
         return;
@@ -174,17 +177,27 @@ static void state_sending_data(uint ev, uint data)
     case EV_TXBUF_EMPTY:
         {
             uint idx = rt.byte_idx;
-            if (idx < rt.tx_len)
+            if (idx < rt.txlen)
             {
                 uart->DR = rt.tx[idx++];
                 rt.byte_idx = idx;
+                return;
+            }
+
+            if (ev == EV_TXBUF_EMPTY)
+            {
+                uart->CR1 = active_cr1 | USART_CR1_TCIE;    // leave only transmit complete interrupt to reduce load
+                return;
+            }
+
+            if (rt.rxlen)
+            {
+                trans(state_receiving_data);
             }
             else
             {
-                if (ev == EV_TXBUF_EMPTY)
-                    uart->CR1 = active_cr1 | USART_CR1_TCIE;    // leave only transmit complete interrupt to reduce load
-                else
-                    trans(state_receiving_data);
+                rt.status = HAL_FIELDBUS_IDLE;
+                trans(state_idling);
             }
         }
         return;
@@ -198,9 +211,11 @@ static void state_receiving_data(uint ev, uint data)
     {
     case EV_ENTRY:
         switch_to_rx();
+        REQUIRE(rt.rx && rt.rxlen);
+        rt.status = HAL_FIELDBUS_BUSY;
         rt.byte_idx = 0;
-        if (rt.rx_tout)
-            start_timer(rt.rx_tout);
+        if (rt.rxtout)
+            start_timer(rt.rxtout);
         uart->CR1 = active_cr1 | USART_CR1_RXNEIE;  // leave only rx interrupt
         return;
 
@@ -220,7 +235,7 @@ static void state_receiving_data(uint ev, uint data)
             uint idx = rt.byte_idx;
             rt.rx[idx++] = data;
 
-            if (idx < rt.rx_len)
+            if (idx < rt.rxlen)
             {
                 rt.byte_idx = idx;
             }
@@ -318,8 +333,7 @@ bool HAL_fieldbus_address_slave(u8 slave_addr, u32 tout)
         return 0;
 
     rt.addr = slave_addr;
-    rt.rx_tout = tout;
-    rt.status = HAL_FIELDBUS_BUSY;
+    rt.rxtout = tout;
 
     trans(state_sending_addr);
     return 1;
@@ -330,18 +344,18 @@ bool HAL_fieldbus_request_xfer(const u8 *tx, uint txlen, u8 *rx, uint rxlen, u32
     if (rt.state != state_idling)
         return 0;
 
-    // XXX: just for now: transactions should be nonempty
-    REQUIRE(tx && txlen);
-    REQUIRE(rx && rxlen);
-
     rt.tx = tx;
     rt.rx = rx;
-    rt.tx_len = txlen;
-    rt.rx_len = rxlen;
-    rt.rx_tout = rx_tout;
+    rt.txlen = txlen;
+    rt.rxlen = rxlen;
+    rt.rxtout = rx_tout;
 
-    rt.status = HAL_FIELDBUS_BUSY;
-    trans(state_sending_data);
+    if (txlen)
+        trans(state_sending_data);
+    else if (rxlen)
+        trans(state_receiving_data);
+    else
+        ;   // stay idle, transaction is degenerate
     return 1;
 }
 
