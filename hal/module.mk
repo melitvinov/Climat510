@@ -30,7 +30,6 @@ HAL_CINCS += hal/lcd
 HAL_CINCS += hal/net
 HAL_CINCS += hal/nvmem
 HAL_CINCS += hal/pincfg
-HAL_CINCS += hal/rs485
 HAL_CINCS += hal/rtc
 HAL_CINCS += hal/sys
 HAL_CINCS += hal/systimer
