@@ -104,7 +104,7 @@ void HAL_systimer_sleep(u32 ms);
 void hal_systimer_sleep_us(u32 us);
 
 
-//--- hal_fieldbus_new.h
+//--- hal_fieldbus.h
 
 typedef enum
 {

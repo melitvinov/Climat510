@@ -403,10 +403,10 @@ uint HAL_mac_write_packet(void *data, uint len)
     // has been sent. otherwise reset transmitter and continue
     if (rt.flags & PHY_FULL_DUPLEX)
     {
-        // one read of phy is 4 spi bytes, at 18 MHz it's 2.2us in best case.
+        // one read of phy is 3 spi bytes, at 18 MHz it's 1.7us in best case.
         // one ethernet packet of 1500+ bytes should be transferred in <2 ms
         // set tries to 10 ms (excluding any extra code overhead)
-        uint tries = 10E-3/2.2E-6;
+        uint tries = 10E-3/1.7E-6;
         while (1)
         {
             if (! (read_control_reg(ECON1) & ECON1_TXRTS))
