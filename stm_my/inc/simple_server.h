@@ -20,7 +20,6 @@
 #define cSizeHead		5
 
 
-
 #define BUFFER_SIZE 1500//400
 #define PSTR(s) s
 

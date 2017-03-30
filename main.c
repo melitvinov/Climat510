@@ -1,5 +1,5 @@
 
-//#define DEBUG
+#define DEBUG
 //#define AHU
 #define AGAPOVSKIY_DOUBLE_VALVE
 //#define SIO_PAUSE	1

@@ -156,9 +156,8 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 				if (!bNight) pScr->Mode=0;
 
 #warning CHECK THIS
-			// иемение 22
-			//if (YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
-			//	pScr->Mode=1;
+			if (YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens1].RCS,cbDownAlarmSens))
+				pScr->Mode=1;
 
 
 

@@ -1,6 +1,5 @@
 #pragma pack(1)
 
-
 typedef struct eeCalSensor {
 	uint8_t		Type;
 	uint8_t		nInput;
