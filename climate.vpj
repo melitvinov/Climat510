@@ -1,0 +1,240 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+	Version="10.0"
+	VendorName="SlickEdit"
+	WorkingDir=".">
+	<Config
+		Name="Release"
+		OutputFile=""
+		CompilerConfigName="">
+		<Menu>
+			<Target
+				Name="Build"
+				MenuCaption="&amp;Build"
+				CaptureOutputWith="ProcessBuffer"
+				SaveOption="SaveWorkspaceFiles"
+				RunFromDir="%rw"
+				ClearProcessBuffer="1">
+				<Exec CmdLine="make all"/>
+			</Target>
+			<Target
+				Name="Rebuild"
+				MenuCaption="&amp;Rebuild"
+				CaptureOutputWith="ProcessBuffer"
+				SaveOption="SaveWorkspaceFiles"
+				RunFromDir="%rw"
+				ClearProcessBuffer="1">
+				<Exec CmdLine="make clean all"/>
+			</Target>
+			<Target
+				Name="Burn"
+				MenuCaption="&amp;Burn"
+				CaptureOutputWith="ProcessBuffer"
+				ClearProcessBuffer="1"
+				SaveOption="SaveWorkspaceFiles"
+				RunFromDir="%rw">
+				<Exec CmdLine="make burn"/>
+			</Target>
+		</Menu>
+	</Config>
+	<CustomFolders>
+		<Folder
+			Name="Source Files"
+			Filters="*.c;*.C;*.cc;*.cpp;*.cp;*.cxx;*.c++;*.prg;*.pas;*.dpr;*.asm;*.s;*.bas;*.java;*.cs;*.sc;*.e;*.cob;*.html;*.rc;*.tcl;*.py;*.pl;*.d">
+		</Folder>
+		<Folder
+			Name="Header Files"
+			Filters="*.h;*.H;*.hh;*.hpp;*.hxx;*.inc;*.sh;*.cpy;*.if">
+		</Folder>
+		<Folder
+			Name="Resource Files"
+			Filters="*.ico;*.cur;*.dlg"/>
+		<Folder
+			Name="Bitmaps"
+			Filters="*.bmp"/>
+		<Folder
+			Name="Other Files"
+			Filters="">
+		</Folder>
+	</CustomFolders>
+	<Files AutoFolders="DirectoryView">
+		<Folder Name="app">
+			<Folder Name="control">
+				<F N="app/control/control.c"/>
+				<F N="app/control/control.h"/>
+				<F N="app/control/control_abi.h"/>
+				<F N="app/control/control_air_heat.c"/>
+				<F N="app/control/control_air_heat.h"/>
+				<F N="app/control/control_const.c"/>
+				<F N="app/control/control_const.h"/>
+				<F N="app/control/control_def.h"/>
+				<F N="app/control/control_gd.c"/>
+				<F N="app/control/control_gd.h"/>
+				<F N="app/control/control_screen.c"/>
+				<F N="app/control/control_screen.h"/>
+				<F N="app/control/control_siod.c"/>
+				<F N="app/control/control_siod.h"/>
+				<F N="app/control/control_strategy.c"/>
+				<F N="app/control/control_strategy.h"/>
+				<F N="app/control/control_subr.c"/>
+				<F N="app/control/control_subr.h"/>
+				<F N="app/control/control_upstream.c"/>
+				<F N="app/control/control_upstream.h"/>
+				<F
+					N="app/control/module.mk"
+					Type="Makefile"/>
+			</Folder>
+			<Folder Name="stm_my">
+				<F N="app/stm_my/ip_arp_udp_tcp.c"/>
+				<F N="app/stm_my/ip_arp_udp_tcp.h"/>
+				<F N="app/stm_my/net.h"/>
+				<F N="app/stm_my/simple_server.c"/>
+				<F N="app/stm_my/simple_server.h"/>
+				<F N="app/stm_my/stm32f10x_Rootines.c"/>
+				<F N="app/stm_my/stm32f10x_Rootines.h"/>
+				<F N="app/stm_my/stm32f10x_RS485.c"/>
+			</Folder>
+			<F N="app/405_cfg.c"/>
+			<F N="app/405_ConfigEnRuSR.h"/>
+			<F N="app/405_Display.c"/>
+			<F N="app/405_EngRus.h"/>
+			<F N="app/405_Memory.c"/>
+			<F N="app/405_Memory.h"/>
+			<F N="app/405_Menu.c"/>
+			<F N="app/405_menu.h"/>
+			<F N="app/defs.h"/>
+			<F N="app/fieldbus.c"/>
+			<F N="app/fieldbus.h"/>
+			<F N="app/keyboard.c"/>
+			<F N="app/keyboard.h"/>
+			<F N="app/lcd.c"/>
+			<F N="app/lcd.h"/>
+			<F N="app/lcdconsts.h"/>
+			<F N="app/main.c"/>
+			<F N="app/main_consts.c"/>
+			<F N="app/main_consts.h"/>
+			<F N="app/measure.c"/>
+			<F N="app/measure.h"/>
+			<F N="app/module.c"/>
+			<F N="app/module.h"/>
+			<F
+				N="app/module.mk"
+				Type="Makefile"/>
+			<F N="app/modules_master.c"/>
+			<F N="app/modules_master.h"/>
+			<F N="app/rtc.c"/>
+			<F N="app/rtc.h"/>
+			<F N="app/sound.c"/>
+			<F N="app/sound.h"/>
+			<F N="app/timers.c"/>
+			<F N="app/timers.h"/>
+			<F N="app/unsorted.c"/>
+			<F N="app/unsorted.h"/>
+			<F N="app/wtf.c"/>
+			<F N="app/wtf.h"/>
+		</Folder>
+		<Folder Name="env">
+			<F N="env/debug.c"/>
+			<F N="env/debug.h"/>
+			<F
+				N="env/module.mk"
+				Type="Makefile"/>
+			<F N="env/syntax.h"/>
+		</Folder>
+		<Folder Name="fwlib">
+			<F N="fwlib/fw_conv.c"/>
+			<F N="fwlib/fw_conv.h"/>
+			<F N="fwlib/fw_format.c"/>
+			<F N="fwlib/fw_format.h"/>
+			<F N="fwlib/fw_mem_wstream.c"/>
+			<F N="fwlib/fw_mem_wstream.h"/>
+			<F N="fwlib/fw_string.c"/>
+			<F N="fwlib/fw_string.h"/>
+			<F N="fwlib/fw_wstream.c"/>
+			<F N="fwlib/fw_wstream.h"/>
+			<F N="fwlib/fwlib.h"/>
+			<F
+				N="fwlib/module.mk"
+				Type="Makefile"/>
+		</Folder>
+		<Folder Name="hal">
+			<Folder Name="beep">
+				<F N="hal/beep/hal_beep.c"/>
+				<F N="hal/beep/hal_beep.h"/>
+			</Folder>
+			<Folder Name="core">
+				<F N="hal/core/core_cm3.h"/>
+				<F N="hal/core/hal_atomic.c"/>
+				<F N="hal/core/hal_atomic.h"/>
+				<F N="hal/core/hal_priorities.h"/>
+				<F N="hal/core/stm32f10x.h"/>
+				<F N="hal/core/stm32f10x_rcc.h"/>
+				<F N="hal/core/system_stm32f10x.h"/>
+			</Folder>
+			<Folder Name="debug">
+				<F N="hal/debug/hal_debug.c"/>
+				<F N="hal/debug/hal_debug.h"/>
+			</Folder>
+			<Folder Name="fieldbus">
+				<F N="hal/fieldbus/hal_fieldbus.c"/>
+				<F N="hal/fieldbus/hal_fieldbus.h"/>
+			</Folder>
+			<Folder Name="i2c">
+				<F N="hal/i2c/hal_i2c.h"/>
+				<F N="hal/i2c/hal_i2c_bitbang.c"/>
+			</Folder>
+			<Folder Name="keyb">
+				<F N="hal/keyb/hal_keyb.c"/>
+				<F N="hal/keyb/hal_keyb.h"/>
+			</Folder>
+			<Folder Name="lcd">
+				<F N="hal/lcd/hal_lcd.c"/>
+				<F N="hal/lcd/hal_lcd.h"/>
+				<F N="hal/lcd/lcd_font.h"/>
+				<F N="hal/lcd/testpic.h"/>
+			</Folder>
+			<Folder Name="net">
+				<F N="hal/net/enc28j60.h"/>
+				<F N="hal/net/hal_mac.c"/>
+				<F N="hal/net/hal_mac.h"/>
+				<F N="hal/net/hw_flags.h"/>
+			</Folder>
+			<Folder Name="nvmem">
+				<F N="hal/nvmem/hal_nvmem.c"/>
+				<F N="hal/nvmem/hal_nvmem.h"/>
+			</Folder>
+			<Folder Name="pincfg">
+				<F N="hal/pincfg/hal_pincfg.c"/>
+				<F N="hal/pincfg/hal_pincfg.h"/>
+			</Folder>
+			<Folder Name="rtc">
+				<F N="hal/rtc/hal_rtc.c"/>
+				<F N="hal/rtc/hal_rtc.h"/>
+			</Folder>
+			<Folder Name="spi">
+				<F N="hal/spi/hal_spi.c"/>
+				<F N="hal/spi/hal_spi.h"/>
+			</Folder>
+			<Folder Name="sys">
+				<F N="hal/sys/hal_sys.c"/>
+				<F N="hal/sys/hal_sys.h"/>
+			</Folder>
+			<Folder Name="systimer">
+				<F N="hal/systimer/hal_systimer.c"/>
+				<F N="hal/systimer/hal_systimer.h"/>
+			</Folder>
+			<Folder Name="tty">
+				<F N="hal/tty/hal_tty.h"/>
+				<F N="hal/tty/hal_tty_bitbang.c"/>
+				<F N="hal/tty/hal_tty_hw.c"/>
+			</Folder>
+			<F N="hal/hal.h"/>
+			<F
+				N="hal/module.mk"
+				Type="Makefile"/>
+		</Folder>
+		<F
+			N="configuration.mk"
+			Type="Makefile"/>
+	</Files>
+</Project>

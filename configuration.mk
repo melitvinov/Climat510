@@ -34,7 +34,7 @@ QUIET := true
 USE_LTO := false
 
 # Modules to build project from
-MODULES := hal env fwlib control .
+MODULES := hal env fwlib app app/control
 
 # Build directory - place for intermediate objects, listings etc.
 BUILD_DIR := $(CFG)/build
