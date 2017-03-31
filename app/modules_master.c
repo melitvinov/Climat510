@@ -5,7 +5,7 @@
 #include "debug.h"
 
 
-#define FULL_SYNC (_MODULE_ACTION_LAST - 1)
+#define FULL_SYNC ((1 << _MODULE_ACTION_IDX_LAST) - 1)
 
 typedef struct
 {
@@ -98,6 +98,8 @@ static module_entry_t *alloc_entry(uint base)
 
         if (e->module.base == 0)
         {
+            LOG("allocated entry for module %d", base);
+
             e->module.base = base;
             prepare_fresh_entry(e);
             return e;
@@ -284,10 +286,8 @@ void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t
 }
 
 
-static module_entry_t *next_entry(void)
+static module_entry_t *next_entry(module_entry_t *e)
 {
-    module_entry_t *e = rt.active_entry;
-
     if (! e)
     {
         e = &rt.entries[0];
@@ -295,7 +295,7 @@ static module_entry_t *next_entry(void)
     else
     {
         e++;
-        if (e >= &endof(rt.entries))
+        if (e >= &endof(rt.entries) || e->module.base == 0)
             e = &rt.entries[0];
     }
 
@@ -331,6 +331,8 @@ static void end_sync(module_entry_t *e, s8 *exterr)
     }
     else
     {
+        LOG("err status 0x%02x", err);
+
         // error, so do a full sync next time around
         e->requested_actions |= FULL_SYNC;
 
@@ -375,21 +377,18 @@ static void end_sync(module_entry_t *e, s8 *exterr)
 
 void SendIPC(s8 *fErrModule)
 {
-    module_entry_t *e =  rt.active_entry;
-
-    if (e)
+    if (rt.active_entry)
     {
         if (module_sync_is_busy())
             return;
 
-        end_sync(e, fErrModule);
+        end_sync(rt.active_entry, fErrModule);
     }
 
-    e = next_entry();
+    rt.active_entry = next_entry(rt.active_entry);
 
-    if (! e)
+    if (! rt.active_entry)
         return;
 
-    rt.active_entry = e;
-    start_sync(e);
+    start_sync(rt.active_entry);
 }

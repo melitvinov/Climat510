@@ -1,4 +1,4 @@
-#define NOLOG
+//#define NOLOG
 
 #include "syntax.h"
 #include "timers.h"
@@ -32,13 +32,20 @@ static void req_push_discrete_outputs(void);
 static void req_pull_inputs(void);
 static void req_push_outputs(void);
 
-static const action_t actions_table[_MODULE_ACTION_LAST] =
+enum
 {
-    [MODULE_ACTION_PULL_STATUS] =           {.req = req_pull_status,            .on_done = on_pull_status_done},
-    [MODULE_ACTION_PUSH_INPUT_CONFIG] =     {.req = req_push_input_config},
-    [MODULE_ACTION_PUSH_DISCRETE_OUTPUTS] = {.req = req_push_discrete_outputs},
-    [MODULE_ACTION_PULL_INPUTS] =           {.req = req_pull_inputs},
-    [MODULE_ACTION_PUSH_OUTPUTS] =          {.req = req_push_outputs},
+    ACTION_IDX_PULL_STATUS,
+    ACTION_IDX_PUSH_INPUT_CONFIG,
+};
+
+
+static const action_t actions_table[] =
+{
+    [_MODULE_ACTION_IDX_PULL_STATUS] =           {.req = req_pull_status,            .on_done = on_pull_status_done},
+    [_MODULE_ACTION_IDX_PUSH_INPUT_CONFIG] =     {.req = req_push_input_config},
+    [_MODULE_ACTION_IDX_PUSH_DISCRETE_OUTPUTS] = {.req = req_push_discrete_outputs},
+    [_MODULE_ACTION_IDX_PULL_INPUTS] =           {.req = req_pull_inputs},
+    [_MODULE_ACTION_IDX_PUSH_OUTPUTS] =          {.req = req_push_outputs},
 };
 
 static void check_progress(timer_t *dummy);
@@ -48,7 +55,7 @@ PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->outputs));
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->discrete_outputs));
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs_cfg));
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs));
-PANIC_IF(_MODULE_ACTION_LAST > 0x100);  // to fit u8
+PANIC_IF(_MODULE_ACTION_IDX_LAST > 8);  // to fit u8
 
 
 static u8 get_maddr(void)
@@ -59,7 +66,7 @@ static u8 get_maddr(void)
 
 static void req_pull_status(void)
 {
-    LOG("pulling cond");
+    LOG("pulling status");
     bool is_ok = fieldbus_request_read(get_maddr(), 0, 0, &rt.data->status_word, sizeof(rt.data->status_word));
     REQUIRE(is_ok);
 }
@@ -78,6 +85,8 @@ static bool on_pull_status_done(void)
 
 static void req_push_input_config(void)
 {
+    LOG("pushing input config");
+
     bool is_ok = fieldbus_request_write(get_maddr(), 0, 2, &rt.data->inputs_cfg, sizeof(rt.data->inputs_cfg));
     REQUIRE(is_ok);
 }
@@ -93,13 +102,14 @@ static void req_push_discrete_outputs(void)
 
 static void req_push_outputs(void)
 {
+    LOG("pushing out regs");
+
     if (rt.data->outputs[0].type == 0)
     {
         // just auto-complete transfer
         return;
     }
 
-    LOG("pushing out regs");
     bool is_ok = fieldbus_request_write(get_maddr(), 0, 8, &rt.data->outputs, sizeof(rt.data->outputs));
     REQUIRE(is_ok);
 }
@@ -107,6 +117,8 @@ static void req_push_outputs(void)
 
 static void req_pull_inputs(void)
 {
+    LOG("pulling inputs");
+
     uint cnt = rt.data->max_n_inputs;
 
     if (cnt == 0)
@@ -143,6 +155,8 @@ static void do_next_action(void)
     }
 
     // limit the number of actions per session to avoid the module blocking the bus for too long
+
+    LOG("actions is %d", actions);
 
     const action_t *action = &actions_table[ctz(actions)];
     action->req();
