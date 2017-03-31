@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "control_gd.h"
 #include "405_memory.h"
+#include "module.h"
 #include "measure.h"
 
 #include "wtf.h"
@@ -31,12 +32,6 @@ extern uchar nReset;
 
 void InitBlockEEP(void)
 {
-/*---!!!!ВНИМАНИЕ!!!! По глупости
-номер в массиве BlockEEP должен соответствовать
-на единицу меньше номеру в массиве AdrGD
-т.е порядки структур должны быть строго одинаковы
-и все несохраняеьые в EEP должны быть в конце AdrGD*/
-
     #warning "WTF: +15 ?"
     BlockEEP[0].AdrCopyRAM=&gd()->Control.Zones;
     BlockEEP[0].Size = sizeof(gd()->Control.Zones)+15;
@@ -151,7 +146,7 @@ void ButtonReset(void)
 
 void SetRelay(uint16_t nRelay)
 {
-    if (GetIPCComMod(nRelay))
+    if (addr2base(nRelay))
     {
         SetOutIPCDigit(1,nRelay);
     }
@@ -159,7 +154,7 @@ void SetRelay(uint16_t nRelay)
 //----------------------------------------
 void ClrRelay(uint16_t nRelay)
 {
-    if (GetIPCComMod(nRelay))
+    if (addr2base(nRelay))
     {
         SetOutIPCDigit(0,nRelay);
     }
@@ -167,7 +162,7 @@ void ClrRelay(uint16_t nRelay)
 
 char TestRelay(uint16_t nRelay)
 {
-    if (GetIPCComMod(nRelay))
+    if (addr2base(nRelay))
         return GetOutIPCDigit(nRelay);
     // XXX: is it right to report 0 ?
     return 0;

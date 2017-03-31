@@ -214,7 +214,7 @@ static void init(void)
     LOG("initing fieldbus ...");
     fieldbus_init();
 
-//  fieldbus_smoke();
+    fieldbus_smoke();
 
 
     keyboardSetBITKL(0);

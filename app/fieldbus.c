@@ -436,8 +436,10 @@ void fieldbus_smoke(void)
     {
         smoke_read_status(121);
         HAL_systimer_sleep(100);
+        smoke_read_status(121);
+        HAL_systimer_sleep(100);
         smoke_write_output(121, output);
-        HAL_systimer_sleep(1000);
+        HAL_systimer_sleep(10000);
 
         output ^= (i++ & 0xFF) << 8;
     }

@@ -2,24 +2,43 @@
 
 #include "module.h"
 #include "modules_master.h"
-
-#include "control_gd.h"
-
 #include "debug.h"
 
 
-static uint8_t cCycle;
-static uint8_t  ncFan;
-static int cModule = -1;
+#define FULL_SYNC (_MODULE_ACTION_LAST - 1)
 
-static module_t ModulData[N_MAX_MODULES];
+typedef struct
+{
+    module_t module;
 
-uint16_t GetIPCComMod(uint16_t nAddress)
+    u8 is_first_sync;           // just a hacky flag to ignore a first reset
+
+    u8 access_cycle;
+
+    u8 status;
+
+    u8 err_cnt;                 // count of comm error
+    u8 reset_cnt;               // count of seen resets
+
+    u8 requested_actions;       // bitmap of actions requested for module before the sync cycle
+    u8 pending_actions;         // bitmap of pending (uncompleted) actions for module
+} module_entry_t;
+
+
+typedef struct
+{
+     module_entry_t entries[N_MAX_MODULES];
+     module_entry_t *active_entry;
+} master_rt_t;
+
+static master_rt_t rt;
+
+uint addr2base(uint nAddress)
 {
     return nAddress/100;
 }
 
-uint16_t GetIPCNum(uint16_t nAddress)
+static uint addr2resource(uint nAddress)
 {
     return nAddress%100;
 }
@@ -31,49 +50,57 @@ void ClrAllOutIPCDigit(void)
     for (i=0; i< N_MAX_MODULES; i++)
     {
         // ok, so the zero module terminates the list
-        if (!ModulData[i].CpM)
+        if (! rt.entries[i].module.base)
             return;
-        ModulData[i].discrete_outputs=0;
+        rt.entries[i].module.discrete_outputs = 0;
+        rt.entries[i].requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
     }
 }
 
 
-module_t *find_module_by_address(u16 addr)
+static module_entry_t *find_entry_by_base(uint base)
 {
-    u32 vCpM = GetIPCComMod(addr);
+    if (base == 0) return 0;
 
-    if (!vCpM) return NULL;
-    if (vCpM/100 == 6) return NULL;
-
-    for (uint i=0; i< N_MAX_MODULES; i++)
+    for (uint i = 0; i < countof(rt.entries); i++)
     {
-        module_t *p =  &ModulData[i];
+        module_entry_t *e =  &rt.entries[i];
 
-        if (p->CpM == vCpM)
-            return p;
+        if (e->module.base == base)
+            return e;
     }
 
     return NULL;
 }
 
-
-module_t *alloc_module(u16 addr)
+static void prepare_fresh_entry(module_entry_t *e)
 {
-    u32 vCpM = GetIPCComMod(addr);
+    e->requested_actions |= FULL_SYNC;
 
-    if (!vCpM) return NULL;
-    if (vCpM/100 == 6) return NULL;
+    e->err_cnt = 0;
+    e->reset_cnt = 0;
+    e->access_cycle = 0;
+    e->status = 0;
+    e->is_first_sync = 1;
+}
 
-    for (uint i=0; i< N_MAX_MODULES; i++)
+static module_entry_t *alloc_entry(uint base)
+{
+    if (base == 0) return NULL;
+
+    module_entry_t *e = find_entry_by_base(base);
+    if (e)
+        return e;
+
+    for (uint i=0; i < countof(rt.entries); i++)
     {
-        module_t *p =  &ModulData[i];
+        module_entry_t *e =  &rt.entries[i];
 
-        if (p->CpM == vCpM)
-            return p;
-        if (p->CpM == 0)
+        if (e->module.base == 0)
         {
-            p->CpM = vCpM;
-            return p;
+            e->module.base = base;
+            prepare_fresh_entry(e);
+            return e;
         }
     }
 
@@ -81,38 +108,45 @@ module_t *alloc_module(u16 addr)
 }
 
 
-void SetOutIPCDigit(char How, uint16_t nAddress)
+void SetOutIPCDigit(bool set, uint nAddress)
 {
-    module_t *m = alloc_module(nAddress);
-    if (! m)
+    uint base = addr2base(nAddress);
+
+    module_entry_t *e = alloc_entry(base);
+    if (! e)
         return;
 
     LOG("updating bit");
 
-    u32 bOut=1;
-    bOut <<= GetIPCNum(nAddress)-1;
+    u32 mask = 1U << (addr2resource(nAddress) - 1);
 
-    if (How)
-        m->discrete_outputs |= bOut;
+    if (set)
+        e->module.discrete_outputs |= mask;
     else
-        m->discrete_outputs &= ~(bOut);
+        e->module.discrete_outputs &= ~(mask);
+
+    e->requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
 }
 
 
-void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr, module_fandata_t *fandata)
+void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr)
 {
-    module_t *m = alloc_module(nAddress);
-    if (! m)
+    uint base = addr2base(nAddress);
+    module_entry_t *e = alloc_entry(base);
+    if (! e)
         return;
 
-    u32 bOut=GetIPCNum(nAddress)-1;
-    if (bOut>=MODULE_MAX_N_OUTPUTS)
+    u32 idx = addr2resource(nAddress)-1;
+    if (idx >= MODULE_MAX_N_OUTPUTS)
         return;
 
-    *nErr=m->err_cnt;
-    m->outputs[bOut].val=How;
-    m->outputs[bOut].type= fType;
-    m->fandata = fandata;
+    *nErr=e->err_cnt;
+
+    e->module.outputs[idx].val=How;
+    e->module.outputs[idx].type= fType;
+
+    e->requested_actions |= MODULE_ACTION_PUSH_OUTPUTS;
+
     return;
 }
 
@@ -120,16 +154,15 @@ void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr, mo
 // GUESS: read binary value from the cached data (relay pin output)
 char GetOutIPCDigit(uint16_t nAddress)
 {
-    u32 vCpM=GetIPCComMod(nAddress);
-    if (!vCpM) return -1;
-    if (vCpM/100 == 6) return 1;
+    uint base = addr2base(nAddress);
+    if (! base) return -1;
 
-    const module_t *m = find_module_by_address(nAddress);
-    if (! m)
+    const module_entry_t *e = find_entry_by_base(base);
+    if (! e)
         return -1;
 
-    u32 bIn = 1U << (GetIPCNum(nAddress) - 1);
-    if (m->discrete_outputs & bIn)
+    u32 mask = 1U << (addr2resource(nAddress) - 1);
+    if (e->module.discrete_outputs & mask)
         return 1;
     else
         return 0;
@@ -140,70 +173,61 @@ char GetOutIPCDigit(uint16_t nAddress)
 uint16_t GetInIPC(uint16_t nAddress, s8 *nErr)
 {
 //TODO
-    u32 vCpM=GetIPCComMod(nAddress);
-    if (!vCpM)
-    {
-        *nErr=-1;
-        return 0;
-    }
-    if (vCpM/100 == 6)
-    {
-        *nErr=0;
-        return 0;
-    }
-
-    u32 vInput=GetIPCNum(nAddress);
-    if (!vInput)
+    uint base=addr2base(nAddress);
+    if (!base)
     {
         *nErr=-1;
         return 0;
     }
 
-    const module_t *m = alloc_module(nAddress);
+    uint idx = addr2resource(nAddress);
+    if (!idx)
+    {
+        *nErr=-1;
+        return 0;
+    }
+
+    const module_entry_t *e = alloc_entry(base);
 
     #warning "4444 ? WTF ?"
-    if (! m)
+    if (! e)
     {
         *nErr=0;
         return 4444;
     }
 
-    *nErr = m->err_cnt;
-    return m->inputs[vInput-1];
+    *nErr = e->err_cnt;
+    return e->module.inputs[idx-1];
 }
 
 
 // GUESS: read the the discrete input from cached data
 uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr)
 {
-    u32 vCpM=GetIPCComMod(nAddress);
-    if (!vCpM)
-    {
-        *nErr=-1;
-        return 0;
-    }
-    if (vCpM/100 == 6)
-    {
-        *nErr=0;
-        return 1;
-    }
-    u32 vInput=GetIPCNum(nAddress);
-    if (!vInput)
+    uint base=addr2base(nAddress);
+    if (!base)
     {
         *nErr=-1;
         return 0;
     }
 
-    const module_t *m = alloc_module(nAddress);
+    uint idx = addr2resource(nAddress);
+    if (!idx)
+    {
+        *nErr=-1;
+        return 0;
+    }
 
-    if (! m)
+    const module_entry_t *e = alloc_entry(base);
+
+    if (! e)
     {
         *nErr=0;
         return 0;
     }
 
-    *nErr=m->err_cnt;
-    if ((m->inputs[vInput-1]>2500) && (m->err_cnt < iMODULE_MAX_ERR))
+    *nErr=e->err_cnt;
+    if ((e->module.inputs[idx-1]>2500) && (e->err_cnt < iMODULE_MAX_ERR))
         return 1;
     else
         return 0;
@@ -213,120 +237,159 @@ uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr)
 // GUESS: resets the input config in cached data and schedule the module update
 void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
 {
-//  nAddress = 101;
-
-    u32 vInput=GetIPCNum(nAddress);
+    uint vInput = addr2resource(nAddress);
     if (! vInput)
         return;
 
-    module_t *m = alloc_module(nAddress);
+    uint base = addr2base(nAddress);
+    module_entry_t *e = alloc_entry(base);
 
-    if (! m)
+    if (! e)
         return;
 
     LOG("updating input");
 
 //			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //·ÂÁ Í‡ÎË·Ó‚ÓÍ
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
-    m->cond |= MODULE_ERR_NEED_RESET;
-    memcpy(&m->inputs_cfg[vInput-1], cfg, sizeof(module_input_cfg_t));
+    memcpy(&e->module.inputs_cfg[vInput-1], cfg, sizeof(module_input_cfg_t));
     //********************** Õ¿ƒŒ ”¡–¿“‹ *****************************
     for (uint k=0;k < 32;k++)
     {
 
         //ModulData[i].InConfig[k].Type=3;
-        m->inputs_cfg[k].input=k+1;
+        e->module.inputs_cfg[k].input=k+1;
     }
     //****************************************************************
 
-    if (m->max_n_inputs<vInput)
-        m->max_n_inputs = vInput;
+    if (e->module.max_n_inputs<vInput)
+        e->module.max_n_inputs = vInput;
+
+    e->requested_actions |= MODULE_ACTION_PUSH_INPUT_CONFIG;
 }
 
 
-void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn,uint16_t **fInputs)
+void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn, const uint16_t **fInputs)
 {
-    *fCpM=ModulData[nMod].CpM;
-    *fErr=ModulData[nMod].err_cnt;
-    *fFail=ModulData[nMod].fail_cnt;
-    *fCond=ModulData[nMod].cond;
-    *fMaxIn=ModulData[nMod].max_n_inputs;
-    *fInputs=ModulData[nMod].inputs;
+    REQUIRE(nMod < countof(rt.entries));
+    const module_entry_t *e = &rt.entries[nMod];
+
+    *fCpM=e->module.base;
+    *fMaxIn=e->module.max_n_inputs;
+    *fInputs=e->module.inputs;
+
+    #warning "status report is broken"
+    *fCond=e->status;
+    *fErr=e->err_cnt;
+    *fFail=e->reset_cnt;
 }
 
-static bool any_modules_defined(void)
+
+static module_entry_t *next_entry(void)
 {
-    if (ModulData[0].CpM == 0)
-        return 0;
-    return 1;
+    module_entry_t *e = rt.active_entry;
+
+    if (! e)
+    {
+        e = &rt.entries[0];
+    }
+    else
+    {
+        e++;
+        if (e >= &endof(rt.entries))
+            e = &rt.entries[0];
+    }
+
+    return e->module.base != 0 ? e : NULL;
 }
+
+
+static void start_sync(module_entry_t *e)
+{
+    if (! e)
+        return;
+
+    if (e->access_cycle == 0)
+        e->requested_actions |= MODULE_ACTION_PULL_STATUS | MODULE_ACTION_PULL_INPUTS;
+
+    // put requested actions to 'fifo'
+    e->pending_actions |= e->requested_actions;
+    e->requested_actions = 0;
+
+    module_sync_run(&e->module, e->pending_actions);
+}
+
+
+static void end_sync(module_entry_t *e, s8 *exterr)
+{
+    uint err = module_sync_get_err();
+
+    if (err == 0)
+    {
+        // dequeue requests
+        e->pending_actions = 0;
+        e->status &= ~MODULE_ERR_RESET; // this error is transient, clear after succesful sync
+    }
+    else
+    {
+        // error, so do a full sync next time around
+        e->requested_actions |= FULL_SYNC;
+
+        // stat resets
+        if (err & MODULE_ERR_RESET)
+        {
+            if (e->is_first_sync)
+            {
+                err &= ~MODULE_ERR_RESET;   // ignore reset for the just-allocated module, it's expected
+            }
+            else
+            {
+                e->reset_cnt++;
+                if (e->reset_cnt > iMODULE_MAX_FAILURES)
+                    e->reset_cnt = iMODULE_MAX_FAILURES;
+            }
+        }
+
+        // stat link errors
+        if (err & (MODULE_ERR_CHECKSUM | MODULE_ERR_LINK))
+        {
+            e->err_cnt++;
+            if (e->err_cnt > iMODULE_MAX_ERR)
+            {
+                e->err_cnt = iMODULE_MAX_ERR;
+                *exterr = e->module.base % 100;
+            }
+        }
+
+        // latch errors
+        e->status |= err;
+    }
+
+    e->is_first_sync = 0;
+
+    #warning "ccycle is seriously broken"
+    #warning "exterr is broken too"
+
+    e->access_cycle = (e->access_cycle + 1) % 10;
+}
+
 
 void SendIPC(s8 *fErrModule)
 {
-    if (! any_modules_defined())
+    module_entry_t *e =  rt.active_entry;
+
+    if (e)
     {
-//        LOG("no modules defined");
-        return;
+        if (module_sync_is_busy())
+            return;
+
+        end_sync(e, fErrModule);
     }
 
-    if (cModule < 0)
-    {
-        // XXX: once at startup
-        cModule = 0;
-        module_processor_run(&ModulData[cModule], 0, 0);
-        return;
-    }
+    e = next_entry();
 
-    if (module_processor_is_busy())
+    if (! e)
         return;
 
-    if (ModulData[cModule].cond)
-        ModulData[cModule].err_cnt++;
-    else
-        ModulData[cModule].err_cnt=0;
-
-    if (ModulData[cModule].fail_cnt>iMODULE_MAX_FAILURES)
-        ModulData[cModule].fail_cnt=iMODULE_MAX_FAILURES;
-
-    if (ModulData[cModule].err_cnt>iMODULE_MAX_ERR)
-    {
-        ModulData[cModule].err_cnt=iMODULE_MAX_ERR;
-        *fErrModule=ModulData[cModule].CpM%100;
-    }
-
-    #warning "ncfan, ccycle are seriously broken"
-
-    ncFan %= MAX_FAN_COUNT;
-    cCycle %= 10;
-
-    cModule = (cModule + 1) % N_MAX_MODULES;
-
-    // if module is not defined, reset cycle and start from the first module
-    if (ModulData[cModule].CpM == 0)
-    {
-        cModule=0;
-        cCycle++;
-        ncFan++;
-        module_processor_run(&ModulData[cModule], (cCycle % 10) != (cModule % 10), ncFan);
-        return;
-    }
-
-
-/*	if ((ModulData[cModule].CpM/100) == 6)
-    {
-        ModulData[cModule].Err=0;
-        cModule++;
-        return;
-    }*/
-//  if (ModulData[cModule].CpM/100)
-//  {
-//      WARN("attempt to send something over uart2. ignored");
-//      ModulData[cModule].Cond=0;
-//      //RS485_Out2_Transmit(120+ModulData[cModule].CpM%100,ModulData[cModule].OutValues);
-//      cOperInModule= ACTION_TOUCH_UART2;
-//      return;
-//  }
-//
-//  if (IMOD_Exchange(&ModulData[cModule]) == 0)
-//      cOperInModule++;
+    rt.active_entry = e;
+    start_sync(e);
 }

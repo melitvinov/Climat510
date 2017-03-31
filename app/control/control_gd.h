@@ -8,14 +8,6 @@
 // XXX: isolation
 #include "405_ConfigEnRuSR.h"
 #include "control_abi.h"
-#include "module.h"
-
-#define MAX_FAN_COUNT	64
-
-typedef struct
-{
-    module_fandata_t FanData[MAX_FAN_COUNT];
-} eFanBlock;
 
 
 typedef struct  eGData
@@ -29,8 +21,6 @@ typedef struct  eGData
     eTuneClimate    TuneClimate;
     eTControl       TControl;
     eLevel          Level;
-    // NOT blobs in remote reporting
-    eFanBlock FanBlock[NZONES][2];
 } eGData;
 
 
@@ -45,7 +35,6 @@ typedef struct
     const eMechConfig *mech_cfg;
     const eConstMech *const_mech;
     const eStrategy *strategies;
-    const eFanBlock *fanblock;
 } zone_t;
 
 typedef struct

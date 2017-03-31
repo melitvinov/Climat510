@@ -1,6 +1,7 @@
 #include "syntax.h"
 
 // XXX: isolation
+
 #include "405_memory.h"
 #include "405_ConfigEnRuSR.h"
 #include "405_EngRus.h"
@@ -8,6 +9,7 @@
 #include "control.h"
 #include "control_siod.h"
 
+#include "module.h"
 #include "measure.h"
 
 // for modul_sum constant
@@ -199,7 +201,9 @@ void pmInfoProg405(void){
 //	IntX = gd_get()->Hot.MidlSR;
 //	if (IntX<0) IntX=-IntX;
 //	w_int(&IntX,SSSS, 0);
-    w_int(&gd()->FanBlock[0][0].FanData[0].actual_speed,SSSS, 0);
+
+    #warning "removed fandata"
+    //w_int(&gd()->FanBlock[0][0].FanData[0].actual_speed,SSSS, 0);
 
     if (!idx)
     {
@@ -871,29 +875,29 @@ void pmNow(void) {
     }
     if (x_menu>SumTeplZones)
     {
-        int byte_y=(x_menu-SumTeplZones-1)/2+1;
-        int byte_z=(x_menu-SumTeplZones-1)%2+1;
-        Y_menu2%=N_MAX_MODULES;//cSMech;
-        Form = 0;
-        Ad_Buf = Str2;
-        w_txt("Fans zone ");
-        w_int(&byte_y,oS, 0);
-        lcdbuf[Ad_Buf++]='-';
-        w_int(&byte_z,oS, 0);
-        Ad_Buf = Str3;
-        for (int byte_x = 0;byte_x<MAX_FAN_COUNT;byte_x++)
-        {
-            if (byte_x == 32)
-                Ad_Buf = Str4;
-            if (gd()->FanBlock[x_menu-SumTeplZones-1][0].FanData[byte_x].actual)
-            {
-
-                lcdbuf[Ad_Buf++]='0';
-            }
-            else
-                lcdbuf[Ad_Buf++]='1';
-
-        }
+//      int byte_y=(x_menu-SumTeplZones-1)/2+1;
+//      int byte_z=(x_menu-SumTeplZones-1)%2+1;
+//      Y_menu2%=N_MAX_MODULES;//cSMech;
+//      Form = 0;
+//      Ad_Buf = Str2;
+//      w_txt("Fans zone ");
+//      w_int(&byte_y,oS, 0);
+//      lcdbuf[Ad_Buf++]='-';
+//      w_int(&byte_z,oS, 0);
+//      Ad_Buf = Str3;
+//      for (int byte_x = 0;byte_x<MAX_FAN_COUNT;byte_x++)
+//      {
+//          if (byte_x == 32)
+//              Ad_Buf = Str4;
+//          if (gd()->FanBlock[x_menu-SumTeplZones-1][0].FanData[byte_x].actual)
+//          {
+//
+//              lcdbuf[Ad_Buf++]='0';
+//          }
+//          else
+//              lcdbuf[Ad_Buf++]='1';
+//
+//      }
 /*        Ad_Buf = Str4;
         for (ByteX = 0;ByteX<MAX_FAN_COUNT;ByteX++)
         {

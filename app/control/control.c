@@ -1120,7 +1120,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
 
     if ((mech_idx == cHSmAHUSpeed1))
     {
-        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr, &zone->fanblock[0].FanData);
+        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr);
         return;
     }
 /*		GD.FanBlock[fnTepl][0].FanData[0].ActualSpeed = fnTepl*5;
@@ -1130,8 +1130,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
 */
     if ((mech_idx == cHSmAHUSpeed2))
     {
-//			Sound;
-        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr, &zone->fanblock[1].FanData);
+        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr);
         return;
     }
 
@@ -1827,7 +1826,6 @@ const zone_t make_zone_ctx(int zone_idx)
         .mech_cfg = &_GD.MechConfig[zone_idx],
         .const_mech = &_GD.ConstMechanic[zone_idx],
         .strategies = _GD.Strategy[zone_idx],
-        .fanblock = _GD.FanBlock[zone_idx],
     };
 
     return ctx;
