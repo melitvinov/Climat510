@@ -236,5 +236,8 @@
 		<F
 			N="configuration.mk"
 			Type="Makefile"/>
+		<F
+			N="makefile"
+			Type="Makefile"/>
 	</Files>
 </Project>

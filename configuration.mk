@@ -43,7 +43,7 @@ TARG_DIR := $(CFG)/out
 # Tools directory. Python scripts are hosted there
 TOOLS_DIR := tools
 # Path to stlink
-STLINK_DIR := C:/stlink
+STLINK := st-link_cli
 
 # Defines to pass to compiler
 CDEFS := -DAGAPOVSKIY_DOUBLE_VALVE -DDEBUG -DNOTESTMEM
