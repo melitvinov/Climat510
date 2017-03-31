@@ -104,7 +104,7 @@ endif
 
 TOOLCHAIN := arm-none-eabi
 
-SHELL := sh
+SHELL := c:/program files/git/bin
 WINSHELL := cmd
 
 CC := $(TOOLCHAIN)-gcc
@@ -147,7 +147,7 @@ preprocess: $(ALL_DIRS) $(AUTOGENS) $(PREPS)
 compile: $(OBJS)
 
 # Build target
-build: prebuild elf bin hex sym
+build: prebuild elf bin hex
 
 # Generate extended listing after build if required
 ifeq ($(GENERATE_LSS), true)
