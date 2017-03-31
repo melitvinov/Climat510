@@ -11,8 +11,6 @@ typedef struct
 {
     module_t module;
 
-    u8 is_first_sync;           // just a hacky flag to ignore a first reset
-
     u8 access_cycle;
 
     u8 status;
@@ -81,7 +79,6 @@ static void prepare_fresh_entry(module_entry_t *e)
     e->reset_cnt = 0;
     e->access_cycle = 0;
     e->status = 0;
-    e->is_first_sync = 1;
 }
 
 static module_entry_t *alloc_entry(uint base)
@@ -339,16 +336,9 @@ static void end_sync(module_entry_t *e, s8 *exterr)
         // stat resets
         if (err & MODULE_ERR_RESET)
         {
-            if (e->is_first_sync)
-            {
-                err &= ~MODULE_ERR_RESET;   // ignore reset for the just-allocated module, it's expected
-            }
-            else
-            {
-                e->reset_cnt++;
-                if (e->reset_cnt > iMODULE_MAX_FAILURES)
-                    e->reset_cnt = iMODULE_MAX_FAILURES;
-            }
+            e->reset_cnt++;
+            if (e->reset_cnt > iMODULE_MAX_FAILURES)
+                e->reset_cnt = iMODULE_MAX_FAILURES;
         }
 
         // stat link errors
@@ -365,8 +355,6 @@ static void end_sync(module_entry_t *e, s8 *exterr)
         // latch errors
         e->status |= err;
     }
-
-    e->is_first_sync = 0;
 
     #warning "ccycle is seriously broken"
     #warning "exterr is broken too"

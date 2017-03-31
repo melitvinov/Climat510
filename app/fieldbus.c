@@ -76,7 +76,6 @@ static void addressing_slave(uint ev, uint arg)
     {
     case EV_ENTRY:
         {
-            LOG("sending !");
             bool is_ok = HAL_fieldbus_address_slave(rt.addr, ADDRESSING_TIMEOUT);
             REQUIRE(is_ok);
             timer_start(&rt.timer, 1, 1, check_xfer);
@@ -84,7 +83,6 @@ static void addressing_slave(uint ev, uint arg)
         return;
 
     case EV_XFER_COMPLETED:
-        LOG("addr done !");
         trans(state_waiting_before_header_send);
         return;
 
