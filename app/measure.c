@@ -4,7 +4,7 @@
 
 #include "control_gd.h"
 #include "module.h"
-#include "modules_master.h"
+#include "fbd.h"
 #include "measure.h"
 
 calibration_t caldata;
@@ -252,16 +252,16 @@ void CheckInputConfig()
         for (nSens=0;nSens<cConfSInputs;nSens++)
         {
             tTempConf.input=GetInputConfig(tTepl,nSens)%100;
-            UpdateInIPC(GetInputConfig(tTepl,nSens),&tTempConf);
+            UpdateInputConfig(GetInputConfig(tTepl,nSens),&tTempConf);
         }
     }
     for (tTepl=0;tTepl<NZONES;tTepl++)
     {
         for (nSens=0;nSens<cConfSSens;nSens++)
-            UpdateInIPC(GetSensConfig(tTepl,nSens), &caldata.InTeplSens[tTepl][nSens]);
+            UpdateInputConfig(GetSensConfig(tTepl,nSens), &caldata.InTeplSens[tTepl][nSens]);
     }
     for (nSens=0;nSens<cConfSMetSens;nSens++)
-        UpdateInIPC(GetMetSensConfig(nSens), &caldata.MeteoSens[nSens]);
+        UpdateInputConfig(GetMetSensConfig(nSens), &caldata.MeteoSens[nSens]);
 
 }
 
@@ -306,11 +306,10 @@ void LoadDiscreteInputs(void)
     for (int zone_idx=0; zone_idx<NZONES; zone_idx++)
     {
         eZone *zone = &gd_rw()->Hot.Zones[zone_idx];
-        s8 nErr;
         for (int input_idx=0; input_idx < cConfSInputs; input_idx++)
         {
             #warning "discrete_inputs stuck and never clears ? nice !"
-            if (GetDiskrIPC(GetInputConfig(zone_idx,input_idx),&nErr))
+            if (GetDiskrIPC(GetInputConfig(zone_idx, input_idx)))
                 zone->discrete_inputs[0] |= 1<<input_idx;
         }
     }

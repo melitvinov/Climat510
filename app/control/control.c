@@ -48,8 +48,6 @@ const uchar   Mon[]={31,28,31,30,31,30,31,31,30,31,30,31};
 
 static control_ctx_t ctx;
 
-const zone_t make_zone_ctx(int zone_idx);
-
 static int abs(int f_in)
 {
     if (f_in<0) return(-f_in);
@@ -61,7 +59,7 @@ static int abs(int f_in)
 @param typeStart тип старта, timeStart - время старта, sunRise - время восхода, sunSet - время захода. Параметры из задания
 @return int16_t скорректированное время. 0 - тип старта = 0, -1 - ошибка
 */
-int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int16_t sunRise, int16_t sunSet)
+static int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int16_t sunRise, int16_t sunSet)
 {
     switch (typeStart)
     {
@@ -102,7 +100,7 @@ int16_t controlTypeStartCorrection(TYPE_START typeStart, int16_t timeStart, int1
 /*----------------------------------------------------
                 Находим нужную программу
 ------------------------------------------------------*/
-int JumpNext(int Now,int Next,char Check, char Mull, int creg_x, int creg_y)
+static int JumpNext(int Now,int Next,char Check, char Mull, int creg_x, int creg_y)
 {
     if ((Check)&&((!Next)||(!Now)))
         return Now*Mull;
@@ -116,7 +114,7 @@ int JumpNext(int Now,int Next,char Check, char Mull, int creg_x, int creg_y)
 
 //int16_t TempOld, TempNew = 0;
 
-void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
+static void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 {
     int8_t nTimer,sTimerNext,sTimerPrev,sTimerMin,sTimerMax;
     int MaxTimeStart,MinTimeStart,NextTimeStart,PrevTimeStart,tVal;
@@ -255,7 +253,7 @@ void TaskTimer(char fsmTime, char fnTeplTimer, char fnTeplLoad)
 }
 
 
-void AllTaskAndCorrection(const zone_t *zone)
+static void AllTaskAndCorrection(const zone_t *zone)
 {
     int sum;
     int val = 0;
@@ -447,7 +445,7 @@ void AllTaskAndCorrection(const zone_t *zone)
     /*--------------------------------------------------------------*/
 }
 
-void SetIfReset(const zone_t *zone)
+static void SetIfReset(const zone_t *zone)
 {
 
     for (int i = 0; i < cSWaterKontur; i++)
@@ -467,7 +465,7 @@ void SetIfReset(const zone_t *zone)
 /*-*-*-*-*--Нахождение прогнозируемого изменения температуры--*-*-*-*-*/
 /**********************************************************************/
 //#warning Прогнозы температуры по внешним факторам !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void __cNextTCalc(const zone_t *zone)
+static void __cNextTCalc(const zone_t *zone)
 {
     int CalcAllKontur;
 
@@ -769,7 +767,7 @@ void __cNextTCalc(const zone_t *zone)
 }
 
 /*------------------------------------------------------*/
-void SetMixValvePosition(const zone_t *zone)
+static void SetMixValvePosition(const zone_t *zone)
 {
     for (int contour_idx = 0; contour_idx<cSWaterKontur; contour_idx++)
     {
@@ -824,7 +822,7 @@ void SetMixValvePosition(const zone_t *zone)
     }
 }
 
-void DoPumps(const zone_t *zone)
+static void DoPumps(const zone_t *zone)
 {
     for (int i = 0; i < cSWaterKontur; i++)
     {
@@ -835,7 +833,7 @@ void DoPumps(const zone_t *zone)
 }
 
 //#warning вкл воздушного обогревателя !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void DoVentCalorifer(const zone_t *zone)
+static void DoVentCalorifer(const zone_t *zone)
 {
 
 //	if (YesBit((*(pGD_Hot_Hand+cHSmHeat)).RCS,cbManMech)) return;
@@ -855,7 +853,7 @@ void DoVentCalorifer(const zone_t *zone)
 
 
 //#warning вкл подсветки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void DoLights(const zone_t *zone)
+static void DoLights(const zone_t *zone)
 {
     if (YesBit( zone->hand[cHSmLight].RCS, cbManMech)) return;
 //	pGD_Hot_Hand[cHSmLight].Position = 0;
@@ -870,7 +868,7 @@ void DoLights(const zone_t *zone)
             pGD_Hot_Hand[cHSmPoise].Position = 1;
 } */
 
-void SetSensOnMech(const zone_t *zone)
+static void SetSensOnMech(const zone_t *zone)
 {
     for (int i = 0;i<cSRegCtrl;i++)
         zone->tcontrol_tepl->MechBusy[i].Sens = 0;
@@ -899,8 +897,7 @@ void SetSensOnMech(const zone_t *zone)
 */
 }
 
-//!!!Оптимизация
-void ClearAllAlarms(void)
+static void ClearAllAlarms(void)
 {
     char alarm_idx;
     char zone_idx;
@@ -920,57 +917,61 @@ void ClearAllAlarms(void)
 //      _GD.TControl.Tepl[zone_idx].Alarms[alarm_idx];
 }
 
-void SetAlarm(void)
+static void set_alarms(void)
 {
+    // GUESS: clear all alarms ?
     for (int zone_idx = 0;zone_idx<_GD.Control.ConfSTepl;zone_idx++)
-        write_output_bit(zone_idx,cHSmAlarm,1,0);
+        output_off(zone_idx, cHSmAlarm, 0);
 
+    // GUESS: set alarms for each zone if there is an alarm condition
     for (int zone_idx = 0;zone_idx<_GD.Control.ConfSTepl;zone_idx++)
     {
         zone_t zone = make_zone_ctx(zone_idx);
 
         zone.tcontrol_tepl->bAlarm = 0;
-        if ((YesBit(zone.hot->RCS,(cbNoTaskForTepl+cbNoSensingTemp+cbNoSensingOutT)))
+        if (   YesBit(zone.hot->RCS, cbNoTaskForTepl | cbNoSensingTemp | cbNoSensingOutT)
             //	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-            ||(YesBit(zone.hot->InTeplSens[cSmWaterSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens))))
+            || YesBit(zone.hot->InTeplSens[cSmWaterSens].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
         {
-            write_output_bit(zone_idx,cHSmAlarm,0,0);
+            output_on(zone_idx, cHSmAlarm, 0);
             zone.tcontrol_tepl->bAlarm = 100;
         }
 
         if (getTempHeatAlarm(&zone, zone_idx)  ==  0)
         {
-            write_output_bit(zone_idx,cHSmAlarm,0,0);
+            output_on(zone_idx, cHSmAlarm, 0);
             zone.tcontrol_tepl->bAlarm = 100;
         }
 
         if (getTempVentAlarm(&zone, zone_idx)  ==  0)
         {
-            write_output_bit(zone_idx,cHSmAlarm,0,0);
+            output_on(zone_idx, cHSmAlarm, 0);
             zone.tcontrol_tepl->bAlarm = 100;
         }
 
         for (int i = 0;i<cConfSSens;i++)
         {
-            if (YesBit(zone.hot->InTeplSens[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+            if (YesBit(zone.hot->InTeplSens[i].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
             {
-                write_output_bit(zone_idx,cHSmAlarm,0,0);
+                output_on(zone_idx, cHSmAlarm, 0);
                 zone.tcontrol_tepl->bAlarm = 100;
             }
         }
     }
+
+    // GUESS: set alarm for zone 0 if any meteo sensor failed
     for (int i = 0;i<cConfSMetSens;i++)
     {
-        if (YesBit(_GD.Hot.MeteoSensing[i].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
+        if (YesBit(_GD.Hot.MeteoSensing[i].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
         {
-            write_output_bit(cSmZone1,cHSmAlarm,0,0);
+            output_on(cSmZone1, cHSmAlarm, 0);
             _GD.TControl.Zones[cSmZone1].bAlarm = 100;
         }
     }
 
 }
 
-void SetDiscreteOutputs(const zone_t *zone)
+static void SetDiscreteOutputs(const zone_t *zone)
 {
     int nLight;
     char tMaxLight;
@@ -983,14 +984,16 @@ void SetDiscreteOutputs(const zone_t *zone)
     for (int i = cHSmPump;i<cHSmRegs;i++)
     {
         //if ((ByteX == cHSmSIOVals)||(ByteX == cHSmLight)) continue;
-        if ((i == cHSmSIOPump)||(i == cHSmSIOVals)||(i == cHSmLight)) continue;
+        if (i == cHSmSIOPump || i == cHSmSIOVals || i == cHSmLight)
+            continue;
 
-        write_output_bit(zone->idx, i, 1, 0);
+        output_off(zone->idx, i, 0);
 
-        if (YesBit(zone->hand[i].Position,0x01))
-            write_output_bit(zone->idx, i, 0,0);
-        if (((i == cHSmHeat)||(i == cHSmVent)) && YesBit(zone->hand[i].Position,0x02))
-            write_output_bit(zone->idx, i, 0,1);
+        if (YesBit(zone->hand[i].Position, 0x01))
+            output_on(zone->idx, i, 0);
+
+        if (((i == cHSmHeat)||(i == cHSmVent)) && YesBit(zone->hand[i].Position, 0x02))
+            output_on(zone->idx, i, 1);
     }
 
 
@@ -1006,7 +1009,7 @@ void SetDiscreteOutputs(const zone_t *zone)
     bool is_light_on = 0;
     if (nLight>1)
     {
-        write_output_bit(zone->idx, cHSmLight, 0, 0);
+        output_on(zone->idx, cHSmLight, 0);
         is_light_on = 1;
     }
     tMaxLight = 8;
@@ -1065,7 +1068,7 @@ void SetDiscreteOutputs(const zone_t *zone)
     for (int i = 0;i<tMaxLight;i++)
     {
         if (YesBit(nLight,(0x01<<i)))
-            write_output_bit(zone->idx, cHSmLight, 0, i+1);
+            output_on(zone->idx, cHSmLight, i+1);
 
     }
 
@@ -1078,27 +1081,27 @@ void SetDiscreteOutputs(const zone_t *zone)
         i = 2;
 
     if (zone->tcontrol_tepl->SetupRegs[0].On && zone->gh_ctrl->co_model)
-        write_output_bit(zone->idx, cHSmCO2, 0, i);
+        output_on(zone->idx, cHSmCO2, i);
 
     // насос
     //__SetBitOutReg(fnTepl,cHSmSIOPump,1,0);
     if (YesBit(zone->hand[cHSmSIOPump].Position,0x01))
-        write_output_bit(zone->idx, cHSmSIOPump, 0, 0);
+        output_on(zone->idx, cHSmSIOPump, 0);
 
     for (int i = 0;i<4;i++)
     {
         if (YesBit(zone->hand[cHSmSIOVals].Position, 1 << i))
-            write_output_bit(zone->idx, cHSmSIOVals, 0, i);
+            output_on(zone->idx, cHSmSIOVals, i);
     }
 
 #ifdef AGAPOVSKIY_DOUBLE_VALVE
     if (YesBit( zone->hand[cHSmSIOVals].Position,0x02))
-        write_output_bit(zone->idx, cHSmAHUVals, 0, 0);
+        output_on(zone->idx, cHSmAHUVals, 0);
 #endif
     for (int i = 0;i<5;i++)
     {
         if (_GD.Hot.Regs[i])
-            write_output_bit(zone->idx, i+cHSmRegs, 0, 0);
+            output_on(zone->idx, i+cHSmRegs, 0);
     }
 }
 
@@ -1107,8 +1110,6 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
     eMechanic *mech = &zone->hand[mech_idx];
 
     const eConstMixVal *ConstMechanic_Mech = &_GD.ConstMechanic[zone->idx].ConstMixVal[mech_idx];
-
-    char fErr;
 
 //		pGD_Hot_Hand_Kontur = pGD_Hot_Hand+ByteX;
     eMechBusy *mechbusy=&(zone->tcontrol_tepl->MechBusy[mech_idx]);
@@ -1120,7 +1121,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
 
     if ((mech_idx == cHSmAHUSpeed1))
     {
-        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr);
+        write_output_register(zone->mech_cfg->RNum[mech_idx], mtRS485, mech->Position);
         return;
     }
 /*		GD.FanBlock[fnTepl][0].FanData[0].ActualSpeed = fnTepl*5;
@@ -1130,7 +1131,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
 */
     if ((mech_idx == cHSmAHUSpeed2))
     {
-        write_output_register(mech->Position, mtRS485, zone->mech_cfg->RNum[mech_idx], &fErr);
+        write_output_register(zone->mech_cfg->RNum[mech_idx], mtRS485, mech->Position);
         return;
     }
 
@@ -1138,8 +1139,8 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
     if ((mech_idx == cHSmCO2)&&(zone->gh_ctrl->co_model == 1))
         return;
 
-    write_output_bit(zone->idx, mech_idx,1,0);
-    write_output_bit(zone->idx, mech_idx,1,1);
+    output_off(zone->idx, mech_idx, 0);
+    output_off(zone->idx, mech_idx, 1);
 
     ClrBit(mechbusy->RCS,cMSBusyMech);
     int byte_y = 0;
@@ -1241,7 +1242,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
     if (mechbusy->TimeSetMech>mechbusy->TimeRealMech)
     {
         mechbusy->TimeRealMech++;
-        write_output_bit(zone->idx, mech_idx, 0, 1);
+        output_on(zone->idx, mech_idx, 1);
         SetBit(mechbusy->RCS,cMSBusyMech);
         //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
         byte_y++;
@@ -1249,7 +1250,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
     if (mechbusy->TimeSetMech<mechbusy->TimeRealMech)
     {
         mechbusy->TimeRealMech--;
-        write_output_bit(zone->idx, mech_idx, 0, 0);
+        output_on(zone->idx, mech_idx, 0);
         SetBit(mechbusy->RCS,cMSBusyMech);
         //SetBit(pGD_Hot_Hand_Kontur->RCS,cbBusyMech);
         byte_y++;
@@ -1278,7 +1279,7 @@ static void do_contour_mechanics(const zone_t *zone, int mech_idx)
     mechbusy->PauseMech = MAX(mechbusy->PauseMech, 0);// MBusy->PauseMech = 0;
 }
 
-void DoMechanics(const zone_t *zone)
+static void DoMechanics(const zone_t *zone)
 {
     for (int i = cHSmMixVal;i<cHSmPump;i++)
     {
@@ -1286,7 +1287,7 @@ void DoMechanics(const zone_t *zone)
     }
 }
 
-void SetMeteo(void)
+static void SetMeteo(void)
 {
     uint16_t tMes,i;
     for (i = 0;i<cConfSMetSens;i++)
@@ -1303,35 +1304,35 @@ void SetMeteo(void)
         }
     }
 
-    const zone_t first_gh = make_zone_ctx(0);
+    const zone_t first_zone = make_zone_ctx(0);
 
-    if (first_gh.tcontrol_tepl->SnowTime >= _GD.TuneClimate.MinRainTime)
+    if (first_zone.tcontrol_tepl->SnowTime >= _GD.TuneClimate.MinRainTime)
         _GD.TControl.bSnow=!_GD.TControl.bSnow;
     if (((_GD.TControl.MeteoSensing[cSmRainSens]<cMinRain)&&(_GD.TControl.bSnow))
         ||((_GD.TControl.MeteoSensing[cSmRainSens]>cMinRain)&&(!_GD.TControl.bSnow)))
     {
-        first_gh.tcontrol_tepl->SnowTime++;
+        first_zone.tcontrol_tepl->SnowTime++;
 //		GD.TControl.Tepl[0].SnowTime = 10;
     }
     else
     {
-        first_gh.tcontrol_tepl->SnowTime = 0;
+        first_zone.tcontrol_tepl->SnowTime = 0;
     }
 
     if ((_GD.TControl.MeteoSensing[cSmOutTSens]<c_SnowIfOut)&&(_GD.TControl.bSnow))
         SetBit(_GD.TControl.bSnow,0x02);
-    first_gh.tcontrol_tepl->SumSens+=_GD.TControl.MeteoSensing[cSmFARSens];//GD.Hot.MeteoSens[cSmFARSens].Value;
-    first_gh.tcontrol_tepl->TimeSumSens++;
-    if (first_gh.tcontrol_tepl->TimeSumSens>=15)
+    first_zone.tcontrol_tepl->SumSens+=_GD.TControl.MeteoSensing[cSmFARSens];//GD.Hot.MeteoSens[cSmFARSens].Value;
+    first_zone.tcontrol_tepl->TimeSumSens++;
+    if (first_zone.tcontrol_tepl->TimeSumSens>=15)
     {
-        first_gh.tcontrol_tepl->SensHourAgo = first_gh.tcontrol_tepl->SensHalfHourAgo;
-        first_gh.tcontrol_tepl->SensHalfHourAgo = first_gh.tcontrol_tepl->SumSens/first_gh.tcontrol_tepl->TimeSumSens;
-        first_gh.tcontrol_tepl->SumSens = 0;
-        first_gh.tcontrol_tepl->TimeSumSens = 0;
+        first_zone.tcontrol_tepl->SensHourAgo = first_zone.tcontrol_tepl->SensHalfHourAgo;
+        first_zone.tcontrol_tepl->SensHalfHourAgo = first_zone.tcontrol_tepl->SumSens/first_zone.tcontrol_tepl->TimeSumSens;
+        first_zone.tcontrol_tepl->SumSens = 0;
+        first_zone.tcontrol_tepl->TimeSumSens = 0;
     }
 }
 
-void SetCO2(void)
+static void SetCO2(void)
 {
 //	if (!(pGD_MechConfig->RNum[cHSmCO2])) return;  // if hand mode exit
 //	if (pGD_Control_Tepl->co_model  ==  2)
@@ -1409,7 +1410,7 @@ void SetCO2(void)
 
 
 //#warning light Досветка !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void SetLighting(const zone_t *zone)
+static void SetLighting(const zone_t *zone)
 {
     char bZad;
 
@@ -1507,7 +1508,7 @@ void SetLighting(const zone_t *zone)
 
 }
 
-void SetTepl(const zone_t *zone)
+static void SetTepl(const zone_t *zone)
 {
 /***********************************************************************
 --------------Вычисление изменения показаний датчика температуры-------
@@ -1595,7 +1596,7 @@ static void SubConfig(const zone_t *zone)
 
 }
 
-void Configuration(void)
+static void Configuration(void)
 {
     for (int zone_idx = 0; zone_idx<NZONES; zone_idx++)
     {
@@ -1604,7 +1605,7 @@ void Configuration(void)
     }
 }
 #ifdef Vitebsk
-void    TransferWaterToBoil(void)
+static void TransferWaterToBoil(void)
 {
     int creg_x = _GD.Hot.MaxReqWater/100; //Делаем запас на 5 градусов
 //	IntX = IntX/100;
@@ -1639,22 +1640,17 @@ void    TransferWaterToBoil(void)
     }
 
     if (YesBit(creg_y,0x01))
-        write_output_bit(0,cHSmRegs+4,0,0);
+        output_on(0,cHSmRegs+4, 0);
     if (YesBit(creg_y,0x02))
-        write_output_bit(0,cHSmRegs+4,0,1);
+        output_on(0,cHSmRegs+4, 1);
     if (YesBit(creg_y,0x04))
-        write_output_bit(0,cHSmRegs+4,0,2);
+        output_on(0,cHSmRegs+4, 2);
 //	GD.Hot.Demon = IntY;
 
 }
 #endif
-/*------------------------------------------------
-        Управлюща программа
-        Вариант "Ромашка"
-        Создана от 14.04.04
---------------------------------------------------*/
 
-void saveSettings(char tCTepl, int *dst)
+static void saveSettings(char tCTepl, int *dst)
 {
     dst[0] = _GD.Hot.Zones[tCTepl].tempParamHeat;
     dst[1] = _GD.Hot.Zones[tCTepl].tempParamVent;
@@ -1663,7 +1659,7 @@ void saveSettings(char tCTepl, int *dst)
     dst[4] = _GD.Hot.Zones[tCTepl].newsZone;
 }
 
-void loadSettings(char tCTepl, const int *src)
+static void loadSettings(char tCTepl, const int *src)
 {
     _GD.Hot.Zones[tCTepl].tempParamHeat = src[0];
     _GD.Hot.Zones[tCTepl].tempParamVent = src[1];
@@ -1675,7 +1671,7 @@ void loadSettings(char tCTepl, const int *src)
 void control_pre(void)
 {
     Configuration();
-    SetAlarm();
+    set_alarms();
 
     for (int zone_idx = 0;zone_idx<NZONES;zone_idx++)
     {

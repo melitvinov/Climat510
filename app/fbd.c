@@ -1,7 +1,9 @@
 #include "syntax.h"
 
+#include "timers.h"
+#include "fieldbus.h"
 #include "module.h"
-#include "modules_master.h"
+#include "fbd.h"
 #include "debug.h"
 
 
@@ -25,20 +27,23 @@ typedef struct
 
 typedef struct
 {
-     module_entry_t entries[N_MAX_MODULES];
-     module_entry_t *active_entry;
-} master_rt_t;
+    timer_t poll_timer;
+    module_entry_t entries[N_MAX_MODULES];
+    module_entry_t *active_entry;
+    bool is_fieldbus_inited;
+    u8 last_bad_module;
+} fbd_rt_t;
 
-static master_rt_t rt;
+static fbd_rt_t rt;
 
 uint addr2base(uint nAddress)
 {
-    return nAddress/100;
+    return (nAddress / 100) % 100;
 }
 
 static uint addr2resource(uint nAddress)
 {
-    return nAddress%100;
+    return nAddress % 100;
 }
 
 
@@ -107,9 +112,17 @@ static module_entry_t *alloc_entry(uint base)
 }
 
 
-void SetOutIPCDigit(bool set, uint nAddress)
+void SetOutIPCDigit(uint addr, bool set)
 {
-    uint base = addr2base(nAddress);
+    uint base = addr2base(addr);
+    uint idx = addr2resource(addr);
+
+    if (! (base && idx))
+        return;
+
+    idx -= 1;
+
+    REQUIRE(idx < 32);
 
     module_entry_t *e = alloc_entry(base);
     if (! e)
@@ -117,7 +130,7 @@ void SetOutIPCDigit(bool set, uint nAddress)
 
     LOG("updating bit");
 
-    u32 mask = 1U << (addr2resource(nAddress) - 1);
+    u32 mask = 1U << idx;
 
     if (set)
         e->module.discrete_outputs |= mask;
@@ -128,21 +141,24 @@ void SetOutIPCDigit(bool set, uint nAddress)
 }
 
 
-void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr)
+void SetOutIPCReg(uint addr, uint type, uint val)
 {
-    uint base = addr2base(nAddress);
+    uint base = addr2base(addr);
+    uint idx = addr2resource(addr);
+
+    if (! (base && idx))
+        return;
+
+    idx -= 1;
+
+    REQUIRE(idx < MODULE_MAX_N_OUTPUTS);
+
     module_entry_t *e = alloc_entry(base);
     if (! e)
         return;
 
-    u32 idx = addr2resource(nAddress)-1;
-    if (idx >= MODULE_MAX_N_OUTPUTS)
-        return;
-
-    *nErr=e->err_cnt;
-
-    e->module.outputs[idx].val=How;
-    e->module.outputs[idx].type= fType;
+    e->module.outputs[idx].type = type;
+    e->module.outputs[idx].val = val;
 
     e->requested_actions |= MODULE_ACTION_PUSH_OUTPUTS;
 
@@ -151,17 +167,23 @@ void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress, char* nErr)
 
 
 // GUESS: read binary value from the cached data (relay pin output)
-char GetOutIPCDigit(uint16_t nAddress)
+char GetOutIPCDigit(uint16_t addr)
 {
-    uint base = addr2base(nAddress);
-    if (! base) return -1;
+    uint base = addr2base(addr);
+    uint idx = addr2resource(addr);
+
+    if (! (base && idx))
+        return -1;
+
+    idx -= 1;
+
+    REQUIRE(idx < 32);
 
     const module_entry_t *e = find_entry_by_base(base);
     if (! e)
         return -1;
 
-    u32 mask = 1U << (addr2resource(nAddress) - 1);
-    if (e->module.discrete_outputs & mask)
+    if (e->module.discrete_outputs & (1U << idx))
         return 1;
     else
         return 0;
@@ -171,20 +193,17 @@ char GetOutIPCDigit(uint16_t nAddress)
 // GUESS: read analog values from the cached data
 uint16_t GetInIPC(uint16_t nAddress, s8 *nErr)
 {
-//TODO
-    uint base=addr2base(nAddress);
-    if (!base)
+    uint base = addr2base(nAddress);
+    uint idx = addr2resource(nAddress);
+
+    if (! (base && idx))
     {
         *nErr=-1;
         return 0;
     }
 
-    uint idx = addr2resource(nAddress);
-    if (!idx)
-    {
-        *nErr=-1;
-        return 0;
-    }
+    idx -= 1;
+    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
 
     const module_entry_t *e = alloc_entry(base);
 
@@ -196,37 +215,30 @@ uint16_t GetInIPC(uint16_t nAddress, s8 *nErr)
     }
 
     *nErr = e->err_cnt;
-    return e->module.inputs[idx-1];
+    return e->module.inputs[idx];
 }
 
 
 // GUESS: read the the discrete input from cached data
-uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr)
+uint16_t GetDiskrIPC(uint addr)
 {
-    uint base=addr2base(nAddress);
-    if (!base)
-    {
-        *nErr=-1;
-        return 0;
-    }
+    uint base = addr2base(addr);
+    uint idx = addr2resource(addr);
 
-    uint idx = addr2resource(nAddress);
-    if (!idx)
-    {
-        *nErr=-1;
+    if (! (base && idx))
         return 0;
-    }
+
+    idx -= 1;
+
+    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
 
     const module_entry_t *e = alloc_entry(base);
 
     if (! e)
-    {
-        *nErr=0;
         return 0;
-    }
 
-    *nErr=e->err_cnt;
-    if ((e->module.inputs[idx-1]>2500) && (e->err_cnt < iMODULE_MAX_ERR))
+    #warning "> 2500 ? wtf ?"s
+    if ((e->module.inputs[idx] > 2500) && (e->err_cnt < iMODULE_MAX_ERR))
         return 1;
     else
         return 0;
@@ -234,13 +246,18 @@ uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr)
 
 
 // GUESS: resets the input config in cached data and schedule the module update
-void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
+void UpdateInputConfig(uint addr, const module_input_cfg_t *cfg)
 {
-    uint vInput = addr2resource(nAddress);
-    if (! vInput)
+    uint base = addr2base(addr);
+    uint idx = addr2resource(addr);
+
+    if (! (idx && base))
         return;
 
-    uint base = addr2base(nAddress);
+    idx -= 1;
+
+    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
+
     module_entry_t *e = alloc_entry(base);
 
     if (! e)
@@ -250,7 +267,7 @@ void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
 
 //			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //·ÂÁ Í‡ÎË·Ó‚ÓÍ
 //				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
-    memcpy(&e->module.inputs_cfg[vInput-1], cfg, sizeof(module_input_cfg_t));
+    memcpy(&e->module.inputs_cfg[idx], cfg, sizeof(module_input_cfg_t));
     //********************** Õ¿ƒŒ ”¡–¿“‹ *****************************
     for (uint k=0;k < 32;k++)
     {
@@ -260,8 +277,8 @@ void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg)
     }
     //****************************************************************
 
-    if (e->module.max_n_inputs<vInput)
-        e->module.max_n_inputs = vInput;
+    if (e->module.max_n_inputs < (idx + 1))
+        e->module.max_n_inputs = idx + 1;
 
     e->requested_actions |= MODULE_ACTION_PUSH_INPUT_CONFIG;
 }
@@ -316,7 +333,7 @@ static void start_sync(module_entry_t *e)
 }
 
 
-static void end_sync(module_entry_t *e, s8 *exterr)
+static void end_sync(module_entry_t *e)
 {
     uint err = module_sync_get_err();
 
@@ -348,7 +365,7 @@ static void end_sync(module_entry_t *e, s8 *exterr)
             if (e->err_cnt > iMODULE_MAX_ERR)
             {
                 e->err_cnt = iMODULE_MAX_ERR;
-                *exterr = e->module.base % 100;
+                rt.last_bad_module = e->module.base;
             }
         }
 
@@ -357,20 +374,19 @@ static void end_sync(module_entry_t *e, s8 *exterr)
     }
 
     #warning "ccycle is seriously broken"
-    #warning "exterr is broken too"
 
     e->access_cycle = (e->access_cycle + 1) % 10;
 }
 
 
-void SendIPC(s8 *fErrModule)
+static void fbd_task(timer_t *dummy)
 {
     if (rt.active_entry)
     {
         if (module_sync_is_busy())
             return;
 
-        end_sync(rt.active_entry, fErrModule);
+        end_sync(rt.active_entry);
     }
 
     rt.active_entry = next_entry(rt.active_entry);
@@ -379,4 +395,25 @@ void SendIPC(s8 *fErrModule)
         return;
 
     start_sync(rt.active_entry);
+}
+
+void fbd_output_discrete_val(uint address, bool val)
+{
+
+}
+
+void fbd_start(void)
+{
+    if (! rt.is_fieldbus_inited)
+    {
+         fieldbus_init();
+         rt.is_fieldbus_inited = 1;
+    }
+
+    timer_start(&rt.poll_timer, 50, 1, fbd_task);
+}
+
+u8 fbd_get_last_bad_module(void)
+{
+    return rt.last_bad_module;
 }

@@ -3,22 +3,29 @@
 #include "syntax.h"
 #include "control_gd.h"
 
-#include "modules_master.h"
+#include "fbd.h"
 
-void write_output_bit(char fnTepl, char fnMech, char fnclr, char fnSm)
+static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_offset)
 {
-    uint16_t nBit;
-    if (fnTepl == -1)
-        nBit=fnMech;
-    else
-        nBit=_GD.MechConfig[fnTepl].RNum[fnMech];
-    if (!nBit) return;
+    uint addr = _GD.MechConfig[zone_idx].RNum[mech_idx];
 
-    if (addr2base(nBit))
-        SetOutIPCDigit(!fnclr,nBit+fnSm);
+    if (! addr)
+        return;
+
+    SetOutIPCDigit(addr + addr_offset, set);
 }
 
-void write_output_register(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr)
+void output_on(uint zone_idx, uint mech_idx, uint addr_offset)
 {
-    SetOutIPCReg(How, fType, nAddress, nErr);
+    write_output_bit(zone_idx, mech_idx, 0, addr_offset);
+}
+
+void output_off(uint zone_idx, uint mech_idx, uint addr_offset)
+{
+    write_output_bit(zone_idx, mech_idx, 1, addr_offset);
+}
+
+void write_output_register(uint addr, uint type, uint val)
+{
+    SetOutIPCReg(addr, type, val);
 }

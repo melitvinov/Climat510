@@ -12,7 +12,7 @@
 
 #include "hal.h"
 #include "sound.h"
-#include "fieldbus.h"
+#include "fbd.h"
 
 static int16_t konturMax[6];
 static int8_t mecPosArray[7];
@@ -142,7 +142,6 @@ static void periodic_task(void)
         CheckWithoutPC();
         CheckInputConfig();
     }
-    //CheckRSTime();
 #ifndef NOTESTMEM
 
     if (wtf0.SostRS == OUT_UNIT)
@@ -211,11 +210,8 @@ static void init(void)
     LOG("initing sound ...");
     sound_init();
 
-    LOG("initing fieldbus ...");
-    fieldbus_init();
-
-    //fieldbus_smoke();
-
+    LOG("initing fieldbus daemon ...");
+    fbd_start();
 
     keyboardSetBITKL(0);
 
@@ -303,7 +299,13 @@ void main(void)
     while (1)
     {
         process_pc_input();
-        process_legacy_timers();
+
+        u8 last_bad_module = fbd_get_last_bad_module();
+
+        #warning "this is likely wrong, but ok for now"
+        if (last_bad_module != 0)
+            gd_rw()->Hot.Zones[0].ConnectionStatus = last_bad_module;
+
         timers_process();
 
         bool should_show_video = 0;

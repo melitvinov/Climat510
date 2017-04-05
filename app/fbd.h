@@ -1,5 +1,5 @@
-#ifndef _MODULES_MASTER_H
-#define _MODULES_MASTER_H
+#ifndef _FBD_H_
+#define _FBD_H_
 
 #include "module.h"
 
@@ -26,18 +26,19 @@
 
 uint addr2base(uint nAddress);
 char GetOutIPCDigit(uint16_t nAddress);
-void SetOutIPCDigit(bool set, uint nAddress);
+void SetOutIPCDigit(uint addr, bool set);
 
-void SetOutIPCReg(uint16_t How, uint8_t fType, uint16_t nAddress,char* nErr);
+void SetOutIPCReg(uint nAddress, uint type, uint val);
+
 void ClrAllOutIPCDigit(void);
 uint16_t GetInIPC(uint16_t nAddress, s8 *nErr);
-uint16_t GetDiskrIPC(uint16_t nAddress, s8 *nErr);
-void UpdateInIPC(uint16_t nAddress, const module_input_cfg_t *cfg);
+uint16_t GetDiskrIPC(uint addr);
+void UpdateInputConfig(uint addr, const module_input_cfg_t *cfg);
 void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn, const uint16_t **fInputs);
 
 
-void SendIPC(s8 *fErrModule);
-
+void fbd_start(void);
+u8 fbd_get_last_bad_module(void);
 
 #endif
 

@@ -103,6 +103,8 @@
 			<F N="app/405_Menu.c"/>
 			<F N="app/405_menu.h"/>
 			<F N="app/defs.h"/>
+			<F N="app/fbd.c"/>
+			<F N="app/fbd.h"/>
 			<F N="app/fieldbus.c"/>
 			<F N="app/fieldbus.h"/>
 			<F N="app/keyboard.c"/>
@@ -120,8 +122,6 @@
 			<F
 				N="app/module.mk"
 				Type="Makefile"/>
-			<F N="app/modules_master.c"/>
-			<F N="app/modules_master.h"/>
 			<F N="app/rtc.c"/>
 			<F N="app/rtc.h"/>
 			<F N="app/sound.c"/>

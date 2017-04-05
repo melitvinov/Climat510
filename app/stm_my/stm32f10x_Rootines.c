@@ -7,7 +7,7 @@
 #include "405_memory.h"
 #include "control_gd.h"
 #include "wtf.h"
-#include "modules_master.h"
+#include "fbd.h"
 
 #include "control_gd.h"
 
@@ -41,8 +41,6 @@ void CheckWithoutPC(void)
     if (NMinPCOut>3)
     {
         NMinPCOut=0;
-        #warning "init of pc uart is diabled"
-        //USART_PC_Configuration(&gd()->Control.NFCtr, wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock,9600);
         simple_server(wtf0.AdrGD,&wtf0.SostRS,&wtf0.NumBlock, gd()->Control.IPAddr,mymac, &wtf0.PORTNUM);
         gd_rw()->TControl.Zones[0].WithoutPC++;
     }
@@ -74,23 +72,6 @@ void Init_STM32(void)
 
     CheckInputConfig();
     LOG("checked input config");
-}
-
-void process_legacy_timers(void)
-{
-    static u32 ipc_timestamp = 0;
-
-    u32 time = HAL_systimer_get();
-
-    if (time - ipc_timestamp > 50)  // was 50ms in legacy code
-    {
-        ipc_timestamp = time;
-        SendIPC(&gd_rw()->Hot.Zones[0].ConnectionStatus);
-    }
-}
-
-void OutReg()
-{
 }
 
 

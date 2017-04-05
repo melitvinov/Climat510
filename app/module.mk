@@ -5,11 +5,11 @@
 # these are good
 SRC += app/sound.c
 SRC += app/timers.c
+SRC += app/fieldbus.c
 
 # these are semi-good
-SRC += app/fieldbus.c
 SRC += app/module.c
-SRC += app/modules_master.c
+SRC += app/fbd.c
 
 # these are ugly
 SRC += app/rtc.c
