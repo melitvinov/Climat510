@@ -5,8 +5,8 @@ typedef struct timer_t timer_t;
 struct timer_t
 {
     timer_t *next;
-    u32 start_time;
     u32 timeout;
+    u32 deadline;
     void (*callback)(timer_t *me);
     u32 flags;
 };

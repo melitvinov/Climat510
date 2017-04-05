@@ -10,38 +10,40 @@
 
 static timer_t *head = NULL;
 
-static uint timer_in_list(const timer_t *tmr)
+static uint is_timer_in_list(const timer_t *tmr)
 {
     for (timer_t *t = head; t; t = t->next)
         if (t == tmr) return 1;
     return 0;
 }
 
-void timer_start(timer_t *tmr, uint timeout, uint is_periodic, void (*callback)(timer_t *))
+// it's expected the timer is fully populated
+static void insert_timer(timer_t *tmr)
 {
-    if (! timer_in_list(tmr))
+    // find the timer which should fire after us
+    timer_t *prev = NULL;
+    for (timer_t *t = head; t; t = t->next)
+    {
+        s32 later = tmr->deadline - t->deadline;
+        if (later < 0)
+            break;
+        prev = t;
+    }
+
+    // we're the first
+    if (! prev)
     {
         tmr->next = head;
         head = tmr;
     }
-    tmr->start_time = HAL_systimer_get();
-    tmr->timeout = timeout;
-    tmr->flags = is_periodic ? F_IS_PERIODIC : 0;
-    tmr->callback = callback;
+    else
+    {
+        tmr->next = prev->next;
+        prev->next = tmr;
+    }
 }
 
-// timer should be in list - it is not checked
-void timer_restart(timer_t *tmr)
-{
-    tmr->start_time = HAL_systimer_get();
-}
-
-uint timer_is_started(const timer_t *tmr)
-{
-    return timer_in_list(tmr);
-}
-
-void timer_stop(timer_t *tmr)
+static void remove_timer(timer_t *tmr)
 {
     if (tmr == head)
     {
@@ -60,26 +62,59 @@ void timer_stop(timer_t *tmr)
     }
 }
 
-static void process_single_timer(timer_t *tmr, u32 systime)
+void timer_start(timer_t *tmr, uint timeout, uint is_periodic, void (*callback)(timer_t *))
 {
-    if (systime - tmr->start_time > tmr->timeout)
-    {
-        if (tmr->flags & F_IS_PERIODIC)
-        {
-            tmr->start_time += tmr->timeout;
-        }
-        else
-        {
-            timer_stop(tmr);
-        }
-        if (tmr->callback)
-            tmr->callback(tmr);
-    }
+    REQUIRE((int)tmr->timeout >= 0);
+
+    remove_timer(tmr);
+
+    tmr->timeout = timeout;
+    tmr->flags = is_periodic ? F_IS_PERIODIC : 0;
+    tmr->callback = callback;
+    tmr->deadline = HAL_systimer_get() + timeout;
+
+    insert_timer(tmr);
+}
+
+// timer should be in list - it is not checked
+void timer_restart(timer_t *tmr)
+{
+    remove_timer(tmr);
+    tmr->deadline = HAL_systimer_get() + tmr->timeout;
+    insert_timer(tmr);
+}
+
+uint timer_is_started(const timer_t *tmr)
+{
+    return is_timer_in_list(tmr);
+}
+
+void timer_stop(timer_t *tmr)
+{
+    remove_timer(tmr);
 }
 
 void timers_process(void)
 {
+    timer_t *t = head;
+
+    if (! t)
+        return;
+
     u32 systime = HAL_systimer_get();
-    for (timer_t *t = head; t; t = t->next)
-        process_single_timer(t, systime);
+    s32 remain = t->deadline - systime;
+
+    if (remain > 0)
+        return;
+
+    remove_timer(t);
+
+    if (t->flags & F_IS_PERIODIC)
+    {
+        t->deadline = systime + t->timeout;
+        insert_timer(t);
+    }
+
+    if (t->callback)
+        t->callback(t);
 }

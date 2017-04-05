@@ -156,7 +156,7 @@ static void do_next_action(void)
 
     // limit the number of actions per session to avoid the module blocking the bus for too long
 
-    LOG("actions is %d", actions);
+//  LOG("actions is %d", actions);
 
     const action_t *action = &actions_table[ctz(actions)];
     action->req();
@@ -199,6 +199,7 @@ static void check_progress(timer_t *dummy)
     }
     else
     {
+        WARN("fieldbus err status %d", status);
         if (status == FIELDBUS_ERR_BAD_CHECKSUM)
             rt.err |= MODULE_ERR_CHECKSUM;
         else
@@ -210,8 +211,6 @@ static void check_progress(timer_t *dummy)
 
 void module_sync_run(module_t *module, u8 requested_actions)
 {
-    LOG("running module processor");
-
     REQUIRE(! module_sync_is_busy());
 
     rt.data = module;
