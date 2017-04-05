@@ -161,9 +161,9 @@ switch (Sockets[nSock].IP_PHASE)
 			*fbsize=0;
 			return 0;
 		}
-        volatile char crc = 1+CheckSum(&fbuf[data_p], cSizeHead);
-        if ( crc != fbuf[info_data_len+53] )
-        	crcflag = 0;
+        //volatile char crc = 1+CheckSum(&fbuf[data_p], cSizeHead);
+        //if ( crc != fbuf[info_data_len+53] )
+        //	crcflag = 0;
 
 		*EthSost=WORK_UNIT;
 		BufCpy((char*)&Sockets[nSock].Header,&f_buf[data_p],cSizeHead);
@@ -178,10 +178,10 @@ switch (Sockets[nSock].IP_PHASE)
 			Sockets[nSock].IP_PHASE=ETH_SENDBLOCK;
 		else
 		{
-			if (crcflag)
+			//if (crcflag)
 				Sockets[nSock].IP_PHASE=ETH_RECVBLOCK;
-			else
-				return 0;
+			//else
+			//	return 0;
 		}
 		return 1;
 	case(ETH_SENDBLOCK):
@@ -217,14 +217,14 @@ switch (Sockets[nSock].IP_PHASE)
 
 		return 1;
 	case(ETH_RECVBLOCK):
-		if (Sockets[nSock].Header.Size<=plen-54)
-        {
-			if (info_data_len <= 1000)
-			{
-				volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
-				if ( crc != fbuf[info_data_len+53] ) return 0;
-			}
-        }
+		//if (Sockets[nSock].Header.Size<=plen-54)
+        //{
+			//if (info_data_len <= 1000)
+			//{
+			//	volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
+			//	if ( crc != fbuf[info_data_len+53] ) return 0;
+			//}
+        //}
 		if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
 		{
 			plen=Sockets[nSock].Header.Size;
