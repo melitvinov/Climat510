@@ -186,6 +186,12 @@ int16_t getTempVent(char fnTepl)
 			GD.Hot.Tepl[fnTepl].tempVent = max;
 		return GD.Hot.Tepl[fnTepl].tempVent;
 	}
+	else
+	{
+		GD.Hot.Tepl[fnTepl].tempParamVent = 0;
+		GD.Hot.Tepl[fnTepl].tempVent = 0;
+		return 0;
+	}
 }
 
 /*!
@@ -235,6 +241,12 @@ int16_t getTempHeat(char fnTepl)
 		if (calcType >> 1 & 1)
 			GD.Hot.Tepl[fnTepl].tempHeat = max;
 		return GD.Hot.Tepl[fnTepl].tempHeat;
+	}
+	else
+	{
+		GD.Hot.Tepl[fnTepl].tempParamHeat = 0;
+		GD.Hot.Tepl[fnTepl].tempHeat = 0;
+		return 0;
 	}
 }
 

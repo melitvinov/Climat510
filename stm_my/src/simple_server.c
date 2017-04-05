@@ -219,10 +219,12 @@ switch (Sockets[nSock].IP_PHASE)
 	case(ETH_RECVBLOCK):
 		if (Sockets[nSock].Header.Size<=plen-54)
         {
-          volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
-          if ( crc != fbuf[info_data_len+53] ) return 0;
+			if (info_data_len <= 1000)
+			{
+				volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);
+				if ( crc != fbuf[info_data_len+53] ) return 0;
+			}
         }
-
 		if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
 		{
 			plen=Sockets[nSock].Header.Size;

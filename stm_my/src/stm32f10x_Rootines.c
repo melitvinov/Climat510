@@ -891,9 +891,16 @@ void Measure()
         	tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
         	if (ErrModule<0)
         	{
-        		GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
-        		GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
-        		GD.uInTeplSens[tTepl][nSens]=0;
+        		if (nSens < 20)
+        		{
+        		  GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
+        		  GD.Hot.Tepl[tTepl].InTeplSens[nSens].Value=0;
+        		  GD.uInTeplSens[tTepl][nSens]=0;
+        		}
+        		else
+        		{
+          		  GD.Hot.Tepl[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
+        		}
         		continue;
         	}
         	if (ErrModule>=iMODULE_MAX_ERR) tSensVal=0;
