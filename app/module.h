@@ -43,23 +43,30 @@ typedef struct __packed
     u16 v1;
 } module_input_cfg_t;
 
+// array of pointers to the configs
+typedef struct __packed
+{
+    const module_input_cfg_t *p[MODULE_MAX_MAX_N_INPUTS];
+} module_input_cfg_links_t;
+
 typedef struct __packed
 {
     u8 type;
     u16 val;
 } module_output_register_t;
 
+
+
+
 typedef struct
 {
     // 'module mem'
-    module_output_register_t outputs[MODULE_MAX_N_OUTPUTS];     // outputs registers (analog/continuous outputs ?)
-    module_input_cfg_t inputs_cfg[MODULE_MAX_MAX_N_INPUTS];     // inputs config
-    u32 discrete_outputs;                                       // bitmap of discrete outputs (relays)
-    u16 inputs[MODULE_MAX_MAX_N_INPUTS];                        // input values
-    u16 status_word;                                            // module status word
-
-    u16 base;                                                   // some kind of module address
-    u8 max_n_inputs;                                            // max number of used inputs
+    module_output_register_t outputs[MODULE_MAX_N_OUTPUTS];         // outputs registers (analog/continuous outputs ?)
+    module_input_cfg_links_t input_cfg_links;                       // pointers to input configs
+    u32 discrete_outputs;                                           // bitmap of discrete outputs (relays)
+    u16 inputs[MODULE_MAX_MAX_N_INPUTS];                            // input values
+    u16 status_word;                                                // module status word
+    u16 addr;                                                       // module base address
 } module_t;
 
 

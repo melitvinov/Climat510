@@ -9,7 +9,9 @@
 
 #define FULL_SYNC ((1 << _MODULE_ACTION_IDX_LAST) - 1)
 
-typedef struct
+typedef struct module_entry_t module_entry_t;
+
+struct module_entry_t
 {
     module_t module;
 
@@ -22,7 +24,7 @@ typedef struct
 
     u8 requested_actions;       // bitmap of actions requested for module before the sync cycle
     u8 pending_actions;         // bitmap of pending (uncompleted) actions for module
-} module_entry_t;
+};
 
 
 typedef struct
@@ -36,24 +38,13 @@ typedef struct
 
 static fbd_rt_t rt;
 
-uint addr2base(uint nAddress)
-{
-    return (nAddress / 100) % 100;
-}
-
-static uint addr2resource(uint nAddress)
-{
-    return nAddress % 100;
-}
-
-
 void ClrAllOutIPCDigit(void)
 {
     int i;
     for (i=0; i< N_MAX_MODULES; i++)
     {
         // ok, so the zero module terminates the list
-        if (! rt.entries[i].module.base)
+        if (! rt.entries[i].module.addr)
             return;
         rt.entries[i].module.discrete_outputs = 0;
         rt.entries[i].requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
@@ -61,15 +52,15 @@ void ClrAllOutIPCDigit(void)
 }
 
 
-static module_entry_t *find_entry_by_base(uint base)
+static module_entry_t *find_entry_by_addr(uint addr)
 {
-    if (base == 0) return 0;
+    if (addr == 0) return NULL;
 
     for (uint i = 0; i < countof(rt.entries); i++)
     {
         module_entry_t *e =  &rt.entries[i];
 
-        if (e->module.base == base)
+        if (e->module.addr == addr)
             return e;
     }
 
@@ -86,11 +77,11 @@ static void prepare_fresh_entry(module_entry_t *e)
     e->status = 0;
 }
 
-static module_entry_t *alloc_entry(uint base)
+static module_entry_t *alloc_entry(uint addr)
 {
-    if (base == 0) return NULL;
+    if (addr == 0) return NULL;
 
-    module_entry_t *e = find_entry_by_base(base);
+    module_entry_t *e = find_entry_by_addr(addr);
     if (e)
         return e;
 
@@ -98,11 +89,11 @@ static module_entry_t *alloc_entry(uint base)
     {
         module_entry_t *e =  &rt.entries[i];
 
-        if (e->module.base == 0)
+        if (e->module.addr == 0)
         {
-            LOG("allocated entry for module %d", base);
+            LOG("allocated entry for module %d", addr);
 
-            e->module.base = base;
+            e->module.addr = addr;
             prepare_fresh_entry(e);
             return e;
         }
@@ -112,25 +103,24 @@ static module_entry_t *alloc_entry(uint base)
 }
 
 
-void SetOutIPCDigit(uint addr, bool set)
+void SetOutIPCDigit(uint addr, uint output_idx, bool set)
 {
-    uint base = addr2base(addr);
-    uint idx = addr2resource(addr);
-
-    if (! (base && idx))
+    if (addr == 0)
         return;
 
-    idx -= 1;
+    if (output_idx > 31)
+    {
+        WARN("attempt to drive discrete output > 31");
+        return;
+    }
 
-    REQUIRE(idx < 32);
-
-    module_entry_t *e = alloc_entry(base);
+    module_entry_t *e = alloc_entry(addr);
     if (! e)
         return;
 
     LOG("updating bit");
 
-    u32 mask = 1U << idx;
+    u32 mask = 1U << output_idx;
 
     if (set)
         e->module.discrete_outputs |= mask;
@@ -141,24 +131,23 @@ void SetOutIPCDigit(uint addr, bool set)
 }
 
 
-void SetOutIPCReg(uint addr, uint type, uint val)
+void SetOutIPCReg(uint addr, uint reg_idx, uint type, uint val)
 {
-    uint base = addr2base(addr);
-    uint idx = addr2resource(addr);
-
-    if (! (base && idx))
+    if (addr == 0)
         return;
 
-    idx -= 1;
+    if (reg_idx >= MODULE_MAX_N_OUTPUTS)
+    {
+        WARN("attempt to drive register >= MODULE_MAX_N_OUTPUTS");
+        return;
+    }
 
-    REQUIRE(idx < MODULE_MAX_N_OUTPUTS);
-
-    module_entry_t *e = alloc_entry(base);
+    module_entry_t *e = alloc_entry(addr);
     if (! e)
         return;
 
-    e->module.outputs[idx].type = type;
-    e->module.outputs[idx].val = val;
+    e->module.outputs[reg_idx].type = type;
+    e->module.outputs[reg_idx].val = val;
 
     e->requested_actions |= MODULE_ACTION_PUSH_OUTPUTS;
 
@@ -167,45 +156,38 @@ void SetOutIPCReg(uint addr, uint type, uint val)
 
 
 // GUESS: read binary value from the cached data (relay pin output)
-char GetOutIPCDigit(uint16_t addr)
+char GetOutIPCDigit(uint addr, uint output_idx)
 {
-    uint base = addr2base(addr);
-    uint idx = addr2resource(addr);
-
-    if (! (base && idx))
+    if (addr == 0)
+        return -1;
+    if (output_idx > 31)
         return -1;
 
-    idx -= 1;
-
-    REQUIRE(idx < 32);
-
-    const module_entry_t *e = find_entry_by_base(base);
+    const module_entry_t *e = find_entry_by_addr(addr);
     if (! e)
         return -1;
 
-    if (e->module.discrete_outputs & (1U << idx))
-        return 1;
-    else
-        return 0;
+    return (e->module.discrete_outputs & (1U << output_idx)) ? 1 : 0;
 }
 
 
 // GUESS: read analog values from the cached data
-uint16_t GetInIPC(uint16_t nAddress, s8 *nErr)
+uint16_t GetInIPC(uint addr, uint input_idx, s8 *nErr)
 {
-    uint base = addr2base(nAddress);
-    uint idx = addr2resource(nAddress);
-
-    if (! (base && idx))
+    if (addr == 0)
     {
-        *nErr=-1;
+        *nErr = -1;
         return 0;
     }
 
-    idx -= 1;
-    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
+    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
+    {
+        WARN("attempt to read input >= MODULE_MAX_MAX_N_INPUTS");
+        *nErr = -1;
+        return 0;
+    }
 
-    const module_entry_t *e = alloc_entry(base);
+    const module_entry_t *e = alloc_entry(addr);
 
     #warning "4444 ? WTF ?"
     if (! e)
@@ -215,30 +197,31 @@ uint16_t GetInIPC(uint16_t nAddress, s8 *nErr)
     }
 
     *nErr = e->err_cnt;
-    return e->module.inputs[idx];
+    return e->module.inputs[input_idx];
 }
 
 
 // GUESS: read the the discrete input from cached data
-uint16_t GetDiskrIPC(uint addr)
-{
-    uint base = addr2base(addr);
-    uint idx = addr2resource(addr);
 
-    if (! (base && idx))
+#warning "totally remove it"
+uint16_t GetDiskrIPC(uint addr, uint input_idx)
+{
+    if (addr == 0)
         return 0;
 
-    idx -= 1;
+    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
+    {
+        WARN("attempt to read input >= MODULE_MAX_MAX_N_INPUTS");
+        return 0;
+    }
 
-    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
-
-    const module_entry_t *e = alloc_entry(base);
+    const module_entry_t *e = alloc_entry(addr);
 
     if (! e)
         return 0;
 
     #warning "> 2500 ? wtf ?"s
-    if ((e->module.inputs[idx] > 2500) && (e->err_cnt < iMODULE_MAX_ERR))
+    if ((e->module.inputs[input_idx] > 2500) && (e->err_cnt < iMODULE_MAX_ERR))
         return 1;
     else
         return 0;
@@ -246,40 +229,25 @@ uint16_t GetDiskrIPC(uint addr)
 
 
 // GUESS: resets the input config in cached data and schedule the module update
-void UpdateInputConfig(uint addr, const module_input_cfg_t *cfg)
+void UpdateInputConfig(uint addr, uint input_idx, const module_input_cfg_t *cfg)
 {
-    uint base = addr2base(addr);
-    uint idx = addr2resource(addr);
-
-    if (! (idx && base))
+    if (addr == 0)
         return;
 
-    idx -= 1;
+    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
+    {
+        WARN("attempt to configure input >= MODULE_MAX_MAX_N_INPUTS");
+        return;
+    }
 
-    REQUIRE(idx < MODULE_MAX_MAX_N_INPUTS);
-
-    module_entry_t *e = alloc_entry(base);
+    module_entry_t *e = alloc_entry(addr);
 
     if (! e)
         return;
 
     LOG("updating input");
 
-//			if ((NoSameBuf(((char*)(&ModulData[i].InConfig[vInput-1]))+2,((char*)ModulConf)+2,2/*sizeof(TIModulConf)-2*/)) //·ÂÁ Í‡ÎË·Ó‚ÓÍ
-//				||(ModulData[i].InConfig[vInput-1].Type!=ModulConf->Type))
-    memcpy(&e->module.inputs_cfg[idx], cfg, sizeof(module_input_cfg_t));
-    //********************** Õ¿ƒŒ ”¡–¿“‹ *****************************
-    for (uint k=0;k < 32;k++)
-    {
-
-        //ModulData[i].InConfig[k].Type=3;
-        e->module.inputs_cfg[k].input=k+1;
-    }
-    //****************************************************************
-
-    if (e->module.max_n_inputs < (idx + 1))
-        e->module.max_n_inputs = idx + 1;
-
+    e->module.input_cfg_links.p[input_idx] = cfg;
     e->requested_actions |= MODULE_ACTION_PUSH_INPUT_CONFIG;
 }
 
@@ -289,8 +257,9 @@ void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t
     REQUIRE(nMod < countof(rt.entries));
     const module_entry_t *e = &rt.entries[nMod];
 
-    *fCpM=e->module.base;
-    *fMaxIn=e->module.max_n_inputs;
+    *fCpM=e->module.addr;
+    #warning "disabled n_used_inputs"
+//  *fMaxIn=e->module.n_used_inputs;
     *fInputs=e->module.inputs;
 
     #warning "status report is broken"
@@ -309,11 +278,11 @@ static module_entry_t *next_entry(module_entry_t *e)
     else
     {
         e++;
-        if (e >= &endof(rt.entries) || e->module.base == 0)
+        if (e >= &endof(rt.entries) || e->module.addr == 0)
             e = &rt.entries[0];
     }
 
-    return e->module.base != 0 ? e : NULL;
+    return e->module.addr != 0 ? e : NULL;
 }
 
 
@@ -365,7 +334,7 @@ static void end_sync(module_entry_t *e)
             if (e->err_cnt > iMODULE_MAX_ERR)
             {
                 e->err_cnt = iMODULE_MAX_ERR;
-                rt.last_bad_module = e->module.base;
+                rt.last_bad_module = e->module.addr;
             }
         }
 
@@ -412,6 +381,7 @@ void fbd_start(void)
 
     timer_start(&rt.poll_timer, 50, 1, fbd_task);
 }
+
 
 u8 fbd_get_last_bad_module(void)
 {

@@ -12,7 +12,7 @@
 #include "control_const.h"
 
 
-#define GetMetSensConfig(nSens)	(gd()->MechConfig[0].RNum[METEO_REGS_OFFSET + nSens])
+#define GetMeteoSensorConfig(nSens)	(gd()->MechConfig[0].RNum[METEO_REGS_OFFSET + nSens])
 
 #define tpRELAY		1
 #define tpLEVEL		2

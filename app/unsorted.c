@@ -48,11 +48,11 @@ void InitBlockEEP(void)
     BlockEEP[4].AdrCopyRAM=&gd_rw()->MechConfig;
     BlockEEP[4].Size = sizeof(gd()->MechConfig);
 
-    BlockEEP[5].AdrCopyRAM=&caldata.InTeplSens;
-    BlockEEP[5].Size = sizeof(caldata.InTeplSens);
+    BlockEEP[5].AdrCopyRAM=&caldata.IndoorSensors;
+    BlockEEP[5].Size = sizeof(caldata.IndoorSensors);
 
-    BlockEEP[6].AdrCopyRAM=&caldata.MeteoSens;
-    BlockEEP[6].Size = sizeof(caldata.MeteoSens);
+    BlockEEP[6].AdrCopyRAM=&caldata.MeteoSensors;
+    BlockEEP[6].Size = sizeof(caldata.MeteoSensors);
 
     BlockEEP[7].AdrCopyRAM=&gd_rw()->ConstMechanic;
     BlockEEP[7].Size = sizeof(gd()->ConstMechanic);
@@ -98,7 +98,7 @@ void setup_scatter(void)
     wtf0.AdrGD[6].MaxSize=sizeof(caldata);
 
     #warning "WTF: size is fullcal again ?"
-    wtf0.AdrGD[7].Adr=&caldata.MeteoSens;
+    wtf0.AdrGD[7].Adr=&caldata.MeteoSensors;
     wtf0.AdrGD[7].MaxSize=sizeof(calibration_t);
 
     wtf0.AdrGD[8].Adr=&gd_rw()->ConstMechanic;
@@ -146,26 +146,19 @@ void ButtonReset(void)
 
 void SetRelay(uint16_t nRelay)
 {
-    if (addr2base(nRelay))
-    {
-        SetOutIPCDigit(1,nRelay);
-    }
+    WARN("set relay not implemented");
+
+    SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 1);
 }
 //----------------------------------------
 void ClrRelay(uint16_t nRelay)
 {
-    if (addr2base(nRelay))
-    {
-        SetOutIPCDigit(0,nRelay);
-    }
+    SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 0);
 }
 
 char TestRelay(uint16_t nRelay)
 {
-    if (addr2base(nRelay))
-        return GetOutIPCDigit(nRelay);
-    // XXX: is it right to report 0 ?
-    return 0;
+    return GetOutIPCDigit(nRelay / 100, nRelay % 100);
 }
 
 void InitAllThisThings(char fTipReset)

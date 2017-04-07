@@ -12,7 +12,9 @@ static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_o
     if (! addr)
         return;
 
-    SetOutIPCDigit(addr + addr_offset, set);
+    addr += addr_offset;
+
+    SetOutIPCDigit(addr / 100, addr % 100 - 1, set);
 }
 
 void output_on(uint zone_idx, uint mech_idx, uint addr_offset)
@@ -27,5 +29,5 @@ void output_off(uint zone_idx, uint mech_idx, uint addr_offset)
 
 void write_output_register(uint addr, uint type, uint val)
 {
-    SetOutIPCReg(addr, type, val);
+    SetOutIPCReg(addr / 100, addr % 100 - 1, type, val);
 }

@@ -222,7 +222,7 @@ void MidlWindAndSr(void)
     _GD.TControl.MidlSR=((((long int)_GD.TControl.MidlSR)*(1000-o_MidlSRFactor))/1000
                         +((long int)_GD.TControl.MeteoSensing[cSmFARSens])*o_MidlSRFactor);
     _GD.Hot.MidlSR=(int)(_GD.TControl.MidlSR/1000);
-    if (GetMetSensConfig(cSmFARSens))
+    if (GetMeteoSensorConfig(cSmFARSens))
     {
         _GD.Hot.SumSun=(int)((_GD.TControl.SumSun*6)/1000);
     }
@@ -232,7 +232,7 @@ void MidlWindAndSr(void)
 
 void CheckMidlSr(void)
 {
-    if (GetMetSensConfig(cSmFARSens))
+    if (GetMeteoSensorConfig(cSmFARSens))
     {
         _GD.Hot.SumSun=(int)((_GD.TControl.SumSun*6)/1000);
     }

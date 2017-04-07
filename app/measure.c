@@ -10,8 +10,16 @@
 calibration_t caldata;
 sens_t sensdata;
 
-#define GetSensConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[SENSORS_REGS_OFFSET + nSens])
-#define GetInputConfig(nTepl,nSens)	(gd()->MechConfig[nTepl].RNum[INPUTS_REGS_OFFSET + nSens])
+static uint GetInputConfig(uint zone_idx, uint sensor_idx)
+{
+    return gd()->MechConfig[zone_idx].RNum[INPUTS_REGS_OFFSET + sensor_idx];
+}
+
+
+static uint GetIndoorSensorConfig(uint zone_idx, uint sensor_idx)
+{
+    return gd()->MechConfig[zone_idx].RNum[SENSORS_REGS_OFFSET + sensor_idx];
+}
 
 static void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_t* tPause, uint16_t tFilter)
 {
@@ -160,7 +168,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     {
         fSens=&gd_rw()->Hot.Zones[nTepl].InTeplSens[nSens];
         fuSens=&sensdata.uInTeplSens[nTepl][nSens];
-        fCalSens=&caldata.InTeplSens[nTepl][nSens];
+        fCalSens=&caldata.IndoorSensors[nTepl][nSens];
         fNameSens=&NameSensConfig[nSens];
         met=0;
     }
@@ -168,7 +176,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     {
         fSens=&gd_rw()->Hot.MeteoSensing[nSens];
         fuSens=&sensdata.uMeteoSens[nSens];
-        fCalSens=&caldata.MeteoSens[nSens];
+        fCalSens=&caldata.MeteoSensors[nSens];
         fNameSens=&NameSensConfig[nSens+cConfSSens];
         met=1;
     }
@@ -207,7 +215,9 @@ void Measure(void)
     {
         for (nSens=0;nSens<cConfSSens;nSens++)
         {
-            tSensVal=GetInIPC(GetSensConfig(tTepl,nSens),&ErrModule);
+            uint mapping = GetIndoorSensorConfig(tTepl,nSens);
+
+            tSensVal=GetInIPC(mapping / 100, mapping % 100 - 1,&ErrModule);
             if (ErrModule<0)
             {
                 gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
@@ -222,7 +232,9 @@ void Measure(void)
     }
     for (nSens=0;nSens<cConfSMetSens;nSens++)
     {
-        tSensVal=GetInIPC(GetMetSensConfig(nSens), &ErrModule);
+        uint mapping = GetMeteoSensorConfig(nSens);
+
+        tSensVal=GetInIPC(mapping / 100, mapping % 100 - 1, &ErrModule);
         if (ErrModule<0)
         {
             gd_rw()->Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
@@ -237,31 +249,29 @@ void Measure(void)
 
 void CheckInputConfig()
 {
-    char tTepl,nSens;
-    module_input_cfg_t tTempConf;
-    tTempConf.corr=0;
-    tTempConf.output=0;
-    tTempConf.type=0;
-    tTempConf.v0 = 0;
-    tTempConf.v1 = 0;
-    tTempConf.u0 = 0;
-    tTempConf.u1 = 0;
+    static const module_input_cfg_t dummy_config;
 
-    for (tTepl=0;tTepl<NZONES;tTepl++)
+    for (uint zone_idx=0; zone_idx < NZONES; zone_idx++)
     {
-        for (nSens=0;nSens<cConfSInputs;nSens++)
+        for (uint sensor_idx =0; sensor_idx < cConfSInputs; sensor_idx++)
         {
-            tTempConf.input=GetInputConfig(tTepl,nSens)%100;
-            UpdateInputConfig(GetInputConfig(tTepl,nSens),&tTempConf);
+            uint mapping = GetInputConfig(zone_idx,sensor_idx);
+            UpdateInputConfig(mapping / 100, mapping % 100 - 1, &dummy_config);
         }
     }
-    for (tTepl=0;tTepl<NZONES;tTepl++)
+    for (uint zone_idx=0;zone_idx<NZONES;zone_idx++)
     {
-        for (nSens=0;nSens<cConfSSens;nSens++)
-            UpdateInputConfig(GetSensConfig(tTepl,nSens), &caldata.InTeplSens[tTepl][nSens]);
+        for (uint sensor_idx = 0; sensor_idx < cConfSSens; sensor_idx++)
+        {
+            uint mapping = GetIndoorSensorConfig(zone_idx, sensor_idx);
+            UpdateInputConfig(mapping / 100, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
+        }
     }
-    for (nSens=0;nSens<cConfSMetSens;nSens++)
-        UpdateInputConfig(GetMetSensConfig(nSens), &caldata.MeteoSens[nSens]);
+    for (uint sensor_idx = 0; sensor_idx < cConfSMetSens; sensor_idx++)
+    {
+        uint mapping = GetMeteoSensorConfig(sensor_idx);
+        UpdateInputConfig(mapping / 100, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
+    }
 
 }
 
@@ -271,7 +281,7 @@ void reset_calibration(void)
 
     for (int i=0; i<cConfSMetSens;i++)
     {
-        eCS=&caldata.MeteoSens[i];
+        eCS=&caldata.MeteoSensors[i];
         eCS->v0=NameSensConfig[i+cConfSSens].vCal[0];
         eCS->v1=NameSensConfig[i+cConfSSens].vCal[1];
         eCS->u0=NameSensConfig[i+cConfSSens].uCal[0];
@@ -286,7 +296,7 @@ void reset_calibration(void)
     {
         for (int byte_y=0;byte_y<cConfSSens;byte_y++)
         {
-            eCS=&caldata.InTeplSens[zone_idx][byte_y];
+            eCS=&caldata.IndoorSensors[zone_idx][byte_y];
             eCS->v0=NameSensConfig[byte_y].vCal[0];
             eCS->v1=NameSensConfig[byte_y].vCal[1];
             eCS->u0=NameSensConfig[byte_y].uCal[0];
@@ -309,7 +319,10 @@ void LoadDiscreteInputs(void)
         for (int input_idx=0; input_idx < cConfSInputs; input_idx++)
         {
             #warning "discrete_inputs stuck and never clears ? nice !"
-            if (GetDiskrIPC(GetInputConfig(zone_idx, input_idx)))
+
+            uint mapping = GetInputConfig(zone_idx, input_idx);
+
+            if (GetDiskrIPC(mapping / 100, mapping % 100 - 1))
                 zone->discrete_inputs[0] |= 1<<input_idx;
         }
     }

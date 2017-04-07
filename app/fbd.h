@@ -23,17 +23,14 @@
 #define N_MAX_MODULES 	30
 
 
-
-uint addr2base(uint nAddress);
-char GetOutIPCDigit(uint16_t nAddress);
-void SetOutIPCDigit(uint addr, bool set);
-
-void SetOutIPCReg(uint nAddress, uint type, uint val);
-
+void SetOutIPCDigit(uint addr, uint output_idx, bool set);
+void SetOutIPCReg(uint addr, uint reg_idx, uint type, uint val);
+char GetOutIPCDigit(uint addr, uint output_idx);
+uint16_t GetInIPC(uint addr, uint input_idx, s8 *nErr);
 void ClrAllOutIPCDigit(void);
-uint16_t GetInIPC(uint16_t nAddress, s8 *nErr);
-uint16_t GetDiskrIPC(uint addr);
-void UpdateInputConfig(uint addr, const module_input_cfg_t *cfg);
+uint16_t GetDiskrIPC(uint addr, uint input_idx);
+void UpdateInputConfig(uint addr, uint input_idx, const module_input_cfg_t *cfg);
+
 void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn, const uint16_t **fInputs);
 
 

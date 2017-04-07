@@ -53,14 +53,14 @@ static void check_progress(timer_t *dummy);
 
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->outputs));
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->discrete_outputs));
-PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs_cfg));
+PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(module_input_cfg_t) * MODULE_MAX_MAX_N_INPUTS);
 PANIC_IF(FIELDBUS_MAX_DATALEN < sizeof(rt.data->inputs));
 PANIC_IF(_MODULE_ACTION_IDX_LAST > 8);  // to fit u8
 
 
 static u8 get_maddr(void)
 {
-    return rt.data->base % 100 + 120;
+    return rt.data->addr % 100 + 120;
 }
 
 
@@ -87,7 +87,30 @@ static void req_push_input_config(void)
 {
     LOG("pushing input config");
 
-    bool is_ok = fieldbus_request_write(get_maddr(), 0, 2, &rt.data->inputs_cfg, sizeof(rt.data->inputs_cfg));
+    // create linear array of inputs
+    module_input_cfg_t buf[MODULE_MAX_MAX_N_INPUTS];
+
+    for (uint i = 0; i < MODULE_MAX_MAX_N_INPUTS; i++)
+    {
+        const module_input_cfg_t *src = rt.data->input_cfg_links.p[i];
+        module_input_cfg_t *dst = &buf[i];
+        if (src == NULL)
+        {
+            memclr(dst, sizeof(module_input_cfg_t));
+        }
+        else
+        {
+            *dst = *src;
+            dst->output = 0;    // XXX: purpose of this field is unknown. set to 0
+            #warning "investigate this field"
+            dst->input = i + 1; // XXX: look like this field should be the 1-based number of input
+        }
+    }
+
+    // make sure there is no alignment effects
+    PANIC_IF(sizeof(buf) != (sizeof(module_input_cfg_t) * MODULE_MAX_MAX_N_INPUTS));
+
+    bool is_ok = fieldbus_request_write(get_maddr(), 0, 2, &buf, sizeof(buf));
     REQUIRE(is_ok);
 }
 
@@ -119,20 +142,21 @@ static void req_pull_inputs(void)
 {
     LOG("pulling inputs");
 
-    uint cnt = rt.data->max_n_inputs;
+    int last_configured_input = -1;
 
-    if (cnt == 0)
+    for (uint i = 0; i < MODULE_MAX_MAX_N_INPUTS; i++)
     {
-        WARN("max in == 0, ignoring transfer");
+        if (rt.data->input_cfg_links.p[i])
+            last_configured_input = i;
+    }
+
+    if (last_configured_input < 0)
+    {
+        WARN("no inputs configured, ignoring read action");
         return;
     }
 
-    if (cnt > countof(rt.data->inputs))
-    {
-        WARN("max in > inValues, trimming transfer");
-        cnt = countof(rt.data->inputs);
-    }
-    bool is_ok = fieldbus_request_read(get_maddr(), 2, 0, rt.data->inputs, sizeof(rt.data->inputs[0]) * cnt);
+    bool is_ok = fieldbus_request_read(get_maddr(), 2, 0, rt.data->inputs, sizeof(rt.data->inputs[0]) * (last_configured_input + 1));
     REQUIRE(is_ok);
 }
 
