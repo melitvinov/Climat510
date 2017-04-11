@@ -9,59 +9,61 @@
 
 #define FULL_SYNC ((1 << _MODULE_ACTION_IDX_LAST) - 1)
 
-typedef struct module_entry_t module_entry_t;
-
 struct module_entry_t
 {
     module_t module;
+    module_stat_t stat;
 
     u8 access_cycle;
-
-    u8 status;
-
-    u8 err_cnt;                 // count of comm error
-    u8 reset_cnt;               // count of seen resets
 
     u8 requested_actions;       // bitmap of actions requested for module before the sync cycle
     u8 pending_actions;         // bitmap of pending (uncompleted) actions for module
 };
 
-
 typedef struct
 {
     timer_t poll_timer;
     module_entry_t entries[N_MAX_MODULES];
-    module_entry_t *active_entry;
-    bool is_fieldbus_inited;
+    u32 used_entries;
+    int active_idx;
     u8 last_bad_module;
 } fbd_rt_t;
 
 static fbd_rt_t rt;
 
-void ClrAllOutIPCDigit(void)
+// make sure we fit u32 bitmap
+PANIC_IF(N_MAX_MODULES >= 32);
+
+static int next_entry(int start)
 {
-    int i;
-    for (i=0; i< N_MAX_MODULES; i++)
+    uint entries = rt.used_entries;
+
+    if (start >= 0)
     {
-        // ok, so the zero module terminates the list
-        if (! rt.entries[i].module.addr)
-            return;
-        rt.entries[i].module.discrete_outputs = 0;
-        rt.entries[i].requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
+        start += 1;
+        entries = (entries >> start) << start;    // clear all bits before (and including) the start
     }
+
+    if (! entries)
+        return -1;
+
+    return ctz(entries);
 }
 
 
-static module_entry_t *find_entry_by_addr(uint addr)
+module_entry_t *fbd_find_module_by_addr(uint addr)
 {
     if (addr == 0) return NULL;
 
-    for (uint i = 0; i < countof(rt.entries); i++)
+    for (u32 used = rt.used_entries; used; used &= used - 1)
     {
-        module_entry_t *e =  &rt.entries[i];
+        uint pos = ctz(used);
 
-        if (e->module.addr == addr)
-            return e;
+        if (pos >= N_MAX_MODULES)
+            break;
+
+        if (rt.entries[pos].module.addr == addr)
+            return &rt.entries[pos];
     }
 
     return NULL;
@@ -71,218 +73,118 @@ static void prepare_fresh_entry(module_entry_t *e)
 {
     e->requested_actions |= FULL_SYNC;
 
-    e->err_cnt = 0;
-    e->reset_cnt = 0;
+    e->stat.err_cnt = 0;
+    e->stat.reset_cnt = 0;
+    e->stat.status = 0;
+
     e->access_cycle = 0;
-    e->status = 0;
 }
 
-static module_entry_t *alloc_entry(uint addr)
+module_entry_t *fbd_mount_module(uint addr)
 {
     if (addr == 0) return NULL;
 
-    module_entry_t *e = find_entry_by_addr(addr);
+    module_entry_t *e = fbd_find_module_by_addr(addr);
     if (e)
         return e;
 
-    for (uint i=0; i < countof(rt.entries); i++)
+    u32 used = rt.used_entries;
+    REQUIRE(used != ~0U);
+
+    u32 pos = ctz(~used);
+    if (pos >= N_MAX_MODULES)
     {
-        module_entry_t *e =  &rt.entries[i];
-
-        if (e->module.addr == 0)
-        {
-            LOG("allocated entry for module %d", addr);
-
-            e->module.addr = addr;
-            prepare_fresh_entry(e);
-            return e;
-        }
+        WARN("no mem to mount module");
+        return NULL;
     }
 
-    return NULL;
+    rt.used_entries |= 1U << pos;
+    e = &rt.entries[pos];
+    prepare_fresh_entry(e);
+    return e;
 }
 
 
-void SetOutIPCDigit(uint addr, uint output_idx, bool set)
+module_entry_t *fbd_next_module(module_entry_t *m)
 {
-    if (addr == 0)
-        return;
-
-    if (output_idx > 31)
-    {
-        WARN("attempt to drive discrete output > 31");
-        return;
-    }
-
-    module_entry_t *e = alloc_entry(addr);
-    if (! e)
-        return;
-
-    LOG("updating bit");
-
-    u32 mask = 1U << output_idx;
-
-    if (set)
-        e->module.discrete_outputs |= mask;
-    else
-        e->module.discrete_outputs &= ~(mask);
-
-    e->requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
+    int start = m ? (m - rt.entries) : -1;
+    int pos = next_entry(start);
+    return pos >= 0 ? &rt.entries[pos] : NULL;
 }
 
 
-void SetOutIPCReg(uint addr, uint reg_idx, uint type, uint val)
+void fbd_unmount_module(module_entry_t *m)
 {
-    if (addr == 0)
+    if (! m)
         return;
 
+    uint pos = m - rt.entries;
+    REQUIRE(pos < N_MAX_MODULES);
+
+    rt.used_entries &= ~(1U << pos);
+
+    // brutally abort transaction if we're processing the entry in question now
+    if (rt.active_idx == (int)pos && module_sync_is_busy())
+    {
+        module_sync_abort();
+        rt.active_idx = -1;
+    }
+}
+
+
+void fbd_write_discrete_outputs(module_entry_t *m, u32 val, u32 mask)
+{
+    u32 oldval = m->module.discrete_outputs;
+    u32 newval = (oldval & ~mask) | (val & mask);
+
+    if (newval != oldval)
+    {
+        m->module.discrete_outputs = newval;
+        m->requested_actions |= MODULE_ACTION_PUSH_DISCRETE_OUTPUTS;
+    }
+}
+
+
+void fbd_write_register(module_entry_t *m, uint reg_idx, uint type, uint val)
+{
     if (reg_idx >= MODULE_MAX_N_OUTPUTS)
     {
         WARN("attempt to drive register >= MODULE_MAX_N_OUTPUTS");
         return;
     }
 
-    module_entry_t *e = alloc_entry(addr);
-    if (! e)
-        return;
+    m->module.outputs[reg_idx].type = type;
+    m->module.outputs[reg_idx].val = val;
 
-    e->module.outputs[reg_idx].type = type;
-    e->module.outputs[reg_idx].val = val;
-
-    e->requested_actions |= MODULE_ACTION_PUSH_OUTPUTS;
-
-    return;
+    m->requested_actions |= MODULE_ACTION_PUSH_OUTPUTS;
 }
 
 
-// GUESS: read binary value from the cached data (relay pin output)
-char GetOutIPCDigit(uint addr, uint output_idx)
+int fbd_read_input(module_entry_t *m, uint input_idx, u16 *val)
 {
-    if (addr == 0)
-        return -1;
-    if (output_idx > 31)
-        return -1;
-
-    const module_entry_t *e = find_entry_by_addr(addr);
-    if (! e)
-        return -1;
-
-    return (e->module.discrete_outputs & (1U << output_idx)) ? 1 : 0;
-}
-
-
-// GUESS: read analog values from the cached data
-uint16_t GetInIPC(uint addr, uint input_idx, s8 *nErr)
-{
-    if (addr == 0)
-    {
-        *nErr = -1;
-        return 0;
-    }
-
     if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
     {
         WARN("attempt to read input >= MODULE_MAX_MAX_N_INPUTS");
-        *nErr = -1;
-        return 0;
+        *val = 0;
+        return -1;
     }
 
-    const module_entry_t *e = alloc_entry(addr);
-
-    #warning "4444 ? WTF ?"
-    if (! e)
-    {
-        *nErr=0;
-        return 4444;
-    }
-
-    *nErr = e->err_cnt;
-    return e->module.inputs[input_idx];
+    *val = m->module.inputs[input_idx];
+    return m->stat.err_cnt;
 }
 
-
-// GUESS: read the the discrete input from cached data
-
-#warning "totally remove it"
-uint16_t GetDiskrIPC(uint addr, uint input_idx)
+void fbd_configure_input(module_entry_t *m, uint input_idx, const module_input_cfg_t *cfg)
 {
-    if (addr == 0)
-        return 0;
-
-    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
-    {
-        WARN("attempt to read input >= MODULE_MAX_MAX_N_INPUTS");
-        return 0;
-    }
-
-    const module_entry_t *e = alloc_entry(addr);
-
-    if (! e)
-        return 0;
-
-    #warning "> 2500 ? wtf ?"s
-    if ((e->module.inputs[input_idx] > 2500) && (e->err_cnt < iMODULE_MAX_ERR))
-        return 1;
-    else
-        return 0;
-}
-
-
-// GUESS: resets the input config in cached data and schedule the module update
-void UpdateInputConfig(uint addr, uint input_idx, const module_input_cfg_t *cfg)
-{
-    if (addr == 0)
-        return;
-
     if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
     {
         WARN("attempt to configure input >= MODULE_MAX_MAX_N_INPUTS");
         return;
     }
 
-    module_entry_t *e = alloc_entry(addr);
-
-    if (! e)
-        return;
-
     LOG("updating input");
 
-    e->module.input_cfg_links.p[input_idx] = cfg;
-    e->requested_actions |= MODULE_ACTION_PUSH_INPUT_CONFIG;
-}
-
-
-void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn, const uint16_t **fInputs)
-{
-    REQUIRE(nMod < countof(rt.entries));
-    const module_entry_t *e = &rt.entries[nMod];
-
-    *fCpM=e->module.addr;
-    #warning "disabled n_used_inputs"
-//  *fMaxIn=e->module.n_used_inputs;
-    *fInputs=e->module.inputs;
-
-    #warning "status report is broken"
-    *fCond=e->status;
-    *fErr=e->err_cnt;
-    *fFail=e->reset_cnt;
-}
-
-
-static module_entry_t *next_entry(module_entry_t *e)
-{
-    if (! e)
-    {
-        e = &rt.entries[0];
-    }
-    else
-    {
-        e++;
-        if (e >= &endof(rt.entries) || e->module.addr == 0)
-            e = &rt.entries[0];
-    }
-
-    return e->module.addr != 0 ? e : NULL;
+    m->module.input_cfg_links.p[input_idx] = cfg;
+    m->requested_actions |= MODULE_ACTION_PUSH_INPUT_CONFIG;
 }
 
 
@@ -310,7 +212,7 @@ static void end_sync(module_entry_t *e)
     {
         // dequeue requests
         e->pending_actions = 0;
-        e->status &= ~MODULE_ERR_RESET; // this error is transient, clear after succesful sync
+        e->stat.status &= ~MODULE_ERR_RESET; // this error is transient, clear after succesful sync
     }
     else
     {
@@ -322,24 +224,24 @@ static void end_sync(module_entry_t *e)
         // stat resets
         if (err & MODULE_ERR_RESET)
         {
-            e->reset_cnt++;
-            if (e->reset_cnt > iMODULE_MAX_FAILURES)
-                e->reset_cnt = iMODULE_MAX_FAILURES;
+            e->stat.reset_cnt++;
+            if (e->stat.reset_cnt > iMODULE_MAX_FAILURES)
+                e->stat.reset_cnt = iMODULE_MAX_FAILURES;
         }
 
         // stat link errors
         if (err & (MODULE_ERR_CHECKSUM | MODULE_ERR_LINK))
         {
-            e->err_cnt++;
-            if (e->err_cnt > iMODULE_MAX_ERR)
+            e->stat.err_cnt++;
+            if (e->stat.err_cnt > iMODULE_MAX_ERR)
             {
-                e->err_cnt = iMODULE_MAX_ERR;
+                e->stat.err_cnt = iMODULE_MAX_ERR;
                 rt.last_bad_module = e->module.addr;
             }
         }
 
         // latch errors
-        e->status |= err;
+        e->stat.status |= err;
     }
 
     #warning "ccycle is seriously broken"
@@ -350,36 +252,46 @@ static void end_sync(module_entry_t *e)
 
 static void fbd_task(timer_t *dummy)
 {
-    if (rt.active_entry)
+    int idx = rt.active_idx;
+
+    if (idx >= 0)
     {
         if (module_sync_is_busy())
             return;
 
-        end_sync(rt.active_entry);
+        end_sync(&rt.entries[idx]);
     }
 
-    rt.active_entry = next_entry(rt.active_entry);
+    idx = next_entry(idx);
+    if (idx < 0)
+        idx = next_entry(-1);
 
-    if (! rt.active_entry)
+    rt.active_idx = idx;
+
+    if (idx < 0)
         return;
 
-    start_sync(rt.active_entry);
+    start_sync(&rt.entries[idx]);
 }
 
-void fbd_output_discrete_val(uint address, bool val)
-{
-
-}
 
 void fbd_start(void)
 {
-    if (! rt.is_fieldbus_inited)
-    {
-         fieldbus_init();
-         rt.is_fieldbus_inited = 1;
-    }
+    fieldbus_init();
+    rt.active_idx = -1;
 
     timer_start(&rt.poll_timer, 50, 1, fbd_task);
+}
+
+
+const module_stat_t *fbd_get_stat(const module_entry_t *m)
+{
+    return &m->stat;
+}
+
+uint fbd_get_addr(const module_entry_t *m)
+{
+    return m->module.addr;
 }
 
 

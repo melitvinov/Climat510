@@ -73,5 +73,6 @@ typedef struct
 void module_sync_run(module_t *module, u8 requested_actions);
 bool module_sync_is_busy(void);
 uint module_sync_get_err(void);
+void module_sync_abort(void);
 
 #endif

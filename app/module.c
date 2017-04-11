@@ -245,6 +245,24 @@ void module_sync_run(module_t *module, u8 requested_actions)
     do_next_action();
 }
 
+void module_sync_abort(void)
+{
+    if (! rt.is_busy)
+        return;
+
+    timer_stop(&rt.timer);
+
+    fieldbus_status_t status;
+
+    while((status = fieldbus_get_status()) == FIELDBUS_BUSY);
+
+    if (status == FIELDBUS_ERR_BAD_CHECKSUM)
+        rt.err |= MODULE_ERR_CHECKSUM;
+    else
+        rt.err |= MODULE_ERR_LINK;
+    finish();
+}
+
 bool module_sync_is_busy(void)
 {
     return rt.is_busy;

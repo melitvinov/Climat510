@@ -148,17 +148,21 @@ void SetRelay(uint16_t nRelay)
 {
     WARN("set relay not implemented");
 
-    SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 1);
+//  SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 1);
 }
 //----------------------------------------
 void ClrRelay(uint16_t nRelay)
 {
-    SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 0);
+    WARN("clr relay not implemented");
+
+//  SetOutIPCDigit(nRelay / 100, nRelay % 100 - 1, 0);
 }
 
 char TestRelay(uint16_t nRelay)
 {
-    return GetOutIPCDigit(nRelay / 100, nRelay % 100);
+    WARN("test relay not implemented");
+
+//  return GetOutIPCDigit(nRelay / 100, nRelay % 100);
 }
 
 void InitAllThisThings(char fTipReset)

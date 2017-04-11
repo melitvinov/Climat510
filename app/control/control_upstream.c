@@ -2,8 +2,8 @@
 
 #include "syntax.h"
 #include "control_gd.h"
-
 #include "fbd.h"
+#include "debug.h"
 
 static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_offset)
 {
@@ -14,7 +14,19 @@ static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_o
 
     addr += addr_offset;
 
-    SetOutIPCDigit(addr / 100, addr % 100 - 1, set);
+    module_entry_t *e = fbd_find_module_by_addr(addr / 100);
+
+    if (! e)
+        return;
+
+    uint bit_idx = addr % 100 - 1;
+    if (bit_idx > 31)
+    {
+        WARN("attempt to set bit > 31");
+        return;
+    }
+
+    fbd_write_discrete_outputs(e, set ? ~0U : 0, 1U << bit_idx);
 }
 
 void output_on(uint zone_idx, uint mech_idx, uint addr_offset)
@@ -29,5 +41,9 @@ void output_off(uint zone_idx, uint mech_idx, uint addr_offset)
 
 void write_output_register(uint addr, uint type, uint val)
 {
-    SetOutIPCReg(addr / 100, addr % 100 - 1, type, val);
+    module_entry_t *e = fbd_find_module_by_addr(addr / 100);
+    if (! e)
+        return;
+
+    fbd_write_register(e, addr % 100 - 1, type, val);
 }

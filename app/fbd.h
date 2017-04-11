@@ -22,20 +22,34 @@
 
 #define N_MAX_MODULES 	30
 
+// XXX: just for now
+typedef struct module_entry_t module_entry_t;
 
-void SetOutIPCDigit(uint addr, uint output_idx, bool set);
-void SetOutIPCReg(uint addr, uint reg_idx, uint type, uint val);
-char GetOutIPCDigit(uint addr, uint output_idx);
-uint16_t GetInIPC(uint addr, uint input_idx, s8 *nErr);
-void ClrAllOutIPCDigit(void);
-uint16_t GetDiskrIPC(uint addr, uint input_idx);
-void UpdateInputConfig(uint addr, uint input_idx, const module_input_cfg_t *cfg);
-
-void ModStatus(uint8_t nMod,uint16_t* fCpM,uint8_t *fErr,uint8_t *fFail, uint8_t *fCond,uint8_t *fMaxIn, const uint16_t **fInputs);
+typedef struct
+{
+    u8 status;
+    u8 err_cnt;
+    u8 reset_cnt;
+} module_stat_t;
 
 
 void fbd_start(void);
 u8 fbd_get_last_bad_module(void);
+
+module_entry_t *fbd_mount_module(uint addr);
+void fbd_unmount_module(module_entry_t *m);
+
+module_entry_t *fbd_find_module_by_addr(uint addr);
+module_entry_t *fbd_next_module(module_entry_t *m);
+
+void fbd_write_discrete_outputs(module_entry_t *m, u32 val, u32 mask);
+void fbd_write_register(module_entry_t *m, uint reg_idx, uint type, uint val);
+
+int fbd_read_input(module_entry_t *m, uint input_idx, u16 *val);
+void fbd_configure_input(module_entry_t *m, uint input_idx, const module_input_cfg_t *cfg);
+
+const module_stat_t *fbd_get_stat(const module_entry_t *m);
+uint fbd_get_addr(const module_entry_t *m);
 
 #endif
 

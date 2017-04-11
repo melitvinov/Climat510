@@ -834,10 +834,10 @@ void pmParMechanic(void) {
 // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  Состояние  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==
 void pmNow(void) {
     uint8_t Cond;
-    uint8_t Err,Failure;
+    uint8_t Err;
+    uint8_t Failure;
     uint8_t MaxIn;
     uint16_t CpM;
-    uint16_t* InpVal;
 
 
     w_txt(Mes38); //Condition
@@ -848,11 +848,27 @@ void pmNow(void) {
     {
         Y_menu2%=N_MAX_MODULES;//cSMech;
         Form = 0;
-        ModStatus(Y_menu2,&CpM,&Err,&Failure,&Cond,&MaxIn,&InpVal);
-        if (!CpM)
+
+        module_entry_t *e = fbd_next_module(NULL);
+
+        for (uint i = 0; e && i < Y_menu2; i++)
+            e = fbd_next_module(e);
+
+        if (! e)
         {
-            Y_menu2 = 0;return;
+            Y_menu2 = 0;
+            return;
         }
+
+        CpM = fbd_get_addr(e);
+        const module_stat_t *stat = fbd_get_stat(e);
+
+        Err = stat->err_cnt;
+        Failure = stat->reset_cnt;
+        Cond = stat->status;
+        #warning "not implemented"
+        MaxIn = -1;
+
         Ad_Buf = Str2;
         w_txt("Modul ");
         w_int(&Y_menu2,SS, 0);

@@ -18,6 +18,7 @@ void fieldbus_init(void);
 bool fieldbus_request_write(u8 slave_addr, uint reg_addr, uint blocknum, const void *data, uint datalen);
 bool fieldbus_request_read(u8 slave_addr, uint reg_addr, uint blocknum, void *data, uint datalen);
 fieldbus_status_t fieldbus_get_status(void);
+bool fieldbus_is_busy(void);
 void fieldbus_abort(void);
 
 #ifdef _FIELDBUS_C_
