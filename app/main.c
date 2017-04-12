@@ -136,7 +136,7 @@ void DoBeepy(void)
 
 static void periodic_task(void)
 {
-    if (wtf0.Second == 58)
+    if (wtf0.Second % 20 == 0)
     {
         LOG("checking input config");
         CheckWithoutPC();

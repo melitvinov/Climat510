@@ -357,7 +357,7 @@ void fieldbus_abort(void)
 {
     if (rt.state != state_idling)
     {
-        HAL_fieldbus_abort();
+        while (HAL_fieldbus_get_status() == HAL_FIELDBUS_BUSY);
     }
     rt.status = FIELDBUS_IDLE;
     trans(state_idling);

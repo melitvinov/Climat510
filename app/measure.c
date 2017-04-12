@@ -259,7 +259,8 @@ void Measure(void)
 
 void CheckInputConfig()
 {
-    mount_modules();
+    unmount_unused_boards();
+    mount_used_boards();
 
     static const board_input_cfg_t dummy_config;
 
@@ -297,7 +298,32 @@ void CheckInputConfig()
 
 // XXX: just for now: mount the modules once
 #warning "ordering is wrong ?"
-void mount_modules(void)
+
+static bool is_board_used(uint addr)
+{
+    for (uint zone_idx = 0; zone_idx < NZONES; zone_idx++)
+    {
+        for (uint mech_idx = 0; mech_idx < countof(gd()->MechConfig[0].RNum); mech_idx++)
+        {
+            uint mapping = gd()->MechConfig[zone_idx].RNum[mech_idx];
+            if (mapping / 100 == addr)
+                return 1;
+        }
+    }
+
+    return 0;
+}
+
+void unmount_unused_boards(void)
+{
+    for (board_t *b = fbd_next_board(NULL); b; b = fbd_next_board(b))
+    {
+        if (! is_board_used(fbd_get_addr(b)))
+            fbd_unmount(b);
+    }
+}
+
+void mount_used_boards(void)
 {
     for (uint zone_idx = 0; zone_idx < NZONES; zone_idx++)
     {

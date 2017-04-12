@@ -58,7 +58,7 @@ static void req_push_input_config(void)
 
     for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        const board_input_cfg_t *src = rt.active_board->input_cfg_links.p[i];
+        const board_input_cfg_t *src = rt.active_board->input_cfgs[i];
         board_input_cfg_t *dst = &buf[i];
         if (src == NULL)
         {
@@ -83,7 +83,7 @@ static void req_push_input_config(void)
 
 static void req_push_discrete_outputs(void)
 {
-    LOG("pushing out values 0x%04x", rt.active_board->discrete_outputs);
+    LOG("pushing out values 0x%04x", (uint)rt.active_board->discrete_outputs);
     bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 3, &rt.active_board->discrete_outputs, sizeof(rt.active_board->discrete_outputs));
     REQUIRE(is_ok);
 }
@@ -110,9 +110,10 @@ static void req_pull_inputs(void)
 
     int last_configured_input = -1;
 
+    // XXX: maybe this check is useless, just fire full read and forget ?
     for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        if (rt.active_board->input_cfg_links.p[i])
+        if (rt.active_board->input_cfgs[i])
             last_configured_input = i;
     }
 
@@ -201,16 +202,10 @@ static void check_sync_progress(timer_t *dummy)
 
 static void abort_sync(void)
 {
+    LOG("aborting");
     timer_stop(&rt.sync_timer);
 
-    fieldbus_status_t status;
-
-    while((status = fieldbus_get_status()) == FIELDBUS_BUSY);
-
-    if (status == FIELDBUS_ERR_BAD_CHECKSUM)
-        rt.active_board->last_sync_errs |= ERR_CHECKSUM;
-    else
-        rt.active_board->last_sync_errs |= ERR_LINK;
+    fieldbus_abort();
     finish_sync();
 }
 
@@ -254,14 +249,11 @@ static board_t *next_dirty_entry(board_t *after)
 }
 
 
-static void prepare_fresh_entry(board_t *b)
+static void init_fresh_entry(board_t *b, uint addr)
 {
-    b->pending_tasks = 0;
+    memclr(b, sizeof(board_t));
     b->requested_tasks = FULL_SYNC;
-
-    b->stat.err_cnt = 0;
-    b->stat.reset_cnt = 0;
-    b->stat.permanent_errs = 0;
+    b->addr = addr;
 }
 
 
@@ -416,8 +408,7 @@ board_t *fbd_mount(uint addr)
 
     rt.used_entries |= 1U << pos;
     b = &rt.pool[pos];
-    b->addr = addr;
-    prepare_fresh_entry(b);
+    init_fresh_entry(b, addr);
 
     LOG("mounted board %d (slot %d)", addr, pos);
 
@@ -435,6 +426,8 @@ void fbd_unmount(board_t *board)
 {
     if (! board)
         return;
+
+    LOG("unmounting board ...");
 
     uint pos = board - rt.pool;
     REQUIRE(pos < MAX_N_BOARDS);
@@ -491,6 +484,12 @@ u16 fbd_read_input(board_t *board, uint input_idx)
         return 0;
     }
 
+    if (! board->input_cfgs[input_idx])
+    {
+        WARN("read of unconfigured input");
+        return 0;
+    }
+
     return board->inputs[input_idx];
 }
 
@@ -504,7 +503,7 @@ void fbd_register_input_config(board_t *board, uint input_idx, const board_input
 
     LOG("updating input");
 
-    board->input_cfg_links.p[input_idx] = cfg;
+    board->input_cfgs[input_idx] = cfg;
     board->requested_tasks |= 1 << SYNC_TASK_PUSH_INPUT_CONFIG;
 }
 

@@ -74,12 +74,6 @@ enum sync_tasks_e
     _SYNC_TASK_LAST,
 };
 
-
-typedef struct __packed
-{
-    const board_input_cfg_t *p[MAX_N_INPUTS];
-} input_cfg_links_t;
-
 typedef struct __packed
 {
     u8 type;
@@ -89,7 +83,7 @@ typedef struct __packed
 struct board_t
 {
     board_output_register_t outputs[MAX_N_OUTPUTS];         // outputs registers (analog/continuous outputs ?)
-    input_cfg_links_t input_cfg_links;                      // pointers to input configs
+    const board_input_cfg_t *input_cfgs[MAX_N_INPUTS];      // pointers to input configs
     u32 discrete_outputs;                                   // bitmap of discrete outputs (relays)
     u16 addr;                                               // board base address
     u16 status_word;                                        // board status word
