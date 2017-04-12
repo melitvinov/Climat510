@@ -1,33 +1,12 @@
 #ifndef _FBD_H_
 #define _FBD_H_
 
-//#include "module.h"
-
-#define N_MAX_MODULES 	30
-
-#define iMODULE_MAX_ERR				100
-#define iMODULE_MAX_FAILURES		125
-
-
-#define		cmt0_5V		0
-#define 	cmt4_20mA	1
-#define		cmtAD592	2
-#define		cmt1Wire	3
-#define 	cmtEC		4
-#define		cmtT_EC		5
-#define		cmtPH1		6
-#define		cmtPH2		7
-#define		cmt0_3V		8
-#define		cmtWater	9
-#define		cmtWeigth	10
-#define		cmtSun		11
-
 typedef struct
 {
-    u8 status;
     u8 err_cnt;
     u8 reset_cnt;
-} module_stat_t;
+    u8 permanent_errs;
+} board_stat_t;
 
 typedef struct __packed
 {
@@ -39,41 +18,50 @@ typedef struct __packed
     u16 v0;
     u16 u1;
     u16 v1;
-} module_input_cfg_t;
+} board_input_cfg_t;
 
 // XXX: just for now
-typedef struct module_entry_t module_entry_t;
+typedef struct board_t board_t;
 
-void fbd_start(void);
-u8 fbd_get_last_bad_module(void);
+void fbd_init(void);
+u8 fbd_get_last_bad_board(void);
 
-module_entry_t *fbd_mount_module(uint addr);
-void fbd_unmount_module(module_entry_t *m);
+board_t *fbd_mount(uint addr);
+void fbd_unmount(board_t *board);
 
-module_entry_t *fbd_find_module_by_addr(uint addr);
-module_entry_t *fbd_next_module(module_entry_t *m);
+board_t *fbd_find_board_by_addr(uint addr);
+board_t *fbd_next_board(board_t *board);
 
-void fbd_write_discrete_outputs(module_entry_t *m, u32 val, u32 mask);
-void fbd_write_register(module_entry_t *m, uint reg_idx, uint type, uint val);
+void fbd_write_discrete_outputs(board_t *board, u32 val, u32 mask);
+void fbd_write_register(board_t *board, uint reg_idx, uint type, uint val);
 
-int fbd_read_input(module_entry_t *m, uint input_idx, u16 *val);
-void fbd_configure_input(module_entry_t *m, uint input_idx, const module_input_cfg_t *cfg);
+u16 fbd_read_input(board_t *board, uint input_idx);
+void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
 
-const module_stat_t *fbd_get_stat(const module_entry_t *m);
-uint fbd_get_addr(const module_entry_t *m);
+const board_stat_t *fbd_get_stat(const board_t *board);
+void fbd_reset_errors(board_t *board);
+uint fbd_get_addr(const board_t *board);
 
 #ifdef _FBD_C_
 // private
 
 #define FULL_SYNC ((1 << _SYNC_TASK_LAST) - 1)
 
-#define MODULE_MAX_MAX_N_INPUTS	    32
-#define MODULE_MAX_N_OUTPUTS	    8
+#define MAX_N_BOARDS 	    30
 
-#define MODULE_ERR_LINK				0x02
-#define MODULE_ERR_CHECKSUM			0x04
+#define MAX_N_INPUTS	    32
+#define MAX_N_OUTPUTS	    8
 
-#define MODULE_ERR_RESET			0x40
+#define ERR_LINK			0x02
+#define ERR_CHECKSUM		0x04
+#define ERR_RESET			0x40
+
+#define SEQ_PERIOD_MS               50
+#define READ_PERIOD_MS              5000
+#define KEEPALIVE_PERIOD_MS         15000
+
+#define LINK_ERRS_THRES   		    100
+#define RESET_ERRS_THRES   		    125
 
 // sync tasks are sorted by the execution order
 enum sync_tasks_e
@@ -89,31 +77,29 @@ enum sync_tasks_e
 
 typedef struct __packed
 {
-    const module_input_cfg_t *p[MODULE_MAX_MAX_N_INPUTS];
-} module_input_cfg_links_t;
+    const board_input_cfg_t *p[MAX_N_INPUTS];
+} input_cfg_links_t;
 
 typedef struct __packed
 {
     u8 type;
     u16 val;
-} module_output_register_t;
+} board_output_register_t;
 
-struct module_entry_t
+struct board_t
 {
-    module_output_register_t outputs[MODULE_MAX_N_OUTPUTS];         // outputs registers (analog/continuous outputs ?)
-    module_input_cfg_links_t input_cfg_links;                       // pointers to input configs
-    u32 discrete_outputs;                                           // bitmap of discrete outputs (relays)
-    u16 addr;                                                       // module base address
-    u16 status_word;                                                // module status word
-    u16 inputs[MODULE_MAX_MAX_N_INPUTS];                            // input values
+    board_output_register_t outputs[MAX_N_OUTPUTS];         // outputs registers (analog/continuous outputs ?)
+    input_cfg_links_t input_cfg_links;                      // pointers to input configs
+    u32 discrete_outputs;                                   // bitmap of discrete outputs (relays)
+    u16 addr;                                               // board base address
+    u16 status_word;                                        // board status word
+    u16 inputs[MAX_N_INPUTS];                            // input values
 
-    module_stat_t stat;
+    board_stat_t stat;
 
-    u8 access_cycle;
-    u8 sync_errs;
-
-    u8 requested_tasks;       // bitmap of tasks requested for module before the sync cycle
-    u8 pending_tasks;         // bitmap of pending (uncompleted) tasks for module
+    u8 last_sync_errs;
+    u8 requested_tasks;       // bitmap of tasks requested for board before the sync cycle
+    u8 pending_tasks;         // bitmap of pending (uncompleted) tasks for board
 };
 
 typedef struct
@@ -125,16 +111,18 @@ typedef struct
 
 typedef struct
 {
-    timer_t poll_timer;
+    timer_t seq_timer;
 
-    module_entry_t entries[N_MAX_MODULES];
+    board_t pool[MAX_N_BOARDS];
     u32 used_entries;
 
-    module_entry_t *active_entry;
+    board_t *active_board;
     timer_t sync_timer;
 
     bool is_syncing;
-    u8 last_bad_module;
+    uint read_delay;
+    uint keepalive_delay;
+    uint last_bad_board;
 } fbd_rt_t;
 
 static void req_pull_status(void);
@@ -144,9 +132,11 @@ static void req_push_discrete_outputs(void);
 static void req_push_outputs(void);
 static void req_pull_inputs(void);
 
-static void check_progress(timer_t *dummy);
+static void check_sync_progress(timer_t *dummy);
 
 static void abort_sync(void);
+
+static void fbd_periodic(timer_t *dummy);
 
 #endif
 #endif

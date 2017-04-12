@@ -4,8 +4,8 @@
 // blobs in remote reporting
 typedef struct __packed
 {
-    module_input_cfg_t  IndoorSensors[NZONES][cConfSSens];
-    module_input_cfg_t  MeteoSensors[cConfSMetSens];
+    board_input_cfg_t  IndoorSensors[NZONES][cConfSSens];
+    board_input_cfg_t  MeteoSensors[cConfSMetSens];
 } calibration_t;
 
 typedef struct

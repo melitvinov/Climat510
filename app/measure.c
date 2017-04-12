@@ -162,7 +162,7 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     eSensing    *fSens;
     const eNameASens  *fNameSens;
     int16_t     *fuSens;
-    module_input_cfg_t  *fCalSens;
+    board_input_cfg_t  *fCalSens;
     char        met=0;
     if (nSArea)
     {
@@ -205,52 +205,33 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     }
 }
 
-#warning "compatibility adapter"
-uint16_t GetInIPC(uint addr, uint input_idx, s8 *nErr)
-{
-    if (addr == 0)
-    {
-        *nErr = -1;
-        return 0;
-    }
-
-    module_entry_t *e = fbd_find_module_by_addr(addr);
-
-    #warning "4444 ? WTF ?"
-    if (! e)
-    {
-        *nErr=0;
-        return 4444;
-    }
-
-    u16 val = 0;
-    *nErr = fbd_read_input(e, input_idx, &val);
-    return val;
-}
-
 
 void Measure(void)
 {
     char tTepl,nSens;
     uint16_t    tSensVal;
-    int nModule;
-    int8_t ErrModule;
+
     for (tTepl=0;tTepl<NZONES;tTepl++)
     {
         for (nSens=0;nSens<cConfSSens;nSens++)
         {
             uint mapping = GetIndoorSensorConfig(tTepl,nSens);
 
-            tSensVal=GetInIPC(mapping / 100, mapping % 100 - 1,&ErrModule);
-            if (ErrModule<0)
+            board_t *b = fbd_find_board_by_addr(mapping / 100);
+
+            if (! b)
             {
                 gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
                 gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].Value=0;
                 sensdata.uInTeplSens[tTepl][nSens]=0;
                 continue;
             }
-            if (ErrModule>=iMODULE_MAX_ERR)
-                tSensVal=0;
+
+            if (fbd_get_stat(b)->permanent_errs)
+                tSensVal = 0;
+            else
+                tSensVal = fbd_read_input(b, mapping % 100 - 1);
+
             CalibrNew(1,tTepl,nSens,tSensVal);
         }
     }
@@ -258,15 +239,20 @@ void Measure(void)
     {
         uint mapping = GetMeteoSensorConfig(nSens);
 
-        tSensVal=GetInIPC(mapping / 100, mapping % 100 - 1, &ErrModule);
-        if (ErrModule<0)
+        board_t *b = fbd_find_board_by_addr(mapping / 100);
+
+        if (! b)
         {
             gd_rw()->Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
             sensdata.uMeteoSens[nSens]=0;
             continue;
         }
-        if (ErrModule>=iMODULE_MAX_ERR)
-            tSensVal=0;
+
+        if (fbd_get_stat(b)->permanent_errs)
+            tSensVal = 0;
+        else
+            tSensVal = fbd_read_input(b, mapping % 100 - 1);
+
         CalibrNew(0,0,nSens,tSensVal);
     }
 }
@@ -275,16 +261,16 @@ void CheckInputConfig()
 {
     mount_modules();
 
-    static const module_input_cfg_t dummy_config;
+    static const board_input_cfg_t dummy_config;
 
     for (uint zone_idx=0; zone_idx < NZONES; zone_idx++)
     {
         for (uint sensor_idx =0; sensor_idx < cConfSInputs; sensor_idx++)
         {
             uint mapping = GetInputConfig(zone_idx,sensor_idx);
-            module_entry_t *e = fbd_find_module_by_addr(mapping / 100);
-            if (e)
-                fbd_configure_input(e, mapping % 100 - 1, &dummy_config);
+            board_t *b = fbd_find_board_by_addr(mapping / 100);
+            if (b)
+                fbd_configure_input(b, mapping % 100 - 1, &dummy_config);
         }
     }
     for (uint zone_idx=0;zone_idx<NZONES;zone_idx++)
@@ -293,18 +279,18 @@ void CheckInputConfig()
         {
             uint mapping = GetIndoorSensorConfig(zone_idx, sensor_idx);
 
-            module_entry_t *e = fbd_find_module_by_addr(mapping / 100);
-            if (e)
-                fbd_configure_input(e, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
+            board_t *b = fbd_find_board_by_addr(mapping / 100);
+            if (b)
+                fbd_configure_input(b, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
         }
     }
     for (uint sensor_idx = 0; sensor_idx < cConfSMetSens; sensor_idx++)
     {
         uint mapping = GetMeteoSensorConfig(sensor_idx);
 
-        module_entry_t *e = fbd_find_module_by_addr(mapping / 100);
-        if (e)
-            fbd_configure_input(e, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
+        board_t *b = fbd_find_board_by_addr(mapping / 100);
+        if (b)
+            fbd_configure_input(b, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
     }
 }
 
@@ -321,7 +307,7 @@ void mount_modules(void)
             if (mapping == 0)
                 continue;
 
-            fbd_mount_module(mapping / 100);
+            fbd_mount(mapping / 100);
         }
     }
 }
@@ -329,7 +315,7 @@ void mount_modules(void)
 
 void reset_calibration(void)
 {
-    module_input_cfg_t *eCS;
+    board_input_cfg_t *eCS;
 
     for (int i=0; i<cConfSMetSens;i++)
     {
@@ -374,19 +360,16 @@ void LoadDiscreteInputs(void)
 
             uint mapping = GetInputConfig(zone_idx, input_idx);
 
-            module_entry_t *e = fbd_find_module_by_addr(mapping / 100);
+            board_t *b = fbd_find_board_by_addr(mapping / 100);
 
-            if (! e)
+            if (! b)
                 continue;
 
-            const module_stat_t *stat = fbd_get_stat(e);
-
-            #warning "its the original logic, copied verbatim here :-)"
-            if (stat->err_cnt >= iMODULE_MAX_ERR)
+            #warning "its the (almost_ original logic, copied verbatim here :-)"
+            if (fbd_get_stat(b)->permanent_errs)
                 continue;
 
-            u16 val = 0;
-            fbd_read_input(e, mapping % 100 - 1, &val);
+            u16 val = fbd_read_input(b, mapping % 100 - 1);
 
             if (val > 2500)
                 zone->discrete_inputs[0] |= 1<<input_idx;
@@ -397,8 +380,8 @@ void LoadDiscreteInputs(void)
 
 void ClrAllOutIPCDigit(void)
 {
-    for (module_entry_t *e = fbd_next_module(NULL); e; e = fbd_next_module(e))
+    for (board_t *b = fbd_next_board(NULL); b; b = fbd_next_board(b))
     {
-        fbd_write_discrete_outputs(e, 0, ~0);
+        fbd_write_discrete_outputs(b, 0, ~0);
     }
 }

@@ -722,7 +722,7 @@ void pmCalibr(void) {
     Ad_Buf++;
 
 
-    module_input_cfg_t *eCS=&caldata.IndoorSensors[0][int_y];
+    board_input_cfg_t *eCS=&caldata.IndoorSensors[0][int_y];
     w_txt(NameSensConfig[byte_x].Name);
     lcdbuf[Ad_Buf++]='=';
     w_int(&int_x,NameSensConfig[byte_x].Frm, 0);
@@ -846,26 +846,25 @@ void pmNow(void) {
     if (!x_menu) return;
     if (x_menu == SumTeplZones*3+1)
     {
-        Y_menu2%=N_MAX_MODULES;//cSMech;
         Form = 0;
 
-        module_entry_t *e = fbd_next_module(NULL);
+        board_t *b = fbd_next_board(NULL);
 
-        for (uint i = 0; e && i < Y_menu2; i++)
-            e = fbd_next_module(e);
+        for (uint i = 0; b && i < Y_menu2; i++)
+            b = fbd_next_board(b);
 
-        if (! e)
+        if (! b)
         {
             Y_menu2 = 0;
             return;
         }
 
-        CpM = fbd_get_addr(e);
-        const module_stat_t *stat = fbd_get_stat(e);
+        CpM = fbd_get_addr(b);
+        const board_stat_t *stat = fbd_get_stat(b);
 
         Err = stat->err_cnt;
         Failure = stat->reset_cnt;
-        Cond = stat->status;
+        Cond = stat->permanent_errs;
         #warning "not implemented"
         MaxIn = -1;
 

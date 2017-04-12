@@ -211,7 +211,7 @@ static void init(void)
     sound_init();
 
     LOG("initing fieldbus daemon ...");
-    fbd_start();
+    fbd_init();
 
     keyboardSetBITKL(0);
 
@@ -300,7 +300,7 @@ void main(void)
     {
         process_pc_input();
 
-        u8 last_bad_module = fbd_get_last_bad_module();
+        u8 last_bad_module = fbd_get_last_bad_board();
 
         #warning "this is likely wrong, but ok for now"
         if (last_bad_module != 0)

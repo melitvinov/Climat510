@@ -4,7 +4,6 @@
 
 #include "timers.h"
 #include "fieldbus.h"
-//#include "module.h"
 #include "fbd.h"
 #include "debug.h"
 
@@ -12,7 +11,7 @@
 static fbd_rt_t rt;
 
 // make sure we fit u32 bitmap
-PANIC_IF(N_MAX_MODULES >= 32);
+PANIC_IF(MAX_N_BOARDS >= 32);
 
 
 static const sync_task_t sync_tasks_table[] =
@@ -28,23 +27,22 @@ static const sync_task_t sync_tasks_table[] =
 
 static u8 get_active_maddr(void)
 {
-    return rt.active_entry->addr % 100 + 120;
+    return rt.active_board->addr % 100 + 120;
 }
-
 
 static void req_pull_status(void)
 {
     LOG("pulling status");
-    bool is_ok = fieldbus_request_read(get_active_maddr(), 0, 0, &rt.active_entry->status_word, sizeof(rt.active_entry->status_word));
+    bool is_ok = fieldbus_request_read(get_active_maddr(), 0, 0, &rt.active_board->status_word, sizeof(rt.active_board->status_word));
     REQUIRE(is_ok);
 }
 
 
 static bool on_pull_status_done(void)
 {
-    if (rt.active_entry->status_word & 0x01)
+    if (rt.active_board->status_word & 0x01)
     {
-        rt.active_entry->sync_errs |= MODULE_ERR_RESET;
+        rt.active_board->last_sync_errs |= ERR_RESET;
         return 0;
     }
 
@@ -56,15 +54,15 @@ static void req_push_input_config(void)
     LOG("pushing input config");
 
     // create linear array of inputs
-    module_input_cfg_t buf[MODULE_MAX_MAX_N_INPUTS];
+    board_input_cfg_t buf[MAX_N_INPUTS];
 
-    for (uint i = 0; i < MODULE_MAX_MAX_N_INPUTS; i++)
+    for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        const module_input_cfg_t *src = rt.active_entry->input_cfg_links.p[i];
-        module_input_cfg_t *dst = &buf[i];
+        const board_input_cfg_t *src = rt.active_board->input_cfg_links.p[i];
+        board_input_cfg_t *dst = &buf[i];
         if (src == NULL)
         {
-            memclr(dst, sizeof(module_input_cfg_t));
+            memclr(dst, sizeof(board_input_cfg_t));
         }
         else
         {
@@ -76,7 +74,7 @@ static void req_push_input_config(void)
     }
 
     // make sure there is no alignment effects
-    PANIC_IF(sizeof(buf) != (sizeof(module_input_cfg_t) * MODULE_MAX_MAX_N_INPUTS));
+    PANIC_IF(sizeof(buf) != (sizeof(board_input_cfg_t) * MAX_N_INPUTS));
 
     bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 2, &buf, sizeof(buf));
     REQUIRE(is_ok);
@@ -86,7 +84,7 @@ static void req_push_input_config(void)
 static void req_push_discrete_outputs(void)
 {
     LOG("pushing out values");
-    bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 3, &rt.active_entry->discrete_outputs, sizeof(rt.active_entry->discrete_outputs));
+    bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 3, &rt.active_board->discrete_outputs, sizeof(rt.active_board->discrete_outputs));
     REQUIRE(is_ok);
 }
 
@@ -95,13 +93,13 @@ static void req_push_outputs(void)
 {
     LOG("pushing out regs");
 
-    if (rt.active_entry->outputs[0].type == 0)
+    if (rt.active_board->outputs[0].type == 0)
     {
         // just auto-complete transfer
         return;
     }
 
-    bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 8, &rt.active_entry->outputs, sizeof(rt.active_entry->outputs));
+    bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 8, &rt.active_board->outputs, sizeof(rt.active_board->outputs));
     REQUIRE(is_ok);
 }
 
@@ -112,77 +110,76 @@ static void req_pull_inputs(void)
 
     int last_configured_input = -1;
 
-    for (uint i = 0; i < MODULE_MAX_MAX_N_INPUTS; i++)
+    for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        if (rt.active_entry->input_cfg_links.p[i])
+        if (rt.active_board->input_cfg_links.p[i])
             last_configured_input = i;
     }
 
     if (last_configured_input < 0)
     {
-        WARN("no inputs configured, ignoring read action");
+        WARN("no inputs configured, ignoring read task");
         return;
     }
 
-    bool is_ok = fieldbus_request_read(get_active_maddr(), 2, 0, rt.active_entry->inputs, sizeof(rt.active_entry->inputs[0]) * (last_configured_input + 1));
+    bool is_ok = fieldbus_request_read(get_active_maddr(), 2, 0, rt.active_board->inputs, sizeof(rt.active_board->inputs[0]) * (last_configured_input + 1));
     REQUIRE(is_ok);
 }
 
-//--- interface to the module sync
+//--- interface to the board sync
 
-static void finish(void)
+static void finish_sync(void)
 {
     rt.is_syncing = 0;
 }
 
 
-static void do_next_action()
+static void do_next_sync_task()
 {
     // update requests
-    u8 actions = rt.active_entry->pending_tasks;
+    u8 tasks = rt.active_board->pending_tasks;
 
-    if (! actions)
+    if (! tasks)
     {
-        finish();
+        finish_sync();
         return;
     }
 
-    // limit the number of actions per session to avoid the module blocking the bus for too long
-
-//  LOG("actions is %d", actions);
-
-    const sync_task_t *action = &sync_tasks_table[ctz(actions)];
-    action->req();
-    timer_start(&rt.sync_timer,  5, 1, check_progress);   // 5 ms poll period is ok
+    const sync_task_t *task = &sync_tasks_table[ctz(tasks)];
+    task->req();
+    timer_start(&rt.sync_timer,  5, 0, check_sync_progress);   // check progress after the 5 ms
 }
 
 
 static void on_done(void)
 {
-    u8 actions = rt.active_entry->pending_tasks;
-    const sync_task_t *action = &sync_tasks_table[ctz(actions)];
+    u8 tasks = rt.active_board->pending_tasks;
+    const sync_task_t *task = &sync_tasks_table[ctz(tasks)];
 
-    rt.active_entry->pending_tasks = actions & (actions - 1); // remove completed action from list
+    rt.active_board->pending_tasks = tasks & (tasks - 1); // remove completed task from list
 
-    if (action->on_done)
+    if (task->on_done)
     {
-        bool should_continue = action->on_done();
+        bool should_continue = task->on_done();
         if (! should_continue)
         {
-            finish();
+            finish_sync();
             return;
         }
     }
 
-    do_next_action();
+    do_next_sync_task();
 }
 
 
-static void check_progress(timer_t *dummy)
+static void check_sync_progress(timer_t *dummy)
 {
     fieldbus_status_t status = fieldbus_get_status();
     if (status == FIELDBUS_BUSY)
+    {
+        timer_start(&rt.sync_timer,  5, 0, check_sync_progress);   // check progress after the 5 ms again
         return;
+    }
 
     timer_stop(&rt.sync_timer);
 
@@ -194,19 +191,16 @@ static void check_progress(timer_t *dummy)
     {
         WARN("fieldbus err status %d", status);
         if (status == FIELDBUS_ERR_BAD_CHECKSUM)
-            rt.active_entry->sync_errs |= MODULE_ERR_CHECKSUM;
+            rt.active_board->last_sync_errs |= ERR_CHECKSUM;
         else
-            rt.active_entry->sync_errs |= MODULE_ERR_LINK;
-        finish();
+            rt.active_board->last_sync_errs |= ERR_LINK;
+        finish_sync();
     }
 }
 
 
 static void abort_sync(void)
 {
-    if (! rt.is_syncing)
-        return;
-
     timer_stop(&rt.sync_timer);
 
     fieldbus_status_t status;
@@ -214,137 +208,173 @@ static void abort_sync(void)
     while((status = fieldbus_get_status()) == FIELDBUS_BUSY);
 
     if (status == FIELDBUS_ERR_BAD_CHECKSUM)
-        rt.active_entry->sync_errs |= MODULE_ERR_CHECKSUM;
+        rt.active_board->last_sync_errs |= ERR_CHECKSUM;
     else
-        rt.active_entry->sync_errs |= MODULE_ERR_LINK;
-    finish();
+        rt.active_board->last_sync_errs |= ERR_LINK;
+    finish_sync();
 }
 
-static module_entry_t *next_entry(module_entry_t *after)
+//--- board sequencer routines and helpers
+
+static board_t *next_entry(board_t *after)
 {
     uint entries = rt.used_entries;
 
     if (after)
     {
-        uint idx = (after - rt.entries) + 1;
+        uint idx = (after - rt.pool) + 1;
         entries = (entries >> idx) << idx;    // clear all bits before (and including) the start
     }
 
     if (! entries)
         return NULL;
 
-    return &rt.entries[ctz(entries)];
+    return &rt.pool[ctz(entries)];
+}
+
+static board_t *next_dirty_entry(board_t *after)
+{
+    if (after)
+    {
+        // check entries from after to last
+        for (board_t *b = next_entry(after); b; b = next_entry(b))
+        {
+            if (b->pending_tasks || b->requested_tasks)
+                return b;
+        }
+    }
+
+    // check entries from start to last (actually to 'after' including)
+    for (board_t *b = next_entry(NULL); b; b = next_entry(b))
+    {
+        if (b->pending_tasks || b->requested_tasks)
+            return b;
+    }
+    return NULL;
 }
 
 
-static void prepare_fresh_entry(module_entry_t *e)
+static void prepare_fresh_entry(board_t *b)
 {
-    e->pending_tasks = 0;
-    e->requested_tasks = FULL_SYNC;
+    b->pending_tasks = 0;
+    b->requested_tasks = FULL_SYNC;
 
-    e->stat.err_cnt = 0;
-    e->stat.reset_cnt = 0;
-    e->stat.status = 0;
-
-    e->access_cycle = 0;
+    b->stat.err_cnt = 0;
+    b->stat.reset_cnt = 0;
+    b->stat.permanent_errs = 0;
 }
 
 
-static void start_sync(module_entry_t *e)
+static void start_sync(board_t *b)
 {
-    if (! e)
-        return;
-
-    if (e->access_cycle == 0)
-        e->requested_tasks |= (1 << SYNC_TASK_PULL_STATUS) | (1 << SYNC_TASK_PULL_INPUTS);
-
-    // put requested actions to 'fifo'
-    e->pending_tasks |= e->requested_tasks;
-    e->requested_tasks = 0;
-
     REQUIRE(! rt.is_syncing);
 
-    rt.active_entry = e;
-    rt.active_entry->sync_errs = 0;
+    // put requested tasks to 'fifo'
+    b->pending_tasks |= b->requested_tasks;
+    b->requested_tasks = 0;
+
+    rt.active_board = b;
+    rt.active_board->last_sync_errs = 0;
     rt.is_syncing = 1;
 
-    do_next_action();
+    do_next_sync_task();
 }
 
 
-static void end_sync(module_entry_t *e)
+static void end_sync(board_t *b)
 {
-    uint err = e->sync_errs;
+    uint errs = b->last_sync_errs;
 
-    if (err == 0)
+    if (errs == 0)
     {
         // dequeue requests
-        REQUIRE(e->pending_tasks == 0);
-        e->stat.status &= ~MODULE_ERR_RESET; // this error is transient, clear after succesful sync
+        REQUIRE(b->pending_tasks == 0);
     }
     else
     {
-        LOG("err status 0x%02x", err);
+        LOG("err status 0x%02x", errs);
 
         // error, so do a full sync next time around
-        // leave pending actions unchanged
-        e->requested_tasks |= FULL_SYNC;
+        // leave pending tasks unchanged
+        b->requested_tasks |= FULL_SYNC;
 
         // stat resets
-        if (err & MODULE_ERR_RESET)
+        if (errs & ERR_RESET)
         {
-            e->stat.reset_cnt++;
-            if (e->stat.reset_cnt > iMODULE_MAX_FAILURES)
-                e->stat.reset_cnt = iMODULE_MAX_FAILURES;
-        }
+            b->stat.reset_cnt++;
 
-        // stat link errors
-        if (err & (MODULE_ERR_CHECKSUM | MODULE_ERR_LINK))
-        {
-            e->stat.err_cnt++;
-            if (e->stat.err_cnt > iMODULE_MAX_ERR)
+            if (b->stat.reset_cnt > RESET_ERRS_THRES)
             {
-                e->stat.err_cnt = iMODULE_MAX_ERR;
-                rt.last_bad_module = e->addr;
+                b->stat.reset_cnt = RESET_ERRS_THRES;
+                b->stat.permanent_errs |= ERR_RESET;
             }
         }
 
-        // latch errors
-        e->stat.status |= err;
+        uint link_errs = errs & (ERR_CHECKSUM | ERR_LINK);
+
+        // stat link errors
+        if (link_errs)
+        {
+            b->stat.err_cnt++;
+            if (b->stat.err_cnt > LINK_ERRS_THRES)
+            {
+                b->stat.err_cnt = LINK_ERRS_THRES;
+                b->stat.permanent_errs |= link_errs;
+                rt.last_bad_board = b->addr;
+            }
+        }
     }
+}
 
-    #warning "ccycle is seriously broken"
+static void schedule_keepalives(void)
+{
+    if (rt.keepalive_delay && --rt.keepalive_delay)
+        return;
 
-    e->access_cycle = (e->access_cycle + 1) % 10;
+    rt.keepalive_delay = KEEPALIVE_PERIOD_MS / SEQ_PERIOD_MS - 1;
+
+    for (board_t *b = next_entry(NULL); b; b = next_entry(b))
+        b->requested_tasks |= 1 << SYNC_TASK_PULL_STATUS;
 }
 
 
-static void fbd_task(timer_t *dummy)
+static void schedule_reads(void)
 {
-    module_entry_t *e = rt.active_entry;
+    if (rt.read_delay && --rt.read_delay)
+        return;
 
-    if (e)
+    rt.read_delay = READ_PERIOD_MS / SEQ_PERIOD_MS - 1;
+
+    for (board_t *b = next_entry(NULL); b; b = next_entry(b))
+        b->requested_tasks |= 1 << SYNC_TASK_PULL_INPUTS;
+}
+
+
+static void fbd_periodic(timer_t *dummy)
+{
+    schedule_reads();
+    schedule_keepalives();
+
+    board_t *b = rt.active_board;
+
+    if (b)
     {
         if (rt.is_syncing)
             return;
 
-        end_sync(e);
+        end_sync(b);
     }
 
-    e = next_entry(e);
-    if (! e)
-        e = next_entry(NULL);
+    b = next_dirty_entry(b);
+    rt.active_board = b;
 
-    rt.active_entry = e;
-
-    if (! e)
-        return;
-
-    start_sync(e);
+    if (b)
+        start_sync(b);
 }
 
+//--- fbd api
 
-module_entry_t *fbd_find_module_by_addr(uint addr)
+board_t *fbd_find_board_by_addr(uint addr)
 {
     if (addr == 0) return NULL;
 
@@ -352,144 +382,152 @@ module_entry_t *fbd_find_module_by_addr(uint addr)
     {
         uint pos = ctz(used);
 
-        if (pos >= N_MAX_MODULES)
+        if (pos >= MAX_N_BOARDS)
             break;
 
-        if (rt.entries[pos].addr == addr)
-            return &rt.entries[pos];
+        if (rt.pool[pos].addr == addr)
+            return &rt.pool[pos];
     }
 
     return NULL;
 }
 
 
-module_entry_t *fbd_mount_module(uint addr)
+board_t *fbd_mount(uint addr)
 {
     if (addr == 0) return NULL;
 
-    module_entry_t *e = fbd_find_module_by_addr(addr);
-    if (e)
-        return e;
+    board_t *b = fbd_find_board_by_addr(addr);
+    if (b)
+        return b;
 
     u32 used = rt.used_entries;
     REQUIRE(used != ~0U);
 
     u32 pos = ctz(~used);
-    if (pos >= N_MAX_MODULES)
+    if (pos >= MAX_N_BOARDS)
     {
-        WARN("no mem to mount module");
+        WARN("no mem to mount board");
         return NULL;
     }
 
+    if (! rt.used_entries)
+        timer_start(&rt.seq_timer, SEQ_PERIOD_MS, 1, fbd_periodic);
+
     rt.used_entries |= 1U << pos;
-    e = &rt.entries[pos];
-    prepare_fresh_entry(e);
-    return e;
+    b = &rt.pool[pos];
+    prepare_fresh_entry(b);
+    return b;
 }
 
 
-module_entry_t *fbd_next_module(module_entry_t *e)
+board_t *fbd_next_board(board_t *board)
 {
-    return next_entry(e);
+    return next_entry(board);
 }
 
 
-void fbd_unmount_module(module_entry_t *m)
+void fbd_unmount(board_t *board)
 {
-    if (! m)
+    if (! board)
         return;
 
-    uint pos = m - rt.entries;
-    REQUIRE(pos < N_MAX_MODULES);
+    uint pos = board - rt.pool;
+    REQUIRE(pos < MAX_N_BOARDS);
 
     rt.used_entries &= ~(1U << pos);
 
     // brutally abort transaction if we're processing the entry in question now
-    if ((rt.is_syncing) && (rt.active_entry) && ((uint)(rt.active_entry - rt.entries) == pos))
+    if ((rt.is_syncing) && (rt.active_board) && ((uint)(rt.active_board - rt.pool) == pos))
     {
         abort_sync();
-        rt.active_entry = NULL;
+        rt.active_board = NULL;
     }
+
+    if (! rt.used_entries)
+        timer_stop(&rt.seq_timer);
 }
 
 
-void fbd_write_discrete_outputs(module_entry_t *m, u32 val, u32 mask)
+void fbd_write_discrete_outputs(board_t *board, u32 val, u32 mask)
 {
-    u32 oldval = m->discrete_outputs;
+    u32 oldval = board->discrete_outputs;
     u32 newval = (oldval & ~mask) | (val & mask);
 
     if (newval != oldval)
     {
-        m->discrete_outputs = newval;
-        m->requested_tasks |= 1 << SYNC_TASK_PUSH_DISCRETE_OUTPUTS;
+        board->discrete_outputs = newval;
+        board->requested_tasks |= 1 << SYNC_TASK_PUSH_DISCRETE_OUTPUTS;
     }
 }
 
 
-void fbd_write_register(module_entry_t *m, uint reg_idx, uint type, uint val)
+void fbd_write_register(board_t *board, uint reg_idx, uint type, uint val)
 {
-    if (reg_idx >= MODULE_MAX_N_OUTPUTS)
+    if (reg_idx >= MAX_N_OUTPUTS)
     {
-        WARN("attempt to drive register >= MODULE_MAX_N_OUTPUTS");
+        WARN("attempt to drive register >= MAX_N_OUTPUTS");
         return;
     }
 
-    m->outputs[reg_idx].type = type;
-    m->outputs[reg_idx].val = val;
+    board->outputs[reg_idx].type = type;
+    board->outputs[reg_idx].val = val;
 
-    m->requested_tasks |= 1 << SYNC_TASK_PUSH_OUTPUTS;
+    board->requested_tasks |= 1 << SYNC_TASK_PUSH_OUTPUTS;
 }
 
 
-int fbd_read_input(module_entry_t *m, uint input_idx, u16 *val)
+u16 fbd_read_input(board_t *board, uint input_idx)
 {
-    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
+    if (input_idx >= MAX_N_INPUTS)
     {
-        WARN("attempt to read input >= MODULE_MAX_MAX_N_INPUTS");
-        *val = 0;
-        return -1;
+        WARN("attempt to read input >= MAX_N_INPUTS");
+        return 0;
     }
 
-    *val = m->inputs[input_idx];
-    return m->stat.err_cnt;
+    return board->inputs[input_idx];
 }
 
-void fbd_configure_input(module_entry_t *m, uint input_idx, const module_input_cfg_t *cfg)
+void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg)
 {
-    if (input_idx >= MODULE_MAX_MAX_N_INPUTS)
+    if (input_idx >= MAX_N_INPUTS)
     {
-        WARN("attempt to configure input >= MODULE_MAX_MAX_N_INPUTS");
+        WARN("attempt to configure input >= MAX_N_INPUTS");
         return;
     }
 
     LOG("updating input");
 
-    m->input_cfg_links.p[input_idx] = cfg;
-    m->requested_tasks |= 1 << SYNC_TASK_PUSH_INPUT_CONFIG;
+    board->input_cfg_links.p[input_idx] = cfg;
+    board->requested_tasks |= 1 << SYNC_TASK_PUSH_INPUT_CONFIG;
 }
 
 
-void fbd_start(void)
+void fbd_init(void)
 {
     fieldbus_init();
-    rt.active_entry = NULL;
+}
 
-    timer_start(&rt.poll_timer, 50, 1, fbd_task);
+const board_stat_t *fbd_get_stat(const board_t *board)
+{
+    return &board->stat;
+}
+
+uint fbd_get_addr(const board_t *board)
+{
+    return board->addr;
 }
 
 
-const module_stat_t *fbd_get_stat(const module_entry_t *m)
+void fbd_reset_errors(board_t *board)
 {
-    return &m->stat;
-}
-
-uint fbd_get_addr(const module_entry_t *m)
-{
-    return m->addr;
+    board->stat.err_cnt = 0;
+    board->stat.reset_cnt = 0;
+    board->stat.permanent_errs = 0;
 }
 
 
-u8 fbd_get_last_bad_module(void)
+u8 fbd_get_last_bad_board(void)
 {
-    return rt.last_bad_module;
+    return rt.last_bad_board;
 }

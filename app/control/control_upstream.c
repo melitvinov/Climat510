@@ -14,9 +14,9 @@ static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_o
 
     addr += addr_offset;
 
-    module_entry_t *e = fbd_find_module_by_addr(addr / 100);
+    board_t *b = fbd_find_board_by_addr(addr / 100);
 
-    if (! e)
+    if (! b)
         return;
 
     uint bit_idx = addr % 100 - 1;
@@ -26,7 +26,7 @@ static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_o
         return;
     }
 
-    fbd_write_discrete_outputs(e, set ? ~0U : 0, 1U << bit_idx);
+    fbd_write_discrete_outputs(b, set ? ~0U : 0, 1U << bit_idx);
 }
 
 void output_on(uint zone_idx, uint mech_idx, uint addr_offset)
@@ -41,9 +41,9 @@ void output_off(uint zone_idx, uint mech_idx, uint addr_offset)
 
 void write_output_register(uint addr, uint type, uint val)
 {
-    module_entry_t *e = fbd_find_module_by_addr(addr / 100);
-    if (! e)
+    board_t *b = fbd_find_board_by_addr(addr / 100);
+    if (! b)
         return;
 
-    fbd_write_register(e, addr % 100 - 1, type, val);
+    fbd_write_register(b, addr % 100 - 1, type, val);
 }
