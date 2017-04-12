@@ -36,7 +36,7 @@ void fbd_write_discrete_outputs(board_t *board, u32 val, u32 mask);
 void fbd_write_register(board_t *board, uint reg_idx, uint type, uint val);
 
 u16 fbd_read_input(board_t *board, uint input_idx);
-void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
+void fbd_register_input_config(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
 
 const board_stat_t *fbd_get_stat(const board_t *board);
 void fbd_reset_errors(board_t *board);
@@ -56,12 +56,12 @@ uint fbd_get_addr(const board_t *board);
 #define ERR_CHECKSUM		0x04
 #define ERR_RESET			0x40
 
-#define SEQ_PERIOD_MS               50
-#define READ_PERIOD_MS              5000
-#define KEEPALIVE_PERIOD_MS         15000
+#define SEQ_PERIOD_MS       50
+#define READ_PERIOD_MS      5000
+#define KEEPALIVE_PERIOD_MS 15000
 
-#define LINK_ERRS_THRES   		    100
-#define RESET_ERRS_THRES   		    125
+#define LINK_ERRS_THRES   	100
+#define RESET_ERRS_THRES   	125
 
 // sync tasks are sorted by the execution order
 enum sync_tasks_e
@@ -93,7 +93,7 @@ struct board_t
     u32 discrete_outputs;                                   // bitmap of discrete outputs (relays)
     u16 addr;                                               // board base address
     u16 status_word;                                        // board status word
-    u16 inputs[MAX_N_INPUTS];                            // input values
+    u16 inputs[MAX_N_INPUTS];                               // input values
 
     board_stat_t stat;
 

@@ -83,7 +83,7 @@ static void req_push_input_config(void)
 
 static void req_push_discrete_outputs(void)
 {
-    LOG("pushing out values");
+    LOG("pushing out values 0x%04x", rt.active_board->discrete_outputs);
     bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 3, &rt.active_board->discrete_outputs, sizeof(rt.active_board->discrete_outputs));
     REQUIRE(is_ok);
 }
@@ -404,7 +404,7 @@ board_t *fbd_mount(uint addr)
     u32 used = rt.used_entries;
     REQUIRE(used != ~0U);
 
-    u32 pos = ctz(~used);
+    uint pos = ctz(~used);
     if (pos >= MAX_N_BOARDS)
     {
         WARN("no mem to mount board");
@@ -416,7 +416,11 @@ board_t *fbd_mount(uint addr)
 
     rt.used_entries |= 1U << pos;
     b = &rt.pool[pos];
+    b->addr = addr;
     prepare_fresh_entry(b);
+
+    LOG("mounted board %d (slot %d)", addr, pos);
+
     return b;
 }
 
@@ -446,6 +450,8 @@ void fbd_unmount(board_t *board)
 
     if (! rt.used_entries)
         timer_stop(&rt.seq_timer);
+
+    LOG("unmounted board %d (slot %d)", board->addr, pos);
 }
 
 
@@ -488,7 +494,7 @@ u16 fbd_read_input(board_t *board, uint input_idx)
     return board->inputs[input_idx];
 }
 
-void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg)
+void fbd_register_input_config(board_t *board, uint input_idx, const board_input_cfg_t *cfg)
 {
     if (input_idx >= MAX_N_INPUTS)
     {

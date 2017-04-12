@@ -270,7 +270,7 @@ void CheckInputConfig()
             uint mapping = GetInputConfig(zone_idx,sensor_idx);
             board_t *b = fbd_find_board_by_addr(mapping / 100);
             if (b)
-                fbd_configure_input(b, mapping % 100 - 1, &dummy_config);
+                fbd_register_input_config(b, mapping % 100 - 1, &dummy_config);
         }
     }
     for (uint zone_idx=0;zone_idx<NZONES;zone_idx++)
@@ -281,7 +281,7 @@ void CheckInputConfig()
 
             board_t *b = fbd_find_board_by_addr(mapping / 100);
             if (b)
-                fbd_configure_input(b, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
+                fbd_register_input_config(b, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
         }
     }
     for (uint sensor_idx = 0; sensor_idx < cConfSMetSens; sensor_idx++)
@@ -290,7 +290,7 @@ void CheckInputConfig()
 
         board_t *b = fbd_find_board_by_addr(mapping / 100);
         if (b)
-            fbd_configure_input(b, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
+            fbd_register_input_config(b, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
     }
 }
 
