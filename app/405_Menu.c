@@ -9,11 +9,11 @@
 #include "control.h"
 #include "control_siod.h"
 
-#include "module.h"
+//#include "module.h"
+#include "fbd.h"
 #include "measure.h"
 
 // for modul_sum constant
-#include "fbd.h"
 #include "lcd.h"
 #include "wtf.h"
 

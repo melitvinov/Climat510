@@ -8,7 +8,7 @@ SRC += app/timers.c
 SRC += app/fieldbus.c
 
 # these are semi-good
-SRC += app/module.c
+#SRC += app/module.c
 SRC += app/fbd.c
 
 # these are ugly

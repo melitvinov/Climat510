@@ -117,8 +117,6 @@
 			<F N="app/main_consts.h"/>
 			<F N="app/measure.c"/>
 			<F N="app/measure.h"/>
-			<F N="app/module.c"/>
-			<F N="app/module.h"/>
 			<F
 				N="app/module.mk"
 				Type="Makefile"/>
@@ -210,10 +208,6 @@
 			<Folder Name="rtc">
 				<F N="hal/rtc/hal_rtc.c"/>
 				<F N="hal/rtc/hal_rtc.h"/>
-			</Folder>
-			<Folder Name="spi">
-				<F N="hal/spi/hal_spi.c"/>
-				<F N="hal/spi/hal_spi.h"/>
 			</Folder>
 			<Folder Name="sys">
 				<F N="hal/sys/hal_sys.c"/>
