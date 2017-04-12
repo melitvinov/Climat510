@@ -32,7 +32,7 @@ static u8 get_active_maddr(void)
 
 static void req_pull_status(void)
 {
-    LOG("pulling status");
+    LOG(" -> status");
     bool is_ok = fieldbus_request_read(get_active_maddr(), 0, 0, &rt.active_board->status_word, sizeof(rt.active_board->status_word));
     REQUIRE(is_ok);
 }
@@ -51,7 +51,7 @@ static bool on_pull_status_done(void)
 
 static void req_push_input_config(void)
 {
-    LOG("pushing input config");
+    LOG(" <- input config");
 
     // create linear array of inputs
     board_input_cfg_t buf[MAX_N_INPUTS];
@@ -83,7 +83,7 @@ static void req_push_input_config(void)
 
 static void req_push_discrete_outputs(void)
 {
-    LOG("pushing out values 0x%04x", (uint)rt.active_board->discrete_outputs);
+    LOG(" <- relays (0x%04x)", (uint)rt.active_board->discrete_outputs);
     bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 3, &rt.active_board->discrete_outputs, sizeof(rt.active_board->discrete_outputs));
     REQUIRE(is_ok);
 }
@@ -91,7 +91,7 @@ static void req_push_discrete_outputs(void)
 
 static void req_push_outputs(void)
 {
-    LOG("pushing out regs");
+    LOG(" <- outputs");
 
     if (rt.active_board->outputs[0].type == 0)
     {
@@ -106,7 +106,7 @@ static void req_push_outputs(void)
 
 static void req_pull_inputs(void)
 {
-    LOG("pulling inputs");
+    LOG(" -> inputs");
 
     int last_configured_input = -1;
 
@@ -131,6 +131,7 @@ static void req_pull_inputs(void)
 
 static void finish_sync(void)
 {
+    LOG("end sync board %d", rt.active_board->addr);
     rt.is_syncing = 0;
 }
 
@@ -202,7 +203,7 @@ static void check_sync_progress(timer_t *dummy)
 
 static void abort_sync(void)
 {
-    LOG("aborting");
+    LOG("aborting sync");
     timer_stop(&rt.sync_timer);
 
     fieldbus_abort();
@@ -261,6 +262,8 @@ static void start_sync(board_t *b)
 {
     REQUIRE(! rt.is_syncing);
 
+    LOG("start sync board %d", b->addr);
+
     // put requested tasks to 'fifo'
     b->pending_tasks |= b->requested_tasks;
     b->requested_tasks = 0;
@@ -284,7 +287,7 @@ static void end_sync(board_t *b)
     }
     else
     {
-        LOG("err status 0x%02x", errs);
+        WARN("err 0x%02x", errs);
 
         // error, so do a full sync next time around
         // leave pending tasks unchanged
@@ -427,8 +430,6 @@ void fbd_unmount(board_t *board)
     if (! board)
         return;
 
-    LOG("unmounting board ...");
-
     uint pos = board - rt.pool;
     REQUIRE(pos < MAX_N_BOARDS);
 
@@ -500,8 +501,6 @@ void fbd_register_input_config(board_t *board, uint input_idx, const board_input
         WARN("attempt to configure input >= MAX_N_INPUTS");
         return;
     }
-
-    LOG("updating input");
 
     board->input_cfgs[input_idx] = cfg;
     board->requested_tasks |= 1 << SYNC_TASK_PUSH_INPUT_CONFIG;
