@@ -140,7 +140,7 @@ static void periodic_task(void)
     {
         LOG("checking input config");
         CheckWithoutPC();
-        CheckInputConfig();
+        UpdateInputConfigs();
     }
 #ifndef NOTESTMEM
 

@@ -21,13 +21,13 @@ static int16_t teplTmes[8][6];
 
 static int16_t getTempSensor(const zone_t *zone, int fnTepl, int sensor)
 {
-    if (zone->hot->InTeplSens[sensor].RCS  ==  0)
+    if (zone->hot->IndoorSensors[sensor].RCS  ==  0)
     {
-        teplTmes[fnTepl][sensor] = zone->hot->InTeplSens[sensor].Value;
-        return zone->hot->InTeplSens[sensor].Value;
+        teplTmes[fnTepl][sensor] = zone->hot->IndoorSensors[sensor].Value;
+        return zone->hot->IndoorSensors[sensor].Value;
     }
 
-    if (zone->hot->InTeplSens[sensor].Value  ==  0)
+    if (zone->hot->IndoorSensors[sensor].Value  ==  0)
         return 0;
     return teplTmes[fnTepl][sensor];
 }

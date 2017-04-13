@@ -214,10 +214,10 @@ void pmInfoProg405(void){
         w_int(&gd()->Hot.Zones[zone_idx].AllTask.DoTVent,SSpS0, 0);
         Ad_Buf++;
         w_txt(Mes42);
-        w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmTSens1].Value,SSpS0, 0);
-        w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmTSens2].Value,SSpS0, 0);
-        w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmTSens3].Value,SSpS0, 0);
-        w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmTSens4].Value,SSpS0, 0);
+        w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmTSens1].Value,SSpS0, 0);
+        w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmTSens2].Value,SSpS0, 0);
+        w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmTSens3].Value,SSpS0, 0);
+        w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmTSens4].Value,SSpS0, 0);
         return;
     }
     if (idx == 1)
@@ -226,14 +226,14 @@ void pmInfoProg405(void){
         w_int(&gd()->Hot.Zones[zone_idx].AllTask.DoRHAir,SSpS0, 0);
         Ad_Buf++;
         w_txt(Mes44);
-        w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmRHSens].Value,SSpS0, 0);
+        w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmRHSens].Value,SSpS0, 0);
         return;
     }
     w_txt(Mes45);
     w_int(&gd()->Hot.Zones[zone_idx].AllTask.DoCO2,SSSS, 0);
     Ad_Buf++;
     w_txt(Mes46);
-    w_int(&gd()->Hot.Zones[zone_idx].InTeplSens[cSmCOSens].Value,SSSS, 0);
+    w_int(&gd()->Hot.Zones[zone_idx].IndoorSensors[cSmCOSens].Value,SSSS, 0);
 
 
 }
@@ -713,7 +713,7 @@ void pmCalibr(void) {
         Y_menu2%=(cConfSSens*5);
         byte_x = Y_menu2/5;        //номер датчика в тепличных именах с 0
         byte_z = byte_x+1;          //номер датчика в тепличных с 1
-        int_x = gd()->Hot.Zones[byte_w].InTeplSens[byte_x].Value;
+        int_x = gd()->Hot.Zones[byte_w].IndoorSensors[byte_x].Value;
         gd_rw()->TControl.Zones[byte_w].TimeInTepl[byte_x]=120;
 //		if (!ByteX)
         int_y = byte_x+byte_w*cConfSSens;    //номер в массиве калибровок
@@ -752,7 +752,10 @@ void pmCalibr(void) {
     }
     Ad_Buf++;
     w_txt(Mes158);
-    w_int(&sensdata.uInTeplSens[0][int_y],SSSS, 0);
+
+    #warning "just output fbd input here"
+
+    w_int(&sensdata.uIndoorSensors[0][int_y],SSSS, 0);
     w_txt(Mes150);
 
     if ((EndInput)&&(byte_y>=3))
@@ -761,14 +764,14 @@ void pmCalibr(void) {
         if (!byte_z)
         {
             eCS->v1+=(SaveInt-eCS->v0);
-            eCS->u1+=(sensdata.uInTeplSens[0][int_y]-eCS->u0);
+            eCS->u1+=(sensdata.uIndoorSensors[0][int_y] - eCS->u0);
             eCS->v0 = SaveInt;
-            eCS->u0 = sensdata.uInTeplSens[0][int_y];
+            eCS->u0 = sensdata.uIndoorSensors[0][int_y];
         }
         else
         {
             eCS->v1 = SaveInt2;
-            eCS->u1 = sensdata.uInTeplSens[0][int_y];
+            eCS->u1 = sensdata.uIndoorSensors[0][int_y];
         }
         SetInSaveRam(eCS, 12);
         EndInput = 0;
@@ -941,18 +944,18 @@ void pmNow(void) {
     Ad_Buf = Str3;
     w_txt(" T  | RH |CO2 |Tp1 |Tp2 |Tp3 |Tp4 |Tp5");
     Ad_Buf = Str4;
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmTSens1].Value,SSpS0, 0);
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmTSens2].Value,SSpS0, 0);
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmTSens3].Value,SSpS0, 0);
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmTSens4].Value,SSpS0, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmTSens1].Value,SSpS0, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmTSens2].Value,SSpS0, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmTSens3].Value,SSpS0, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmTSens4].Value,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmRHSens].Value,SSpS0, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmRHSens].Value,SSpS0, 0);
     lcdbuf[Ad_Buf++]='|';
-    w_int(&gd()->Hot.Zones[byte_y].InTeplSens[cSmCOSens].Value,SSSS, 0);
+    w_int(&gd()->Hot.Zones[byte_y].IndoorSensors[cSmCOSens].Value,SSSS, 0);
     for (int byte_x = 0;byte_x<cSWaterKontur-1;byte_x++)
     {
         lcdbuf[Ad_Buf++]='|';
-        int int_x = gd()->Hot.Zones[byte_y].InTeplSens[cSmWaterSens+byte_x].Value/10;
+        int int_x = gd()->Hot.Zones[byte_y].IndoorSensors[cSmWaterSens+byte_x].Value/10;
         w_int(&int_x,SSS, 0);
         Ad_Buf++;
     }

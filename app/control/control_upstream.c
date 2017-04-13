@@ -20,6 +20,9 @@ static void write_output_bit(uint zone_idx, uint mech_idx, bool set, uint addr_o
         return;
 
     uint bit_idx = addr % 100 - 1;
+    if (bit_idx == -1U) // undefined input
+        return;
+
     if (bit_idx > 31)
     {
         WARN("attempt to set bit > 31");

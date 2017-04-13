@@ -8,6 +8,8 @@
 #include "measure.h"
 
 calibration_t caldata;
+
+#warning "these data are only for intermediate results and calibration. may be refactored away later"
 sens_t sensdata;
 
 static uint GetInputConfig(uint zone_idx, uint sensor_idx)
@@ -44,38 +46,34 @@ static void CheckDigitMidl(eSensing *ftemp,int16_t* Mes, int16_t* ValueS, uint8_
 }
 
 
-void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
+void CheckSensLevsNew(char zone_idx, uint8_t sensor_idx, bool is_meteo_sensor,int16_t Mes, int16_t raw_sample)
 {
-    const int16_t         *uS;
     const eNameASens  *nameS;
     eSensing    *valueS;
     int16_t         *llS;
     int16_t         *lS;
-    int16_t         *levelS;
     uint8_t         *tPause;
-    uS=&sensdata.uInTeplSens[fnTepl][fnSens];
-    nameS=&NameSensConfig[fnSens];
+    nameS=&NameSensConfig[sensor_idx];
 
-    valueS=&gd_rw()->Hot.Zones[fnTepl].InTeplSens[fnSens];
-    llS=&gd_rw()->TControl.Zones[fnTepl].LastLastInTeplSensing[fnSens];
-    lS=&gd_rw()->TControl.Zones[fnTepl].LastInTeplSensing[fnSens];
-    levelS=gd_rw()->Level.InTeplSens[fnTepl][fnSens];
-    tPause=&gd_rw()->TControl.Zones[fnTepl].TimeInTepl[fnSens];
-    if (met)
+    valueS=&gd_rw()->Hot.Zones[zone_idx].IndoorSensors[sensor_idx];
+    llS=&gd_rw()->TControl.Zones[zone_idx].LastLastInTeplSensing[sensor_idx];
+    lS=&gd_rw()->TControl.Zones[zone_idx].LastInTeplSensing[sensor_idx];
+    tPause=&gd_rw()->TControl.Zones[zone_idx].TimeInTepl[sensor_idx];
+
+    if (is_meteo_sensor)
     {
-        uS=&sensdata.uMeteoSens[fnSens];
-        nameS=&NameSensConfig[fnSens+cConfSSens];
-        valueS=&gd_rw()->Hot.MeteoSensing[fnSens];
+        nameS=&NameSensConfig[sensor_idx+cConfSSens];
+        valueS=&gd_rw()->Hot.MeteoSensing[sensor_idx];
         //llS=&GD.TControl.LastLastMeteoSensing[fnSens];
         //lS=&GD.TControl.LastMeteoSensing[fnSens];
-        levelS=gd_rw()->Level.MeteoSens[fnSens];
-        tPause=&gd_rw()->TControl.TimeMeteoSensing[fnSens];
+        tPause=&gd_rw()->TControl.TimeMeteoSensing[sensor_idx];
     }
-    if (full)
-    {
-        if (((*uS)<nameS->uMin)||((*uS)>nameS->uMax))
-            valueS->RCS |= cbMinMaxUSens;
-    }
+
+    // GUESS: check raw measurement ('voltage')
+    if (raw_sample < nameS->uMin || raw_sample > nameS->uMax)
+        valueS->RCS |= cbMinMaxUSens;
+
+    // GUESS: clamp cooked measurement min and max
     if (Mes < nameS->Min)
     {
         if ((nameS->TypeSens == cTypeSun)||(nameS->TypeSens == cTypeRain)||(nameS->TypeSens == cTypeFram)||(nameS->TypeSens == cTypeScreen))
@@ -105,7 +103,7 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         (*llS)=0;
     case c3MidlSens:
         {
-            if (met) break;
+            if (is_meteo_sensor) break;
 
             int16_t int_x = (*llS);
             int16_t int_y = (*lS);
@@ -125,18 +123,18 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
         (*lS)=Mes;
         break;
     }
-    if (!met)
+    if (!is_meteo_sensor)
         CheckDigitMidl(valueS,&Mes,&valueS->Value,tPause,nameS->DigitMidl);
     if (nameS->TypeSens == cTypeFram)
     {
-        if (! (gd()->TControl.Zones[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
-            gd_rw()->TControl.Zones[fnTepl].MechBusy[fnSens-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Zones[zone_idx].MechBusy[sensor_idx-cSmWinNSens+cHSmWinN].RCS & cMSBusyMech))
+            gd_rw()->TControl.Zones[zone_idx].MechBusy[sensor_idx-cSmWinNSens+cHSmWinN].RCS |= cMSFreshSens;
 
     }
     if (nameS->TypeSens == cTypeScreen)
     {
-        if (! (gd()->TControl.Zones[fnTepl].MechBusy[cHSmScrTH].RCS & cMSBusyMech))
-            gd_rw()->TControl.Zones[fnTepl].MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
+        if (! (gd()->TControl.Zones[zone_idx].MechBusy[cHSmScrTH].RCS & cMSBusyMech))
+            gd_rw()->TControl.Zones[zone_idx].MechBusy[cHSmScrTH].RCS |= cMSFreshSens;
 
     }
     valueS->Value=Mes;
@@ -157,30 +155,31 @@ void CheckSensLevsNew(char fnTepl,uint8_t fnSens,char full,char met,int16_t Mes)
     }*/
 }
 
-void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
+static void CalibrNew(bool is_indoor_sensor, uint zone_idx, char sensor_idx, int16_t sample)
 {
     eSensing    *fSens;
     const eNameASens  *fNameSens;
     int16_t     *fuSens;
-    board_input_cfg_t  *fCalSens;
-    char        met=0;
-    if (nSArea)
+    const board_input_cfg_t  *fCalSens;
+
+    if (is_indoor_sensor)
     {
-        fSens=&gd_rw()->Hot.Zones[nTepl].InTeplSens[nSens];
-        fuSens=&sensdata.uInTeplSens[nTepl][nSens];
-        fCalSens=&caldata.IndoorSensors[nTepl][nSens];
-        fNameSens=&NameSensConfig[nSens];
-        met=0;
+        fSens = &gd_rw()->Hot.Zones[zone_idx].IndoorSensors[sensor_idx];
+        fuSens = &sensdata.uIndoorSensors[zone_idx][sensor_idx];
+        fCalSens = &caldata.IndoorSensors[zone_idx][sensor_idx];
+        fNameSens=&NameSensConfig[sensor_idx];
     }
     else
     {
-        fSens=&gd_rw()->Hot.MeteoSensing[nSens];
-        fuSens=&sensdata.uMeteoSens[nSens];
-        fCalSens=&caldata.MeteoSensors[nSens];
-        fNameSens=&NameSensConfig[nSens+cConfSSens];
-        met=1;
+        fSens=&gd_rw()->Hot.MeteoSensing[sensor_idx];
+        fuSens=&sensdata.uMeteoSens[sensor_idx];
+        fCalSens=&caldata.MeteoSensors[sensor_idx];
+        fNameSens=&NameSensConfig[sensor_idx+cConfSSens];
     }
-    fSens->RCS=(fSens->RCS&(cbNotGoodSens+cbDownAlarmSens+cbUpAlarmSens));
+
+    // leave only these fields
+    fSens->RCS &= cbNotGoodSens | cbDownAlarmSens | cbUpAlarmSens;
+
     switch (fNameSens->TypeSens)
     {
     case cTypeFram:
@@ -191,15 +190,17 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
     case cTypeRH:
     case cTypeMeteo:
         {
-            //Mes=(int)((long int)Mes*(long int)1000/(long int)GD.Cal.Port);
-            fuSens[0]=Mes;
+            *fuSens = sample;
+
+            int16_t cooked_sample = sample;
+
+            #warning "so fckn calibration is applied right here, not in sensor"
 //			if(Mes>5000)
 //				Mes=0;
-            long long_x = ((long)fCalSens->v0-(long)fCalSens->v0)
-                          *((long)Mes-(long)fCalSens->u0);
-            Mes=(int16_t)(long_x/((long)fCalSens->u0-(long)fCalSens->u0));
-            Mes=Mes+fCalSens->v0;
-            CheckSensLevsNew(nTepl,nSens,1,met,Mes);
+            long long_x = ((long)fCalSens->v0 -(long)fCalSens->v0) * ((long)sample-(long)fCalSens->u0);
+            cooked_sample = (int16_t)(long_x/((long)fCalSens->u0-(long)fCalSens->u0));
+            cooked_sample += fCalSens->v0;
+            CheckSensLevsNew(zone_idx,sensor_idx, !is_indoor_sensor, cooked_sample, sample);
             return;
         }
     }
@@ -208,56 +209,51 @@ void  CalibrNew(char nSArea,char nTepl, char nSens,int16_t Mes)
 
 void Measure(void)
 {
-    char tTepl,nSens;
-    uint16_t    tSensVal;
-
-    for (tTepl=0;tTepl<NZONES;tTepl++)
+    for (uint zone_idx=0;zone_idx<NZONES;zone_idx++)
     {
-        for (nSens=0;nSens<cConfSSens;nSens++)
+        for (uint sensor_idx=0; sensor_idx<cConfSSens; sensor_idx++)
         {
-            uint mapping = GetIndoorSensorConfig(tTepl,nSens);
+            uint mapping = GetIndoorSensorConfig(zone_idx, sensor_idx);
 
             board_t *b = fbd_find_board_by_addr(mapping / 100);
 
             if (! b)
             {
-                gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].RCS=cbNoWorkSens;
-                gd_rw()->Hot.Zones[tTepl].InTeplSens[nSens].Value=0;
-                sensdata.uInTeplSens[tTepl][nSens]=0;
+                gd_rw()->Hot.Zones[zone_idx].IndoorSensors[sensor_idx].RCS = cbNoWorkSens;
+                gd_rw()->Hot.Zones[zone_idx].IndoorSensors[sensor_idx].Value = 0;
+                sensdata.uIndoorSensors[zone_idx][sensor_idx]=0;
                 continue;
             }
 
-            if (fbd_get_stat(b)->permanent_errs)
-                tSensVal = 0;
-            else
-                tSensVal = fbd_read_input(b, mapping % 100 - 1);
+            u16 val = 0;
+            if (! fbd_get_stat(b)->permanent_errs)
+                val = fbd_read_input(b, mapping % 100 - 1);
 
-            CalibrNew(1,tTepl,nSens,tSensVal);
+            CalibrNew(1,zone_idx,sensor_idx,val);
         }
     }
-    for (nSens=0;nSens<cConfSMetSens;nSens++)
+    for (uint sensor_idx=0; sensor_idx < cConfSMetSens; sensor_idx++)
     {
-        uint mapping = GetMeteoSensorConfig(nSens);
+        uint mapping = GetMeteoSensorConfig(sensor_idx);
 
         board_t *b = fbd_find_board_by_addr(mapping / 100);
 
         if (! b)
         {
-            gd_rw()->Hot.MeteoSensing[nSens].RCS=cbNoWorkSens;
-            sensdata.uMeteoSens[nSens]=0;
+            gd_rw()->Hot.MeteoSensing[sensor_idx].RCS=cbNoWorkSens;
+            sensdata.uMeteoSens[sensor_idx]=0;
             continue;
         }
 
-        if (fbd_get_stat(b)->permanent_errs)
-            tSensVal = 0;
-        else
-            tSensVal = fbd_read_input(b, mapping % 100 - 1);
+        u16 val = 0;
+        if (! fbd_get_stat(b)->permanent_errs)
+            val = fbd_read_input(b, mapping % 100 - 1);
 
-        CalibrNew(0,0,nSens,tSensVal);
+        CalibrNew(0,0,sensor_idx,val);
     }
 }
 
-void CheckInputConfig()
+void UpdateInputConfigs(void)
 {
     unmount_unused_boards();
     mount_used_boards();
@@ -268,7 +264,7 @@ void CheckInputConfig()
     {
         for (uint sensor_idx =0; sensor_idx < cConfSInputs; sensor_idx++)
         {
-            uint mapping = GetInputConfig(zone_idx,sensor_idx);
+            uint mapping = GetInputConfig(zone_idx, sensor_idx);
             board_t *b = fbd_find_board_by_addr(mapping / 100);
             if (b)
                 fbd_register_input_config(b, mapping % 100 - 1, &dummy_config);
@@ -306,7 +302,7 @@ static bool is_board_used(uint addr)
         for (uint mech_idx = 0; mech_idx < countof(gd()->MechConfig[0].RNum); mech_idx++)
         {
             uint mapping = gd()->MechConfig[zone_idx].RNum[mech_idx];
-            if (mapping / 100 == addr)
+            if (mapping / 100 == addr && (mapping % 100 != 0))
                 return 1;
         }
     }
@@ -330,10 +326,9 @@ void mount_used_boards(void)
         for (uint mech_idx = 0; mech_idx < countof(gd()->MechConfig[0].RNum); mech_idx++)
         {
             uint mapping = gd()->MechConfig[zone_idx].RNum[mech_idx];
-            if (mapping == 0)
-                continue;
 
-            fbd_mount(mapping / 100);
+            if (mapping / 100 != 0 && mapping % 100 != 0)
+                fbd_mount(mapping / 100);
         }
     }
 }
@@ -372,8 +367,10 @@ void reset_calibration(void)
     }
 
     #warning "meteo is not cleaned"
-    memclr(&sensdata.uInTeplSens,sizeof(sensdata.uInTeplSens));
+    memclr(&sensdata.uIndoorSensors,sizeof(sensdata.uIndoorSensors));
 }
+
+#warning "maybe we could sanitize RNum while receiving block (at frontend)"
 
 void LoadDiscreteInputs(void)
 {
@@ -385,10 +382,12 @@ void LoadDiscreteInputs(void)
             #warning "discrete_inputs stuck and never clears ? nice !"
 
             uint mapping = GetInputConfig(zone_idx, input_idx);
-
             board_t *b = fbd_find_board_by_addr(mapping / 100);
 
             if (! b)
+                continue;
+
+            if (mapping % 100 == 0)
                 continue;
 
             #warning "its the (almost_ original logic, copied verbatim here :-)"

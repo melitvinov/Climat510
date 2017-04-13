@@ -496,7 +496,7 @@ static void __cNextTCalc(const zone_t *zone)
 // ---------------------
 // NEW
 
-    #warning "these indexes are fucked up"
+    #warning "these indexes are fucked up. moreover, level is unused"
     eSensLevel *Level_Tepl=_GD.Level.InTeplSens[zone->idx];
 
     int cSmTSens = 0;
@@ -521,8 +521,8 @@ static void __cNextTCalc(const zone_t *zone)
     int creg_y = _GD.Hot.MidlSR;
     int creg_z;
 
-    if ((!YesBit(zone->hot->InTeplSens[cSmInLightSens].RCS,cbNoWorkSens)))
-        creg_y = zone->hot->InTeplSens[cSmInLightSens].Value;
+    if ((!YesBit(zone->hot->IndoorSensors[cSmInLightSens].RCS,cbNoWorkSens)))
+        creg_y = zone->hot->IndoorSensors[cSmInLightSens].Value;
 
     CorrectionRule(_GD.TuneClimate.c_SRStart,
                    _GD.TuneClimate.c_SREnd,
@@ -532,7 +532,7 @@ static void __cNextTCalc(const zone_t *zone)
                    &creg_z);
     zone->hot->NextTCalc.UpSR = creg_z;
 /*Вычиляем увеличение от разницы температуры задания и стекла*/
-    creg_y = zone->hot->AllTask.NextTAir-zone->hot->InTeplSens[cSmGlassSens].Value;
+    creg_y = zone->hot->AllTask.NextTAir-zone->hot->IndoorSensors[cSmGlassSens].Value;
 
     CorrectionRule(_GD.TuneClimate.c_GlassStart,
                    _GD.TuneClimate.c_GlassEnd,
@@ -616,8 +616,8 @@ static void __cNextTCalc(const zone_t *zone)
     creg_y = _GD.Hot.MidlSR;
 /*if work on internal light sensor, then change IntY*/
 
-    if ((!YesBit(zone->hot->InTeplSens[cSmInLightSens].RCS,cbNoWorkSens)))
-        creg_y = zone->hot->InTeplSens[cSmInLightSens].Value;
+    if ((!YesBit(zone->hot->IndoorSensors[cSmInLightSens].RCS,cbNoWorkSens)))
+        creg_y = zone->hot->IndoorSensors[cSmInLightSens].Value;
 
     CorrectionRule(_GD.TuneClimate.c_SRStart,
                    _GD.TuneClimate.c_SREnd,
@@ -873,9 +873,9 @@ static void SetSensOnMech(const zone_t *zone)
     for (int i = 0;i<cSRegCtrl;i++)
         zone->tcontrol_tepl->MechBusy[i].Sens = 0;
 
-    zone->tcontrol_tepl->MechBusy[cHSmWinN].Sens=&zone->hot->InTeplSens[cSmWinNSens];
-    zone->tcontrol_tepl->MechBusy[cHSmWinS].Sens=&zone->hot->InTeplSens[cSmWinSSens];
-    zone->tcontrol_tepl->MechBusy[cHSmScrTH].Sens=&zone->hot->InTeplSens[cSmScreenSens];
+    zone->tcontrol_tepl->MechBusy[cHSmWinN].Sens=&zone->hot->IndoorSensors[cSmWinNSens];
+    zone->tcontrol_tepl->MechBusy[cHSmWinS].Sens=&zone->hot->IndoorSensors[cSmWinSSens];
+    zone->tcontrol_tepl->MechBusy[cHSmScrTH].Sens=&zone->hot->IndoorSensors[cSmScreenSens];
 /*	if ((YesBit((*(pGD_Hot_Hand+cHSmWinS)).RCS,(cbManMech))))
     {
     if 	((pGD_TControl_Tepl->FramUpdate[1])&&(abs((char)(pGD_Hot_Tepl->InTeplSens[cSmWinSSens].Value)-(*(pGD_Hot_Hand+cHSmWinS)).Position)>GD.TuneClimate.f_MaxAngle))
@@ -931,7 +931,7 @@ static void set_alarms(void)
         zone.tcontrol_tepl->bAlarm = 0;
         if (   YesBit(zone.hot->RCS, cbNoTaskForTepl | cbNoSensingTemp | cbNoSensingOutT)
             //	||(YesBit(pGD_Hot_Tepl->InTeplSens[cSmTSens].RCS,(cbUpAlarmSens+cbDownAlarmSens+cbMinMaxVSens)))
-            || YesBit(zone.hot->InTeplSens[cSmWaterSens].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
+            || YesBit(zone.hot->IndoorSensors[cSmWaterSens].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
         {
             output_on(zone_idx, cHSmAlarm, 0);
             zone.tcontrol_tepl->bAlarm = 100;
@@ -951,7 +951,7 @@ static void set_alarms(void)
 
         for (int i = 0;i<cConfSSens;i++)
         {
-            if (YesBit(zone.hot->InTeplSens[i].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
+            if (YesBit(zone.hot->IndoorSensors[i].RCS, cbUpAlarmSens | cbDownAlarmSens | cbMinMaxVSens))
             {
                 output_on(zone_idx, cHSmAlarm, 0);
                 zone.tcontrol_tepl->bAlarm = 100;
@@ -1521,13 +1521,13 @@ static void SetTepl(const zone_t *zone)
 //	if(!pGD_Hot_Tepl->InTeplSens[cSmTSens].Value)
 //		SetBit(pGD_Hot_Tepl->RCS,cbNoSensingTemp);
 // NEW
-    if (! zone->hot->InTeplSens[cSmTSens1].Value)
+    if (! zone->hot->IndoorSensors[cSmTSens1].Value)
         zone->hot->RCS |= cbNoSensingTemp;
-    if (! zone->hot->InTeplSens[cSmTSens2].Value)
+    if (! zone->hot->IndoorSensors[cSmTSens2].Value)
         zone->hot->RCS |= cbNoSensingTemp;
-    if (! zone->hot->InTeplSens[cSmTSens3].Value)
+    if (! zone->hot->IndoorSensors[cSmTSens3].Value)
         zone->hot->RCS |= cbNoSensingTemp;
-    if (! zone->hot->InTeplSens[cSmTSens4].Value)
+    if (! zone->hot->IndoorSensors[cSmTSens4].Value)
         zone->hot->RCS |= cbNoSensingTemp;
 
 //	if(!pGD_Hot_Tepl->RCS)
@@ -1549,7 +1549,7 @@ static void SetTepl(const zone_t *zone)
         InitScreen(zone, cTermVertScr3);
         InitScreen(zone, cTermVertScr4);
 
-        SetReg(zone, cHSmCO2, zone->hot->AllTask.DoCO2, zone->hot->InTeplSens[cSmCOSens].Value);
+        SetReg(zone, cHSmCO2, zone->hot->AllTask.DoCO2, zone->hot->IndoorSensors[cSmCOSens].Value);
 
         zone->hot->OtherCalc.MeasDifPress = _GD.TControl.MeteoSensing[cSmPresureSens]-_GD.TControl.MeteoSensing[cSmPresureSens+1];
 
@@ -1585,7 +1585,7 @@ static void SubConfig(const zone_t *zone)
 
             if (i<cSWaterKontur)
             {
-                ctr.tcontrol->SensValue = zone->hot->InTeplSens[i+cSmWaterSens].Value;
+                ctr.tcontrol->SensValue = zone->hot->IndoorSensors[i+cSmWaterSens].Value;
 
                 zone->hand[i+cHSmPump] = main_gh.hand[i+cHSmPump];
                 ctr.tcontrol->SensValue = main_contour.tcontrol->SensValue;

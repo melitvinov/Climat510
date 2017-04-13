@@ -14,9 +14,9 @@
 /**************************************************************************/
 int DefRH(const zone_t *zone)
 {
-    if ((! zone->hot->AllTask.DoRHAir)|| (! zone->hot->InTeplSens[cSmRHSens].Value))
+    if ((! zone->hot->AllTask.DoRHAir)|| (! zone->hot->IndoorSensors[cSmRHSens].Value))
         return 0;
-    return zone->hot->InTeplSens[cSmRHSens].Value - zone->hot->AllTask.DoRHAir;
+    return zone->hot->IndoorSensors[cSmRHSens].Value - zone->hot->AllTask.DoRHAir;
 
 }
 
@@ -68,11 +68,11 @@ void __sMinMaxWater(const contour_t *ctr)
     if (ctr->cidx  ==  cSmKontur5)
     {
 
-        if ((!(YesBit(ctr->link.hot->InTeplSens[cSmGlassSens].RCS, cbMinMaxVSens)))
-            && ((ctr->link.hot->InTeplSens[cSmGlassSens].Value
+        if ((!(YesBit(ctr->link.hot->IndoorSensors[cSmGlassSens].RCS, cbMinMaxVSens)))
+            && ((ctr->link.hot->IndoorSensors[cSmGlassSens].Value
                  < _GD.TuneClimate.c_DoMinIfGlass)))
         {
-            int creg_y = ctr->link.hot->InTeplSens[cSmGlassSens].Value;
+            int creg_y = ctr->link.hot->IndoorSensors[cSmGlassSens].Value;
             int creg_z;
             CorrectionRule(_GD.TuneClimate.c_DoMaxIfGlass,
                            _GD.TuneClimate.c_DoMinIfGlass,

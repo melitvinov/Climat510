@@ -108,11 +108,11 @@ void setup_scatter(void)
     wtf0.AdrGD[9].MaxSize=sizeof(gd()->Level);
 
     #warning "WTF: Hot again ?"
-    wtf0.AdrGD[10].Adr=&gd_rw()->Hot;
-    wtf0.AdrGD[10].MaxSize=sizeof(gd()->Hot);
-
-    wtf0.AdrGD[11].Adr=&gd_rw()->TControl;
-    wtf0.AdrGD[11].MaxSize=sizeof(gd()->TControl);
+//  wtf0.AdrGD[10].Adr=&gd_rw()->Hot;
+//  wtf0.AdrGD[10].MaxSize=sizeof(gd()->Hot);
+//
+//  wtf0.AdrGD[11].Adr=&gd_rw()->TControl;
+//  wtf0.AdrGD[11].MaxSize=sizeof(gd()->TControl);
 
 
     LOG("scatter addresses:");

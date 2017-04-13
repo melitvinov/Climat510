@@ -10,7 +10,7 @@ typedef struct __packed
 
 typedef struct
 {
-    int16_t         uInTeplSens[NZONES][cConfSSens];
+    int16_t         uIndoorSensors[NZONES][cConfSSens];
     int16_t         uMeteoSens[cConfSMetSens];
 } sens_t;
 
@@ -20,6 +20,6 @@ extern sens_t sensdata;
 void reset_calibration(void);
 
 void Measure(void);
-void CheckInputConfig(void);
+void UpdateInputConfigs(void);
 
 #endif

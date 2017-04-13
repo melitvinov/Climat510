@@ -128,7 +128,7 @@ typedef struct __packed
 
     uint8_t       Cfg[2];
 
-    eSensing    InTeplSens[cConfSSens];
+    eSensing    IndoorSensors[cConfSSens];
     int16_t     discrete_inputs[2];
 
     int8_t      ExtRCS;

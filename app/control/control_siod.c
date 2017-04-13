@@ -131,8 +131,8 @@ void SetUpSiod(const zone_t *zone)
         zone->tcontrol_tepl->PauseSIO++;
 
 
-    if ((   ((zone->hot->InTeplSens[cSmRHSens].Value - zone->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
-            ||(zone->hot->InTeplSens[cSmRHSens].Value > 9600))
+    if ((   ((zone->hot->IndoorSensors[cSmRHSens].Value - zone->hot->AllTask.DoRHAir)>_GD.TuneClimate.sio_RHStop)
+            ||(zone->hot->IndoorSensors[cSmRHSens].Value > 9600))
         &&  zone->hot->AllTask.DoRHAir)
         return;              // если достигнута заданная влажность влажность + коэфицент
 
@@ -142,8 +142,8 @@ void SetUpSiod(const zone_t *zone)
     if ((zone->hot->AllTask.DoTHeat-getTempHeat(zone, zone->idx))>_GD.TuneClimate.sio_TStop)
         return;  // если держать больше чем измерено
     if (((getTempHeat(zone, zone->idx) - zone->hot->AllTask.DoTHeat)<_GD.TuneClimate.sio_TStart)
-        &&(((zone->hot->AllTask.DoRHAir-zone->hot->InTeplSens[cSmRHSens].Value)<_GD.TuneClimate.sio_RHStart)
-           ||(!zone->hot->InTeplSens[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
+        &&(((zone->hot->AllTask.DoRHAir-zone->hot->IndoorSensors[cSmRHSens].Value)<_GD.TuneClimate.sio_RHStart)
+           ||(!zone->hot->IndoorSensors[cSmRHSens].Value))) return;    // условия для начала работы не выполнены
 
     int creg_y = getTempHeat(zone, zone->idx)-zone->hot->AllTask.DoTHeat;
     int creg_z;
@@ -156,7 +156,7 @@ void SetUpSiod(const zone_t *zone)
                    &creg_z);
     int creg_x = (int)(_GD.TuneClimate.sio_TStartFactor-creg_z);
 
-    creg_y = zone->hot->AllTask.DoRHAir-zone->hot->InTeplSens[cSmRHSens].Value;
+    creg_y = zone->hot->AllTask.DoRHAir-zone->hot->IndoorSensors[cSmRHSens].Value;
     CorrectionRule(_GD.TuneClimate.sio_RHStart,
                    _GD.TuneClimate.sio_RHEnd,
                    _GD.TuneClimate.sio_RHStartFactor-_GD.TuneClimate.sio_RHEndFactor,
@@ -165,7 +165,7 @@ void SetUpSiod(const zone_t *zone)
                    &creg_z);
     creg_z=_GD.TuneClimate.sio_RHStartFactor - creg_z;
 
-    if ((zone->hot->InTeplSens[cSmRHSens].Value)&&(zone->hot->AllTask.DoRHAir))
+    if ((zone->hot->IndoorSensors[cSmRHSens].Value)&&(zone->hot->AllTask.DoRHAir))
     {
         if (creg_x > creg_z)
             creg_x = creg_z;

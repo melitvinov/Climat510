@@ -70,7 +70,7 @@ void Init_STM32(void)
 //    USART_OUT2_Configuration(9600);
 //    LOG("inited uart1");
 
-    CheckInputConfig();
+    UpdateInputConfigs();
     LOG("checked input config");
 }
 

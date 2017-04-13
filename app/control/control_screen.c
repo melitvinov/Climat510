@@ -66,7 +66,7 @@ void CheckModeScreen(const zone_t *zone, char typScr,char chType)
             }
 
 #warning CHECK THIS
-            if (YesBit(zone->hot->InTeplSens[cSmTSens1].RCS, cbDownAlarmSens))
+            if (YesBit(zone->hot->IndoorSensors[cSmTSens1].RCS, cbDownAlarmSens))
                 pScr->Mode=1;
 
 
@@ -91,7 +91,7 @@ void CheckModeScreen(const zone_t *zone, char typScr,char chType)
             return;
 
         zone->tcontrol_tepl->ScrExtraHeat=0;
-        creg_y = zone->hot->InTeplSens[cSmGlassSens].Value;
+        creg_y = zone->hot->IndoorSensors[cSmGlassSens].Value;
         CorrectionRule(_GD.TuneClimate.sc_GlassStart,
                        _GD.TuneClimate.sc_GlassEnd,
                        _GD.TuneClimate.sc_GlassMax,
@@ -99,7 +99,7 @@ void CheckModeScreen(const zone_t *zone, char typScr,char chType)
                        creg_y,
                        &creg_z);
 
-        if ((YesBit(zone->hot->InTeplSens[cSmGlassSens].RCS,cbMinMaxVSens)))
+        if ((YesBit(zone->hot->IndoorSensors[cSmGlassSens].RCS,cbMinMaxVSens)))
             creg_z = _GD.TuneClimate.sc_GlassMax;
 
         #warning "is it right ? strange C-block was here"
@@ -249,10 +249,10 @@ void LaunchVent(const zone_t *zone)
     }
     // Вентиляторы перемешивания
     int creg_y = 0;
-    if (zone->hot->InTeplSens[cSmTSens2].Value)
+    if (zone->hot->IndoorSensors[cSmTSens2].Value)
     {
         //IntY= getTempVent(fnTepl)-pGD_Hot_Tepl->InTeplSens[cSmTSens2].Value;
-        creg_y = zone->hot->InTeplSens[cSmTSens1].Value - zone->hot->InTeplSens[cSmTSens2].Value;
+        creg_y = zone->hot->IndoorSensors[cSmTSens1].Value - zone->hot->IndoorSensors[cSmTSens2].Value;
         if (creg_y < 0)
             creg_y =- creg_y;
     }
@@ -418,9 +418,9 @@ void RegWorkDiskr(const zone_t *zone, char fHSmReg)
             COset = COset - _GD.TuneClimate.co2Off;
         }
         zone->hot->CO2valveTask = 0;
-        if (COset > zone->hot->InTeplSens[cSmCOSens].Value)
+        if (COset > zone->hot->IndoorSensors[cSmCOSens].Value)
         {
-            delta = COset - zone->hot->InTeplSens[cSmCOSens].Value;
+            delta = COset - zone->hot->IndoorSensors[cSmCOSens].Value;
             zone->hot->CO2valveTask = delta;
             if (delta < _GD.TuneClimate.co2On)
                 tMech = 0;
