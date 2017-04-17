@@ -8,16 +8,11 @@ typedef struct
     u8 permanent_errs;
 } board_stat_t;
 
-typedef struct __packed
+typedef struct
 {
     u8 type;
-    u8 input;
     u8 output;
     u8 corr;
-    u16 u0;
-    u16 v0;
-    u16 u1;
-    u16 v1;
 } board_input_cfg_t;
 
 // XXX: just for now
@@ -36,7 +31,7 @@ void fbd_write_discrete_outputs(board_t *board, u32 val, u32 mask);
 void fbd_write_register(board_t *board, uint reg_idx, uint type, uint val);
 
 u16 fbd_read_input(board_t *board, uint input_idx);
-void fbd_register_input_config(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
+void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
 
 const board_stat_t *fbd_get_stat(const board_t *board);
 void fbd_reset_errors(board_t *board);
@@ -80,10 +75,19 @@ typedef struct __packed
     u16 val;
 } board_output_register_t;
 
+typedef struct __packed
+{
+    u8 type;
+    u8 input;
+    u8 output;
+    u8 corr;
+    u8 reserved[8];
+} board_input_cfg_abi_t;
+
 struct board_t
 {
     board_output_register_t outputs[MAX_N_OUTPUTS];         // outputs registers (analog/continuous outputs ?)
-    const board_input_cfg_t *input_cfgs[MAX_N_INPUTS];      // pointers to input configs
+    board_input_cfg_t inputs_cfg[MAX_N_INPUTS];             // input configs (only used fields are stored)
     u32 discrete_outputs;                                   // bitmap of discrete outputs (relays)
     u16 addr;                                               // board base address
     u16 status_word;                                        // board status word

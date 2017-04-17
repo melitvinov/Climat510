@@ -156,7 +156,8 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
             *EthSost=IN_UNIT;
             Sockets[nSock].IP_PHASE=ETH_INIT;
         }
-        else plen-=54;
+        else
+            plen-=54;
 //		if ((Sockets[nSock].Header.Adr<pADRGD[Sockets[nSock].NumBlock].MaxSize-plen))/*&&(Sockets[nSock].Header.Adr>=0)
 //				&&(Sockets[nSock].Header.Size<pADRGD[Sockets[nSock].NumBlock].MaxSize))*/
 //			if ((Sockets[nSock].NumBlock<12)&&((Sockets[nSock].Header.NumDirect&0xF0) == IN_UNIT))
@@ -216,7 +217,6 @@ void simple_servercycle(void)
     uint8_t tIPAddr[4];
     char i,nS,freeSlot;
     volatile unsigned int j;
-//		OSTimeDlyHMSM(0, 0, 0, 50);
     // get the next new packet:
 
     plen = mac_recv_pkt_adapter();
@@ -336,9 +336,6 @@ void simple_servercycle(void)
 
 void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, const uint8_t* fIPAddr,uint8_t* fMACAddr,uint16_t *fPORTNUMBER)
 {
-
-//	Del_1ms(100);
-    /*initialize enc28j60*/
     pADRGD=fADRGD;
     EthSost=fSostEth;
     EthBlock=nBlock;
@@ -347,11 +344,5 @@ void simple_server(const eAdrGD *fADRGD, uint8_t* fSostEth,uint8_t* nBlock, cons
     IPAddr=fIPAddr;
     HAL_mac_init(MACAddr, PHY_FULL_DUPLEX | MAC_ACCEPT_BROADCAST);
     init_ip_arp_udp_tcp(MACAddr,IPAddr,*PORTNUMBER);
-    //Ö¸Ê¾µÆ×´Ì¬:0x476 is PHLCON LEDA(ÂÌ)=links status, LEDB(ºì)=receive/transmit
-//    enc28j60PhyWrite(PHLCON,0x7a4);
-//    enc28j60clkout(2); // change clkout from 6.25MHz to 12.5MHz
-//	Del_1ms(20);
     Sockets[0].IP_PHASE=0;
-    //init the ethernet/ip layer:
-//        return (0);
 }

@@ -1,11 +1,23 @@
 #ifndef _MEASURE_H_
 #define _MEASURE_H_
 
+typedef struct __packed
+{
+    u8 type;
+    u8 input;
+    u8 output;
+    u8 corr;
+    u16 u0;
+    u16 v0;
+    u16 u1;
+    u16 v1;
+} sensor_config_t;
+
 // blobs in remote reporting
 typedef struct __packed
 {
-    board_input_cfg_t  IndoorSensors[NZONES][cConfSSens];
-    board_input_cfg_t  MeteoSensors[cConfSMetSens];
+    sensor_config_t  IndoorSensors[NZONES][cConfSSens];
+    sensor_config_t  MeteoSensors[cConfSMetSens];
 } calibration_t;
 
 typedef struct

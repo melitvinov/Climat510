@@ -54,27 +54,24 @@ static void req_push_input_config(void)
     LOG(" <- input config");
 
     // create linear array of inputs
-    board_input_cfg_t buf[MAX_N_INPUTS];
+    board_input_cfg_abi_t buf[MAX_N_INPUTS];
 
     for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        const board_input_cfg_t *src = rt.active_board->input_cfgs[i];
-        board_input_cfg_t *dst = &buf[i];
-        if (src == NULL)
+        const board_input_cfg_t *src = &rt.active_board->inputs_cfg[i];
+        board_input_cfg_abi_t *dst = &buf[i];
+        memclr(dst, sizeof(board_input_cfg_abi_t));
+        if (src->type != 0)
         {
-            memclr(dst, sizeof(board_input_cfg_t));
-        }
-        else
-        {
-            *dst = *src;
-            dst->output = 0;    // XXX: purpose of this field is unknown. set to 0
-            #warning "investigate this field"
+            dst->type = src->type;
             dst->input = i + 1; // XXX: look like this field should be the 1-based number of input
+            dst->output = src->output;
+            dst->corr = src->corr;
         }
     }
 
     // make sure there is no alignment effects
-    PANIC_IF(sizeof(buf) != (sizeof(board_input_cfg_t) * MAX_N_INPUTS));
+    PANIC_IF(sizeof(buf) != (sizeof(board_input_cfg_abi_t) * MAX_N_INPUTS));
 
     bool is_ok = fieldbus_request_write(get_active_maddr(), 0, 2, &buf, sizeof(buf));
     REQUIRE(is_ok);
@@ -113,7 +110,7 @@ static void req_pull_inputs(void)
     // XXX: maybe this check is useless, just fire full read and forget ?
     for (uint i = 0; i < MAX_N_INPUTS; i++)
     {
-        if (rt.active_board->input_cfgs[i])
+        if (rt.active_board->inputs_cfg[i].type != 0)
             last_configured_input = i;
     }
 
@@ -485,16 +482,18 @@ u16 fbd_read_input(board_t *board, uint input_idx)
         return 0;
     }
 
-    if (! board->input_cfgs[input_idx])
+    if (board->inputs_cfg[input_idx].type == 0)
     {
         WARN("read of unconfigured input");
         return 0;
     }
 
+    LOG("board %d input %d: %d", board->addr, input_idx, board->inputs[input_idx]);
+
     return board->inputs[input_idx];
 }
 
-void fbd_register_input_config(board_t *board, uint input_idx, const board_input_cfg_t *cfg)
+void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg)
 {
     if (input_idx >= MAX_N_INPUTS)
     {
@@ -502,7 +501,7 @@ void fbd_register_input_config(board_t *board, uint input_idx, const board_input
         return;
     }
 
-    board->input_cfgs[input_idx] = cfg;
+    board->inputs_cfg[input_idx] = *cfg;
     board->requested_tasks |= 1 << SYNC_TASK_PUSH_INPUT_CONFIG;
 }
 

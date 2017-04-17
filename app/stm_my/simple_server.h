@@ -10,7 +10,6 @@
 
 #define ETH_INIT		0
 #define ETH_HEAD		1
-#define ETH_HEADRECEIVED		2
 #define ETH_SENDBLOCK	3
 #define ETH_RECVBLOCK	4
 #define MAX_SOCKET_COUNT	5

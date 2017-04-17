@@ -722,7 +722,7 @@ void pmCalibr(void) {
     Ad_Buf++;
 
 
-    board_input_cfg_t *eCS=&caldata.IndoorSensors[0][int_y];
+    sensor_config_t *eCS=&caldata.IndoorSensors[0][int_y];
     w_txt(NameSensConfig[byte_x].Name);
     lcdbuf[Ad_Buf++]='=';
     w_int(&int_x,NameSensConfig[byte_x].Frm, 0);

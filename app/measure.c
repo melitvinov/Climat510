@@ -160,7 +160,7 @@ static void CalibrNew(bool is_indoor_sensor, uint zone_idx, char sensor_idx, int
     eSensing    *fSens;
     const eNameASens  *fNameSens;
     int16_t     *fuSens;
-    const board_input_cfg_t  *fCalSens;
+    const sensor_config_t  *fCalSens;
 
     if (is_indoor_sensor)
     {
@@ -258,18 +258,6 @@ void UpdateInputConfigs(void)
     unmount_unused_boards();
     mount_used_boards();
 
-    static const board_input_cfg_t dummy_config;
-
-    for (uint zone_idx=0; zone_idx < NZONES; zone_idx++)
-    {
-        for (uint sensor_idx =0; sensor_idx < cConfSInputs; sensor_idx++)
-        {
-            uint mapping = GetInputConfig(zone_idx, sensor_idx);
-            board_t *b = fbd_find_board_by_addr(mapping / 100);
-            if (b)
-                fbd_register_input_config(b, mapping % 100 - 1, &dummy_config);
-        }
-    }
     for (uint zone_idx=0;zone_idx<NZONES;zone_idx++)
     {
         for (uint sensor_idx = 0; sensor_idx < cConfSSens; sensor_idx++)
@@ -278,7 +266,11 @@ void UpdateInputConfigs(void)
 
             board_t *b = fbd_find_board_by_addr(mapping / 100);
             if (b)
-                fbd_register_input_config(b, mapping % 100 - 1, &caldata.IndoorSensors[zone_idx][sensor_idx]);
+            {
+                const sensor_config_t *src = &caldata.IndoorSensors[zone_idx][sensor_idx];
+                board_input_cfg_t cfg = {.type = src->type, .corr = src->corr, .output = src->output};
+                fbd_configure_input(b, mapping % 100 - 1, &cfg);
+            }
         }
     }
     for (uint sensor_idx = 0; sensor_idx < cConfSMetSens; sensor_idx++)
@@ -287,7 +279,11 @@ void UpdateInputConfigs(void)
 
         board_t *b = fbd_find_board_by_addr(mapping / 100);
         if (b)
-            fbd_register_input_config(b, mapping % 100 - 1, &caldata.MeteoSensors[sensor_idx]);
+        {
+            const sensor_config_t *src = &caldata.MeteoSensors[sensor_idx];
+            board_input_cfg_t cfg = {.type = src->type, .corr = src->corr, .output = src->output};
+            fbd_configure_input(b, mapping % 100 - 1, &cfg);
+        }
     }
 }
 
@@ -336,7 +332,7 @@ void mount_used_boards(void)
 
 void reset_calibration(void)
 {
-    board_input_cfg_t *eCS;
+    sensor_config_t *eCS;
 
     for (int i=0; i<cConfSMetSens;i++)
     {
