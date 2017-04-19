@@ -142,6 +142,11 @@ void SocketUpdate(char nSock,char* f_buf,int data_p,int* fbsize)
 
     case(ETH_RECVBLOCK):
         LOG("socket recvblock");
+
+        LOG("rcv size %d, block %d, offset %d."
+            "block addr is 0x%08x", Sockets[nSock].Header.Size, Sockets[nSock].NumBlock, Sockets[nSock].Header.Adr,
+            (int) pADRGD[Sockets[nSock].NumBlock].Adr);
+
         if (Sockets[nSock].Header.Size<=plen-54)
         {
             volatile char crc = 55-CheckSum(&fbuf[data_p], info_data_len-1);

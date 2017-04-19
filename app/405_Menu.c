@@ -23,8 +23,6 @@
 
 #define	MaxY_menu		9
 
-#define SUM_NAME_TUNE sizeof(NameConst)
-
 #define SumTeplZones	(gd()->Control.ConfSTepl)
 
 
@@ -54,11 +52,6 @@ extern int MaximVal;
 extern int16_t SaveInt;
 
 extern uchar SumYMenu;
-
-extern uint16_t ctx__fnSIOfaza[8];
-extern uint16_t ctx__fnSIOpumpOut[8];
-extern uint16_t ctx__fnSIOvelvOut[8];
-extern uint16_t ctx__fnSIOpause[8];
 
 static const uchar DayOfWeek[][10]=
 {

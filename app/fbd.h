@@ -15,27 +15,40 @@ typedef struct
     u8 corr;
 } board_input_cfg_t;
 
-// XXX: just for now
 typedef struct board_t board_t;
 
+//-- general fieldbus daemon api
+
+// init daemon
 void fbd_init(void);
-u8 fbd_get_last_bad_board(void);
-
+// mount board by address
 board_t *fbd_mount(uint addr);
+// unmount board by address
 void fbd_unmount(board_t *board);
-
+// find board by address
 board_t *fbd_find_board_by_addr(uint addr);
+// iterate over mounted boards (pass NULL to begin)
 board_t *fbd_next_board(board_t *board);
 
+//-- concrete board api
+
+// schedule write of discrete outputs bitmap (relays), val may be masked
 void fbd_write_discrete_outputs(board_t *board, u32 val, u32 mask);
+// schedule write of some kind of register(continuous output)
 void fbd_write_register(board_t *board, uint reg_idx, uint type, uint val);
-
+// read recent input
 u16 fbd_read_input(board_t *board, uint input_idx);
+// schedule input configure process
 void fbd_configure_input(board_t *board, uint input_idx, const board_input_cfg_t *cfg);
-
+// get board status/statistic
 const board_stat_t *fbd_get_stat(const board_t *board);
+// clear errors
 void fbd_reset_errors(board_t *board);
+// get address
 uint fbd_get_addr(const board_t *board);
+
+// XXX: remove it from api
+u8 fbd_get_last_bad_board(void);
 
 #ifdef _FBD_C_
 // private
