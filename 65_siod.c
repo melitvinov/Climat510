@@ -3,10 +3,10 @@
 #define cSIOFazaPause	3
 #define cSIOFazaEnd		4
 
-uint16_t fnSIOfaza[8];
-uint16_t fnSIOpumpOut[8];
-uint16_t fnSIOvelvOut[8];
-uint16_t fnSIOpause[8];
+//uint16_t fnSIOfaza[8];
+//uint16_t fnSIOpumpOut[8];
+//uint16_t fnSIOvelvOut[8];
+//uint16_t fnSIOpause[8];
 
 void siodInit()
 {
@@ -133,7 +133,7 @@ void SetUpSiod(char fnTepl)
 		if (IntX>IntZ) 
 			IntX=IntZ;
 
-	fnSIOpause[fnTepl] = pGD_TControl_Tepl->PauseSIO;     // out
+//	fnSIOpause[fnTepl] = pGD_TControl_Tepl->PauseSIO;     // out
 
 	if (pGD_TControl_Tepl->PauseSIO<IntX*60) return;		// проверка паузы между вкл
 	if (YesBit(RegLEV,cSmSIONo)) return;
@@ -159,7 +159,7 @@ void DoSiod(char fnTepl)
 		NSIO=cNumValSiodMax;
 
 
-	fnSIOfaza[fnTepl] = pGD_TControl_Tepl->FazaSiod;  // out
+//	fnSIOfaza[fnTepl] = pGD_TControl_Tepl->FazaSiod;  // out
 
 	switch(pGD_TControl_Tepl->FazaSiod)
 	{
@@ -177,13 +177,13 @@ void DoSiod(char fnTepl)
 			pGD_TControl_Tepl->TPauseSIO=sio_ValPause;
 			pGD_TControl_Tepl->CurVal++;
 
-			fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
+//			fnSIOvelvOut[fnTepl] = pGD_TControl_Tepl->CurVal;			// out
 		}	
 	case cSIOFazaPump:
 		(*(pGD_Hot_Hand+cHSmSIOPump)).Position=1;
 		if (!pGD_TControl_Tepl->TPauseSIO)	pGD_TControl_Tepl->TPauseSIO=sio_ValPause;
 
-		fnSIOpumpOut[fnTepl] = pGD_TControl_Tepl->TPauseSIO;			// out
+//		fnSIOpumpOut[fnTepl] = pGD_TControl_Tepl->TPauseSIO;			// out
 
 		break;
 

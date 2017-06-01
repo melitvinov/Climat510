@@ -158,6 +158,21 @@ void	TestFRAM(char EraseBl)
         }
 }
 
+void ReadBlockFRAM(int block)
+{
+	uint16_t cSum;
+	//RecvBlockFRAM(BlockEEP[block].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[block].AdrCopyRAM,BlockEEP[block].Size);
+
+	RecvBlockFRAM(BlockEEP[block].AdrCopyRAM-(uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[block].AdrCopyRAM,BlockEEP[block].Size);
+	//RecvBlockFRAM((uint32_t)(BlockEEP[0].AdrCopyRAM),BlockEEP[0].AdrCopyRAM,BlockEEP[0].Size);
+
+	//cSum=CalcRAMSum(BlockEEP[block].AdrCopyRAM,BlockEEP[block].Size);
+	//RecvBlockFRAM(ADDRESS_FRAM_SUM+block*2,&BlockEEP[block].CSum,2);
+    ClrDog;
+    BlockEEP[block].CSum=cSum;
+    BlockEEP[block].Erase=0;
+}
+
 /*-- Была запись с ПК в блок NumBlock ,
      цикл перезаписи блока куда была передача ----*/
 void ReWriteFRAM(void) {

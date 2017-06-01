@@ -1056,6 +1056,9 @@ ClrDog;
         MemClr(&GD.ConstMechanic[0],sizeof(eTuneClimate)+sizeof(eTControl)+sizeof(eStrategy)*cSStrategy*cSTepl+sizeof(eConstMech)*cSTepl+sizeof(eMechConfig)*cSTepl);
         MemClr(&GD.uInTeplSens[0][0],sizeof(uint16_t)*(cConfSMetSens+cSTepl*cConfSSens));
 ClrDog;
+
+		GD.Timer[0].crc = 0xAA;
+
         /* Установка данных по умолчанию */
         GD.Hot.Year=01;
         GD.Hot.Data=257;

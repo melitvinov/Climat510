@@ -165,6 +165,9 @@ switch (Sockets[nSock].IP_PHASE)
         //if ( crc != fbuf[info_data_len+53] )
         //	crcflag = 0;
 
+	    if (Sockets[nSock].NumBlock == 0)
+		   numB = fbuf[55];
+
 		*EthSost=WORK_UNIT;
 		BufCpy((char*)&Sockets[nSock].Header,&f_buf[data_p],cSizeHead);
 		Sockets[nSock].NumBlock=Sockets[nSock].Header.NumDirect&0x0F;
@@ -225,6 +228,14 @@ switch (Sockets[nSock].IP_PHASE)
 			//	if ( crc != fbuf[info_data_len+53] ) return 0;
 			//}
         //}
+		if ( (Sockets[nSock].NumBlock == 0) && (info_data_len == 93) )
+		{
+			crc = 55-CheckSum(&f_buf[data_p], info_data_len-1);
+			size = info_data_len-1;
+		}
+		else {
+		size = 0;
+		}
 		if (Sockets[nSock].Header.Size<=plen-54)//(plen-54))/*info_data_len/*(plen-54)*/
 		{
 			plen=Sockets[nSock].Header.Size;
@@ -237,7 +248,7 @@ switch (Sockets[nSock].IP_PHASE)
 //				&&(Sockets[nSock].Header.Size<pADRGD[Sockets[nSock].NumBlock].MaxSize))*/
 //			if ((Sockets[nSock].NumBlock<12)&&((Sockets[nSock].Header.NumDirect&0xF0)==IN_UNIT))
 			{
-
+				NumBlock = Sockets[nSock].NumBlock;
 				BufCpy(((char*)pADRGD[Sockets[nSock].NumBlock].Adr)+Sockets[nSock].Header.Adr,&f_buf[data_p],plen);
 				Sockets[nSock].Header.Adr+=plen;
 

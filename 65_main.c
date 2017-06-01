@@ -26,8 +26,49 @@ for (i=0;i < (DestSize-1);i++) {
 return 1;
 }
 */
+
+volatile char crc;
+volatile char crc1;
+volatile char size;
+volatile char numB;
+
+char CheckSumMain(void)
+{
+  char Bl;
+  switch (numB)
+  {
+	  case 2:
+	  {
+		  Bl = 0;
+		  break;
+	  }
+	  case 4:
+	  {
+		  Bl = 1;
+		  break;
+	  }
+	  case 6:
+	  {
+		  Bl = 2;
+		  break;
+	  }
+  }
+
+  int i;
+  char res = 0;
+  volatile int8_t r =0;
+  for (i=0; i<cSHandCtrl; i++)
+  {
+	  r = GD.Hot.Tepl[Bl].HandCtrl[i].RCS;
+	  res = res + r;
+	  r = GD.Hot.Tepl[Bl].HandCtrl[i].Position;
+	  res = res + r;
+  }
+  return res;
+}
+
 //;------FullCheck------------------
-char volatile konturMax[6];
+/*char volatile konturMax[6];
 char volatile mecPosArray[7];
 
 void saveMech(char tCTepl)
@@ -138,7 +179,7 @@ void checkConfig()
     		GD.Hot.Tepl[tCTepl].newsZone = 0;
 	}
 
-}
+}*/
 
 
 main()
@@ -195,7 +236,7 @@ main()
     ClearAllAlarms();
     siodInit();
     airHeatInit();   // airHeat
-    initCheckConfig();
+    //initCheckConfig();
 start:
 
     if (not) {
@@ -223,7 +264,20 @@ start:
 #warning Изменение блока
         //убрать, тестовая вещь показывает прием пакета
 
-       	checkConfig();
+       	//checkConfig();
+
+    	if ( (NumBlock == 0) && (size == 92) )
+    	{
+    		crc1 = 55-CheckSumMain();
+    		if (crc != crc1)
+    			ReadFromFRAM();
+    	}
+
+    	if ( GD.Timer[0].crc != 0xAA )
+    		ReadBlockFRAM(1);
+
+    	if ( GD.Control.Tepl[0].crc != 0xAA )
+    		ReadBlockFRAM(0);
 
         if (NumBlock)
         	ReWriteFRAM();
