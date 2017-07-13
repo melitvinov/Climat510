@@ -23,6 +23,7 @@
 <attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
+<<<<<<< HEAD
 <breakpoint enabled="true" persistant="true" registered="true">
 <resource path="/Climat510_true/65_subr.c" type="1"/>
 <marker lineNumber="166" type="org.eclipse.cdt.debug.core.cLineBreakpointMarker">
@@ -63,4 +64,6 @@
 <attrib name="org.eclipse.debug.core.enabled" value="true"/>
 </marker>
 </breakpoint>
+=======
+>>>>>>> Kazan_test
 </breakpoints>

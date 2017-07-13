@@ -68,7 +68,8 @@ typedef struct  eeTimer
 		uchar		MinTPipe3;
 		uchar		RHAir_c;
 
-		uint16_t	Rez[10];
+		uint16_t	Rez[9];
+		uint16_t	crc;
         }
         eTimer;
 
@@ -552,7 +553,8 @@ typedef struct eeTeplControl
 		int8_t		sensT_heat;
 		int8_t		sensT_vent;
 
-   	    int16_t		Rez[19];
+   	    int16_t		Rez[18];
+   	    int16_t     crc;
 //+42 байта
 		} eTeplControl;
 
