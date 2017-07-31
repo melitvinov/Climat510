@@ -19,8 +19,8 @@ void SetUpSiod(char fnTepl)
 {
 	//uint16_t numConf;
 	//uint16_t confGroup[8][9];
-	char equalConf;
-	char nMas, nCon;
+	volatile char equalConf;
+	volatile char nMas, nCon;
 
 	if (!pGD_Control_Tepl->sio_SVal) return;  						// нет клапанов
 	pGD_Hot_Tepl->OtherCalc.TimeSiod=pGD_TControl_Tepl->TimeSIO;
