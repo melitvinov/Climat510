@@ -376,9 +376,12 @@ typedef struct eeTuneClimate
 		int16_t		c_WindEnd;  /*Контур 1 - ветер влияет до*/
         int16_t     c_WindFactor;  /*Контур 1 - ветер увеличивает на*/
 
-		int16_t		sc_GlassStart;  /*Контур 1 - фрамуги начинают влиять при*/
-		int16_t		sc_GlassEnd;  /*Контур 1 - фрамуги влияют до*/
-        int16_t     sc_GlassMax;  /*Контур 1 - фрамуги увеличивают на*/
+        int16_t		sc_deltaTstart;  /*Экран - Tизм-Тзад влияет при*/				// вместо  sc_GlassStart
+     	int16_t		sc_deltaTend;    /*Экран - Tизм-Тзад влияет до*/
+        int16_t     sc_MaxOpenCorrect;    /*Экран - Tизм-Тзад уменьшает максимум из параметров на*/
+		//int16_t		sc_GlassStart;  /*Контур 1 - фрамуги начинают влиять при*/
+		//int16_t		sc_GlassEnd;  /*Контур 1 - фрамуги влияют до*/
+        //int16_t     sc_GlassMax;  /*Контур 1 - фрамуги увеличивают на*/
 
         int16_t     c_LightFactor;  /*Контур 1 - понизить при включении досветки*/
         int16_t     c_ScreenFactor;  /*Контур 1 - понизить при закрытом экране*/
@@ -526,7 +529,13 @@ typedef struct eeTuneClimate
 		int16_t		co2Fram2;
 		int16_t		co2Off;
 
-	    int16_t     Rez[5];  //9
+		// new
+		int8_t		sc_TCorrMin;		// Экран термический - (Tзад-Tизм) влияет на минимум ( до 10,типовое 2°C)
+		int8_t		sc_TCorrMax;		// Экран термический - (Tзад-Tизм) влияет на минимум ( до 10,типовое 2°C)
+		int8_t		sc_TMinOpenCorrect;	// Экран термический - (Tзад-Tизм) увеличивает минимум на ( до 100,типовое 100%)
+		int8_t      sc_LineSunVol;		// Экран термический линейно открывать до указанного значения
+
+	    int16_t     Rez[3];  //9
 //282
        }
         eTuneClimate;
