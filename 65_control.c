@@ -636,7 +636,7 @@ void __cNextTCalc(char fnTepl)
 	IntY=GD.Hot.MidlWind;
 	CorrectionRule(GD.TuneClimate.c_WindStart,GD.TuneClimate.c_WindEnd,
 		GD.TuneClimate.c_WindFactor,0);	
-	IntY=(*pGD_Hot_Tepl).AllTask.NextTAir-GD.TControl.MeteoSensing[cSmOutTSens]-IntZ;
+	IntY=(*pGD_Hot_Tepl).AllTask.NextTAir-getCSmOutTSens()-IntZ;
 	CorrectionRule(GD.TuneClimate.c_OutStart,GD.TuneClimate.c_OutEnd,
 		GD.TuneClimate.c_OutFactor,0);
 	(*pGD_Hot_Tepl).NextTCalc.LowOutWinWind+=IntZ;
@@ -683,7 +683,7 @@ void __cNextTCalc(char fnTepl)
 	IntY=GD.Hot.MidlWind;
 	CorrectionRule(GD.TuneClimate.c_WindStart,GD.TuneClimate.c_WindEnd,
 		GD.TuneClimate.f_WindFactor,0);	
-	IntY=(*pGD_Hot_Tepl).AllTask.NextTAir-GD.TControl.MeteoSensing[cSmOutTSens]-IntZ;
+	IntY=(*pGD_Hot_Tepl).AllTask.NextTAir-getCSmOutTSens()-IntZ;
 	CorrectionRule(GD.TuneClimate.c_OutStart,GD.TuneClimate.c_OutEnd,
 		GD.TuneClimate.f_OutFactor,0);
 	pGD_Hot_Tepl->NextTCalc.dSumCalcF+=IntZ;
@@ -761,6 +761,17 @@ void __cNextTCalc(char fnTepl)
 	if (getTempVent(fnTepl))
 		IntY=getTempVent(fnTepl)-(*pGD_Hot_Tepl).AllTask.DoTVent;
 	else IntY=0;
+
+
+	if (startFlag)
+	{
+		//pGD_TControl_Tepl->IntegralVent= GD.Hot.Tepl[fnTepl].AllTask.DoTHeat * 100;
+		pGD_TControl_Tepl->IntegralVent= 0;
+		pGD_TControl_Tepl->TVentCritery = 0;
+		startFlag--;
+	}
+
+
 
 	(*pGD_Hot_Tepl).NextTCalc.PCorrectionVent=((int)((((long)(IntY))*((long)pGD_Control_Tepl->f_PFactor))/100));
 	if (pGD_TControl_Tepl->StopVentI<2)
@@ -1322,7 +1333,7 @@ void SetMeteo(void)
 	else
 		GD.TControl.Tepl[0].SnowTime=0;
 
-	if  ((GD.TControl.MeteoSensing[cSmOutTSens]<c_SnowIfOut)&&(GD.TControl.bSnow))
+	if  ( (getCSmOutTSens() < c_SnowIfOut) && (GD.TControl.bSnow) )
 			SetBit(GD.TControl.bSnow,0x02);
 	GD.TControl.Tepl[0].SumSens+=GD.TControl.MeteoSensing[cSmFARSens];//GD.Hot.MeteoSens[cSmFARSens].Value;
 	GD.TControl.Tepl[0].TimeSumSens++;

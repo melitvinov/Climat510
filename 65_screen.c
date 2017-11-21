@@ -11,11 +11,22 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 	bZad=0;
 	if (pScr->PauseMode) bZad=1;
 
+//	if ((pGD_Hot_Tepl->AllTask.Screen[ttyp]<2)&&(!bZad))
+//	{
+//		pScr->Mode=pGD_Hot_Tepl->AllTask.Screen[ttyp];
+//		bZad=1;
+//	}
+
 	if ((pGD_Hot_Tepl->AllTask.Screen[ttyp]<2)&&(!bZad))
-	{
-		pScr->Mode=pGD_Hot_Tepl->AllTask.Screen[ttyp];
-		bZad=1;
-	}
+    {
+    	pScr->Mode=pGD_Hot_Tepl->AllTask.Screen[ttyp];
+        if (pScr->Mode == 0)
+        	pScr->Value = pGD_Control_Tepl->sc_TMaxOpen;
+        if (pScr->Mode == 1)
+        	pScr->Value = 0;
+        return;
+    }
+
 
 	// из Ультраклимата
 	int Tz;
@@ -27,7 +38,7 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 	IntY=getTempHeat(fnTepl)-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sc_dTStart,GD.TuneClimate.sc_dTEnd,GD.TuneClimate.sc_dTSunFactor,0);   // начинает влиять на солнце при, начинает влиять на солнце до, уменьшает солнце на
 	SunZClose=GD.TuneClimate.sc_ZSRClose-IntZ;
-	volatile int sc_Tout = GD.TControl.MeteoSensing[cSmOutTSens];
+	volatile int sc_Tout = getCSmOutTSens();
 
 	switch(chType)
 	{
@@ -68,7 +79,7 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 			deltaTi = (getTempHeat(fnTepl) - pGD_Hot_Tepl->AllTask.DoTHeat);
 		else
 			deltaTi = 0;
-
+/*
 			if (MidlSun < sc_TSROpen)
 			{
 				if ( (bNight)&&(sc_TOutClose < sc_Tout) ) // коррекция по внешней температуре с признаком ночи, экран не надо сварачивать
@@ -82,7 +93,22 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 					pScr->Value = pGD_Control_Tepl->sc_TMaxOpen;  // не 100 а макс из парам
 				}
 			}
-			if ( (MidlSun > sc_TSROpen)&(MidlSun < sc_ZSRClose) )
+*/
+		if (MidlSun <= sc_TSROpen)
+		{
+			if ( sc_TOutClose < sc_Tout ) // коррекция по внешней температуре с признаком ночи, экран не надо сварачивать
+			{
+				pScr->Mode=1;
+				pScr->Value = 0;
+			}
+			else
+			{
+				pScr->Mode=0;
+				pScr->Value = pGD_Control_Tepl->sc_TMaxOpen;  // не 100 а макс из парам
+			}
+		}
+
+		if ( (MidlSun > sc_TSROpen)&(MidlSun < sc_ZSRClose) )
 			{
 				pScr->Mode=1;
 				pScr->Value = 0;
@@ -135,11 +161,11 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 		// расчет минимального открытия экрана
 			if (deltaTz > 0)
 			{
-				if (deltaTz < sc_TCorrMin)
-				{
-					pScr->Mode=1;
-					pScr->Value = sc_StartP1Zone;
-				}
+//				if (deltaTz < sc_TCorrMin)
+//				{
+//					pScr->Mode=1;
+//					pScr->Value = sc_StartP1Zone;
+//				}
 				if ( (deltaTz > sc_TCorrMin)&&(deltaTz < sc_TCorrMax) )
 				{
 					if (sc_TCorrMax > sc_TCorrMin)
@@ -191,7 +217,7 @@ void CheckModeScreen(char typScr,char chType, char fnTepl)
 	IntY=getTempHeat(fnTepl)-pGD_Hot_Tepl->AllTask.DoTHeat;
 	CorrectionRule(GD.TuneClimate.sc_dTStart,GD.TuneClimate.sc_dTEnd,GD.TuneClimate.sc_dTSunFactor,0);
 	SunZClose=GD.TuneClimate.sc_ZSRClose-IntZ;
-	IntZ=GD.TControl.MeteoSensing[cSmOutTSens];
+	IntZ=getCSmOutTSens();
 	switch(chType)
 	{
 	case 0:	// термический горизонтальный экран
@@ -490,9 +516,9 @@ void LaunchCalorifer(char fnTepl)
 		+GD.TuneClimate.vt_EndCalorifer))||(!GD.TuneClimate.vt_StartCalorifer))
 		ClrBit(pGD_TControl_Tepl->Calorifer,0x01);
 //		pGD_TControl_Tepl->Calorifer=0;
-	if ((GD.TControl.MeteoSensing[cSmOutTSens]>pGD_Hot_Tepl->AllTask.DoTVent+GD.TuneClimate.cool_PFactor)&&(GD.TuneClimate.cool_PFactor))
+	if ((getCSmOutTSens()>pGD_Hot_Tepl->AllTask.DoTVent+GD.TuneClimate.cool_PFactor)&&(GD.TuneClimate.cool_PFactor))
 		SetBit(pGD_TControl_Tepl->Calorifer,0x02);
-	if (((GD.TControl.MeteoSensing[cSmOutTSens]<pGD_Hot_Tepl->AllTask.DoTVent+GD.TuneClimate.cool_PFactor-100))||(!GD.TuneClimate.cool_PFactor))
+	if (((getCSmOutTSens()<pGD_Hot_Tepl->AllTask.DoTVent+GD.TuneClimate.cool_PFactor-100))||(!GD.TuneClimate.cool_PFactor))
 		ClrBit(pGD_TControl_Tepl->Calorifer,0x02);
 }
 

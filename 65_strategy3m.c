@@ -174,7 +174,7 @@ void __sMinMaxWater(char fnKontur) {
 
 		}
 		if (YesBit(GD.TControl.bSnow, 0x02)) {
-			IntY = GD.TControl.MeteoSensing[cSmOutTSens];
+			IntY = getCSmOutTSens();
 			CorrectionRule(GD.TuneClimate.c_CriticalSnowOut, c_SnowIfOut,
 					pGD_Hot_Tepl_Kontur->MaxCalc - GD.TuneClimate.c_MinIfSnow,
 					0);
@@ -274,7 +274,7 @@ void __sMinMaxWindows(void) {
 			((int) GD.TuneClimate.f_min_Cor), 0);
 	ogrMin(&(pGD_Hot_Tepl->Kontur[cSmWindowUnW].MinCalc), IntZ);
 
-	IntY = GD.TControl.MeteoSensing[cSmOutTSens];
+	IntY = getCSmOutTSens();
 	CorrectionRule(GD.TuneClimate.f_StartCorrPow, GD.TuneClimate.f_EndCorrPow,
 			(GD.TuneClimate.f_PowFactor - 1000), 0);
 	(*pGD_TControl_Tepl).f_Power = GD.TuneClimate.f_PowFactor - IntZ;
@@ -291,7 +291,7 @@ void __sMinMaxWindows(void) {
 	//--------------------------------------------------------------------------------
 //Максимум рассчитываем по внешней температуре
 //--------------------------------------------------------------------------------
-	IntY = GD.TControl.MeteoSensing[cSmOutTSens];
+	IntY = getCSmOutTSens();
 	CorrectionRule(GD.TuneClimate.f_MinTFreeze,
 			GD.TuneClimate.f_MinTFreeze + f_MaxTFreeze, 200, 0);
 	IntX = IntZ;
@@ -748,7 +748,7 @@ void __WorkableKontur(char fnKontur, char fnTepl) {
 			&& (pGD_TControl_Tepl->Critery > 0) && (fnKontur < cSmKontur5)) {
 		if ((GD.Hot.MidlSR < GD.TuneClimate.f_MinSun)
 				&& (pGD_Hot_Tepl->AllTask.NextTAir
-						- GD.TControl.MeteoSensing[cSmOutTSens]
+						- getCSmOutTSens()
 						> GD.TuneClimate.f_DeltaOut)
 				|| ((getTempHeat(fnTepl) - (*pGD_Hot_Tepl).AllTask.DoTHeat) < 0)
 						&& (((pGD_Control_Tepl->c_PFactor % 100) < 90)
@@ -779,7 +779,7 @@ void __WorkableKontur(char fnKontur, char fnTepl) {
 				&& (!(YesBit((*pGD_Hot_Tepl_Kontur).ExtRCS, cbBlockPumpKontur)))
 				&& (!pGD_TControl_Tepl_Kontur->PumpPause)
 				&& (pGD_TControl_Tepl->Critery < 0) && (!IntY)
-				&& (GD.TControl.MeteoSensing[cSmOutTSens] > 500))
+				&& (getCSmOutTSens() > 500))
 			SetBit((*pGD_Hot_Tepl_Kontur).ExtRCS, cbReadyPumpKontur);
 	}
 
@@ -1026,6 +1026,7 @@ void __sLastCheckWindow(char fnTepl) {
 	if (DoOn > MaxOn)
 		DoOn = MaxOn;
 
+
 	//IntY=CURRENT_TEMP_VALUE-(*pGD_Hot_Tepl).AllTask.DoTVent;   // было
 #warning CHECK THIS
 // NEW
@@ -1261,7 +1262,9 @@ void __sCalcKonturs(void) {
 		pGD_Hot_Tepl->Kontur[cSmWindowUnW].Optimal =
 				pGD_TControl_Tepl->f_NMinDelta;
 
-		(*pGD_TControl_Tepl).Kontur[cSmWindowUnW].CalcT = __TempToVent();
+#warning check vent temp !!! XXX 32
+		if (getTempVent(fnTepl))
+			(*pGD_TControl_Tepl).Kontur[cSmWindowUnW].CalcT = __TempToVent();
 
 		__sLastCheckWindow(fnTepl);
 

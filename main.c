@@ -17,7 +17,7 @@
 #include "405_ClimDef.c"
 #include "405_ConfigEnRuSR.c"
 
-#define cConfSTepl		6
+#define cConfSTepl		2
 //#define BIGLCD
 #ifdef AHU
 #define cModification	16+4

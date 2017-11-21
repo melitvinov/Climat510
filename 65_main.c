@@ -52,6 +52,31 @@ char CheckSumMain(void)
 		  Bl = 2;
 		  break;
 	  }
+	  case 8:
+	  {
+		  Bl = 3;
+		  break;
+	  }
+	  case 10:
+	  {
+		  Bl = 4;
+		  break;
+	  }
+	  case 12:
+	  {
+		  Bl = 5;
+		  break;
+	  }
+	  case 14:
+	  {
+		  Bl = 6;
+		  break;
+	  }
+	  case 16:
+	  {
+		  Bl = 7;
+		  break;
+	  }
   }
 
   int i;
@@ -68,8 +93,8 @@ char CheckSumMain(void)
 }
 
 //;------FullCheck------------------
-/*char volatile konturMax[6];
-char volatile mecPosArray[7];
+//char volatile konturMax[6];
+/*char volatile mecPosArray[7];
 
 void saveMech(char tCTepl)
 {
@@ -82,25 +107,25 @@ void saveMech(char tCTepl)
 	mecPosArray[6] = GD.Hot.Tepl[tCTepl].HandCtrl[cHSmLight].Position;
 }
 
-void loadKontur(char tCTepl)
-{
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
-	GD.Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
-}
+//void loadKontur(char tCTepl)
+//{
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[0] = konturMax[0]*10;
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[1] = konturMax[1]*10;
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[2] = konturMax[2]*10;
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[3] = konturMax[3]*10;
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[4] = konturMax[4]*10;
+//	GD.Control.Tepl[tCTepl].c_MaxTPipe[5] = konturMax[5]*10;
+//}
 
-void saveKontur(char tCTepl)
-{
-	konturMax[0] = GD.Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
-	konturMax[1] = GD.Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
-	konturMax[2] = GD.Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
-	konturMax[3] = GD.Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
-	konturMax[4] = GD.Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
-	konturMax[5] = GD.Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
-}
+//void saveKontur(char tCTepl)
+//{
+//	konturMax[0] = GD.Control.Tepl[tCTepl].c_MaxTPipe[0]/10;
+//	konturMax[1] = GD.Control.Tepl[tCTepl].c_MaxTPipe[1]/10;
+//	konturMax[2] = GD.Control.Tepl[tCTepl].c_MaxTPipe[2]/10;
+//	konturMax[3] = GD.Control.Tepl[tCTepl].c_MaxTPipe[3]/10;
+//	konturMax[4] = GD.Control.Tepl[tCTepl].c_MaxTPipe[4]/10;
+//	konturMax[5] = GD.Control.Tepl[tCTepl].c_MaxTPipe[5]/10;
+//}
 
 void loadMech(char tCTepl)
 {
@@ -137,12 +162,12 @@ void checkConfig()
 	for (tCTepl=0;tCTepl<cSTepl;tCTepl++)
 	{
 		checkMech = 0;
-		checkKontur = 0;
-		for (sys=0;sys<6;sys++)
-		{
-		  if (GD.Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
-		   	checkKontur = 1;
-		}
+		//checkKontur = 0;
+		//for (sys=0;sys<6;sys++)
+		//{
+		//  if (GD.Control.Tepl[tCTepl].c_MaxTPipe[sys] > 1300)   // темп заданная в мониторе *10
+		//   	checkKontur = 1;
+		//}
 		ClrDog;
 		for (sys=0;sys<6;sys++)
 		{
@@ -162,16 +187,16 @@ void checkConfig()
     	{
     		saveMech(tCTepl);
     	}
-    	ClrDog;
-    	if (checkKontur == 1)
-    	{
-    		GD.Hot.Tepl[tCTepl].newsZone = 0x0F;
-    		loadKontur(tCTepl);
-    		repeatNews[tCTepl] = 4;
-    	} else
-    	{
-    		saveKontur(tCTepl);
-    	}
+    	//ClrDog;
+    	//if (checkKontur == 1)
+    	//{
+    	//	GD.Hot.Tepl[tCTepl].newsZone = 0x0F;
+    	//	loadKontur(tCTepl);
+    	//	repeatNews[tCTepl] = 4;
+    	//} else
+    	//{
+    	//	saveKontur(tCTepl);
+    	//}
     	ClrDog;
     	if (repeatNews[tCTepl])
     		repeatNews[tCTepl]--;
@@ -179,8 +204,8 @@ void checkConfig()
     		GD.Hot.Tepl[tCTepl].newsZone = 0;
 	}
 
-}*/
-
+}
+*/
 
 main()
 {
@@ -237,7 +262,26 @@ main()
     siodInit();
     airHeatInit();   // airHeat
     //initCheckConfig();
+    startFlag = 5;
 start:
+
+/*
+GD.Hot.Tepl[0].NextTCalc.DifTAirTDo = 111;
+GD.Hot.Tepl[0].NextTCalc.UpSR = 211;
+GD.Hot.Tepl[0].NextTCalc.LowGlass = 311;
+GD.Hot.Tepl[0].NextTCalc.LowOutWinWind = 411;
+GD.Hot.Tepl[0].NextTCalc.UpLight = 511;
+GD.Hot.Tepl[0].NextTCalc.ICorrection = 611;
+GD.Hot.Tepl[0].NextTCalc.dSumCalcF = 711;
+GD.Hot.Tepl[0].NextTCalc.DiffCO2 = 811;
+GD.Hot.Tepl[0].NextTCalc.TVentCritery = 911;
+GD.Hot.Tepl[0].NextTCalc.PCorrection = 122;
+GD.Hot.Tepl[0].NextTCalc.Critery = 133;
+GD.Hot.Tepl[0].NextTCalc.ICorrectionVent = 144;
+GD.Hot.Tepl[0].NextTCalc.dSumCalc = 155;
+GD.Hot.Tepl[0].NextTCalc.PCorrectionVent = 166;
+GD.Hot.Tepl[0].NextTCalc.CorrectionScreen = 177;
+*/
 
     if (not) {
         if (!ton_t--) {
@@ -264,14 +308,14 @@ start:
 #warning Изменение блока
         //убрать, тестовая вещь показывает прием пакета
 
-       	//checkConfig();
-
     	if ( (NumBlock == 0) && (size == 92) )
     	{
     		crc1 = 55-CheckSumMain();
     		if (crc != crc1)
     			ReadFromFRAM();
     	}
+
+       	//checkConfig();
 
     	if ( GD.Timer[0].crc != 0xAA )
     		ReadBlockFRAM(1);

@@ -121,6 +121,29 @@ int16_t getÑSmWaterSens(void)
 }
 */
 
+
+int16_t OutSensSave;
+
+int16_t getCSmOutTSens( void )
+{
+	int16_t x = 0;
+	int16_t temp;
+	temp = GD.TControl.MeteoSensing[cSmOutTSens];
+	if (temp > 4500)
+	{
+		if (OutSensSave < 4500)
+			x = OutSensSave;
+		else
+			x = 4500;
+	}
+	else
+	{
+		OutSensSave = temp;
+		x = OutSensSave;
+	}
+	return x;
+}
+
 int16_t teplTmes[8][6];
 
 int16_t getTempSensor(char fnTepl, char sensor)
@@ -572,7 +595,10 @@ void MidlWindAndSr(void)
 	{
 	  GD.Hot.SumSun=(int)((GD.TControl.SumSun*6)/1000);
 	}
-	GD.Hot.MidlWind=(int)((((long int)GD.Hot.MidlWind)*(1000-o_MidlWindFactor)+((long int)GD.TControl.MeteoSensing[cSmVWindSens])*o_MidlWindFactor)/1000);
+
+
+	if (GD.TControl.MeteoSensing[cSmVWindSens] < 3000)
+		GD.Hot.MidlWind=(int)((((long int)GD.Hot.MidlWind)*(1000-o_MidlWindFactor)+((long int)GD.TControl.MeteoSensing[cSmVWindSens])*o_MidlWindFactor)/1000);
 }
 
 void CheckMidlSr(void)
